@@ -150,12 +150,75 @@ FAIT :
 - Structure prête à accueillir les écrans et l'API réelle
 
 ================================================================
+SESSION 6 - 03/09/2026 : PROTOTYPE FONCTIONNEL DES ÉCRANS
+================================================================
+FAIT :
+1. Expo Router configuré dans apps/mobile :
+   - Dépendances : expo-router, react-native-safe-area-context,
+     react-native-screens, expo-linking, expo-constants
+   - Entrée : main = "expo-router/entry"
+   - app.json : nom "Fable", slug "fable", scheme "fable",
+     userInterfaceStyle "dark", newArchEnabled
+2. Prototype fonctionnel (sans design, données mock) :
+   - src/data/mock.ts : genres (6), sous-genres, traits,
+     styles, longueurs, difficultés, tranches d'âge
+   - src/services/mockStory.ts : générateur de chapitres local
+     (simule l'IA : intros/choix/fins par genre, streaming)
+   - src/state/store.ts : Zustand + persist (âge, partie en cours)
+   - Écrans (Expo Router) :
+     * app/_layout.tsx : stack racine
+     * app/index.tsx : splash + redirection (âge ou accueil)
+     * app/age.tsx : sélection de l'âge (4 tranches)
+     * app/home.tsx : accueil (continuer / nouvelle partie)
+     * app/new-game.tsx : 3 étapes (genre -> héros -> params)
+     * app/game/[gameId].tsx : lecture (chapitres + choix,
+       streaming simulé "machine à écrire")
+     * app/game/end.tsx : fin du roman
+3. Alias de chemins : "@/*" -> src/* dans tsconfig
+   (+ "@fable/shared" -> packages/shared)
+4. Corrections :
+   - Apostrophe non échappée dans mockStory (ligne 182)
+   - Chemin d'import mockStory -> ../data/mock
+   - Accolade en trop dans app.json
+   - baseUrl déprécié en TS6 -> ignoreDeprecations: "6.0"
+5. MISE À JOUR NODE :
+   - Node 20.10.0 trop ancien pour Expo 57 (requis >= 20.19.4)
+   - Installé Node.js 24.19.0 LTS via winget
+     (OpenJS.NodeJS.LTS) -> npm 11.17.0
+6. VÉRIFICATIONS :
+   - Typecheck mobile : OK
+   - Export web : bundle 786 modules, aucune erreur
+   - Export android : bundle 2.7MB, aucune erreur
+   - Serveur Expo : HTTP 200 sur localhost:8082
+7. NOTES UTILISATEUR :
+   - Le serveur doit être lancé par l'utilisateur dans SON
+     terminal pour voir le QR code : cd /d D:\Fable\apps\mobile
+     && npm start (le cd /d est obligatoire en cmd pour
+     changer de lecteur)
+   - Expo Go installé sur le téléphone de l'utilisateur
+   - Le prototype couvre : âge -> accueil -> nouvelle partie ->
+     lecture (streaming + choix) -> fin
+
+ÉTAT : prototype fonctionnel navigable, tourne en web ET en
+natif (Android compilé). À brancher sur l'API réelle ensuite.
+
+================================================================
+SESSION 7 - 03/09/2026 : GITHUB + VERCEL
+================================================================
+FAIT :
+1. Comptes vérifiés :
+   - GitHub : HyddenTroll (gh auth OK)
+   - Vercel : hyddentroll (vercel whoami OK)
+2. En attente :
+   [ ] Push initial sur GitHub (repo : fable ? public/privé ?)
+   [ ] Déploiement Vercel (repo + config)
+
+================================================================
 PROCHAINE SESSION (à faire)
 ================================================================
-1. Rédiger les prompts complets dans prompts/ (voir prompts-ia.txt)
-2. Créer les écrans Expo Router (accueil, genres, héros,
-   paramètres, lecture)
-3. API réelle : /game/create (story bible) + /game/chapter
-4. Projet Supabase : schéma + RLS + Auth
-5. Quota chapitres gratuits (côté serveur)
-6. GitHub + Vercel
+1. Créer le repo GitHub + push initial
+2. Déployer sur Vercel
+3. Rédiger les prompts complets dans prompts/
+4. API réelle : /game/create (story bible) + /game/chapter
+5. Projet Supabase : schéma + RLS + Auth
+6. Quota chapitres gratuits (côté serveur)
