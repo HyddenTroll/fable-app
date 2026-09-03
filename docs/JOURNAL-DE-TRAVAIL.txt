@@ -286,6 +286,29 @@ FAIT :
 11. Le serveur n'est PAS lancé par moi : l'utilisateur le lance
    lui-même (cd /d D:\Fable\apps\mobile && npm start)
 
+SESSION 9 bis - 03/09/2026 : FIX DÉPLOIEMENT VERCEL
+================================================================
+FAIT :
+1. Problème : après le push des écrans, l'URL finale renvoyait
+   404. Cause : le build Vercel depuis apps/mobile ne trouvait
+   pas @fable/shared (workspace du monorepo) car Vercel
+   installait isolément dans apps/mobile.
+2. Solution : vercel.json DÉPLACÉ à la RACINE du monorepo :
+   - buildCommand : cd apps/mobile && npx expo export --platform web
+   - outputDirectory : apps/mobile/dist
+   - installCommand : npm install (installe les workspaces,
+     donc @fable/shared est résolu)
+3. vercel.json supprimé de apps/mobile (conflit possible).
+4. Build local validé depuis la racine (export web OK).
+5. Redéploiement : https://fable-5pt9sqan8-... -> aliased
+   https://fable-app-three.vercel.app -> HTTP 200.
+6. Commit + push : 4f98944 "Fix déploiement Vercel".
+
+URLS FINALES :
+- Site : https://fable-app-three.vercel.app (HTTP 200)
+- Repo : https://github.com/HyddenTroll/fable-app
+- Local : http://localhost:8081 (npm start dans apps/mobile)
+
 ================================================================
 PROCHAINE SESSION (à faire)
 ================================================================
