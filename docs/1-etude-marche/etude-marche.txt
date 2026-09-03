@@ -1,0 +1,85 @@
+========================================
+ÉTUDE DE MARCHÉ
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+1. TAILLE DU MARCHÉ
+--------------------------------------------------------
+- Interactive Fiction (jeux narratifs interactifs) :
+  ~6,4 Mds $ en 2025 => ~14,8 Mds $ attendus en 2034
+  (CAGR ~9,8 %).
+- Jeux narratifs / narrative games :
+  ~12,4 Mds $ en 2025 => ~28,9 Mds $ en 2034 (CAGR 9,8 %).
+- Livres-jeux / storybooks générés par IA :
+  ~3,2 Mds $ en 2025 => ~18,7 Mds $ en 2034 (CAGR ~21,8 %)
+  => LE segment qui croît le plus vite.
+- Apps de narration interactive (mobile) :
+  ~2,5 Mds $ en 2025 => ~4,7 Mds $ en 2033 (CAGR 14,7 %).
+- Segment mobile = 41,2 % du marché de l'interactive fiction.
+- Enjeu local : le marché francophone (France ~67 M d'habitants,
+  + francophonie ~300 M de locuteurs) est très peu couvert par
+  des offres IA en français.
+
+--------------------------------------------------------
+2. TENDANCES
+--------------------------------------------------------
+- L'IA devient le moteur standard de la narration interactive :
+  en 2025, 41 % des studios de jeux narratifs utilisent des LLM
+  (vs 12 % en 2023) ; 54 % des studios implémentent des PNJ pilotés
+  par IA.
+- +1 milliard d'utilisateurs d'IA dans le monde chaque mois (2026).
+- Le papier "livres dont vous êtes le héros" connaît un regain :
+  ventes record en 2025 (ruptures récurrentes en librairie).
+- Passage du choix à menus fixes vers une narration générative
+  ouverte et personnalisée.
+- Demande croissante en français (peu de contenu IA de qualité
+  dans la langue).
+
+--------------------------------------------------------
+3. SEGMENTS DE MARCHÉ
+--------------------------------------------------------
+- Segments identifiés :
+  * Nostalgiques 28-45 ans (LDVELH des années 80-90, Gallimard) :
+    forte volonté de payer, segment adulte = 35 % des ventes.
+  * Amateurs de jeux narratifs / RPG / visual novels (18-35).
+  * Jeunes lecteurs 12-18 (habitués du mobile, éducation).
+  * Curieux de l'IA (découverte du potentiel créatif).
+- Le segment le plus rentable au départ : adultes nostalgiques +
+  amateurs de narration (éduqués, équipés, prêts à payer).
+
+--------------------------------------------------------
+4. CANAUX DE DISTRIBUTION
+--------------------------------------------------------
+- iOS (App Store) et Android (Google Play) : cible principale.
+- Web (Vercel) : version jouable dans le navigateur, SEO,
+  partage sur les réseaux.
+- Pas de coût d'acquisition au début : ASO (App Store
+  Optimization), réseaux sociaux (TikTok/Instagram, contenu
+  "let's play"), bouche-à-oreille communautaire.
+
+--------------------------------------------------------
+5. MODÈLES DE REVENUS OBSERVÉS
+--------------------------------------------------------
+- AI Dungeon : freemium. Gratuit limité ; 9,99 à 49,99 $/mois
+  (modèles premium, contexte plus long, images).
+- Episode / Choices (Pocket Gems, Pixelberry) : gratuit +
+  achats intégrés (passes de chapitres, énergie, cosmétiques).
+- NovelAI, Character.AI : abonnement (5 à 25 $/mois).
+- Livres-jeux papier : vente unitaire 12 à 27 € (preuve de
+  volonté de payer).
+=> Le marché accepte l'abonnement ; le freemium est la norme.
+
+--------------------------------------------------------
+6. SYNTHÈSE / OPPORTUNITÉ
+--------------------------------------------------------
+- Marché en croissance rapide, piloté par l'IA (CAGR ~20 % sur
+  les storybooks IA), marché mobile dominant.
+- Forte demande française non satisfaite : peu d'apps de
+  narration IA en français, et le papier LDVELH reflète une
+  demande massive.
+- Coûts d'entrée faibles : API IA bon marché, Vercel serverless,
+  Expo = il est possible de lancer un MVP vite et à bas coût.
+- Positionnement gagnant : "Livre dont vous êtes le héros"
+  (notoriété du genre) + "généré par IA" (innovation) + FR.

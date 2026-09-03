@@ -1,0 +1,88 @@
+========================================
+RISQUES & MITIGATIONS
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+RISQUE 1 : Coût de l'IA trop élevé
+--------------------------------------------------------
+Probabilité : Moyenne
+Impact : Élevé (peut tuer la rentabilité)
+Mitigation :
+- Choisir un modèle budget (Claude Haiku, Mistral Small,
+  GPT-5 nano) : ~0,0045 $/chapitre avec Haiku.
+- Plafonner les générations gratuites (10 chapitres/jour).
+- Prompt caching (-75 à -90 %) sur les instructions et le résumé.
+- Résumé de l'historique au lieu de renvoyer tout le texte.
+- Multi-fournisseurs pour arbitrer les prix (fallback).
+
+--------------------------------------------------------
+RISQUE 2 : Latence de génération trop longue
+--------------------------------------------------------
+Probabilité : Moyenne
+Impact : Moyen (abandon si > 5 s)
+Mitigation :
+- Streaming de la réponse (l'effet "machine à écrire").
+- Modèle rapide (Haiku/Small/mini) plutôt que le modèle géant.
+- Générer le premier choix en parallèle / par anticipation.
+- Afficher une animation de "lecture en cours" engageante.
+
+--------------------------------------------------------
+RISQUE 3 : Qualité du texte en français
+--------------------------------------------------------
+Probabilité : Faible-Moyenne
+Impact : Élevé (cœur du produit)
+Mitigation :
+- Modèles réputés bons en FR (Claude, GPT-4.1, Mistral Large).
+- Prompts soignés : consigne de style, vocabulaire, longueur.
+- Format strict : retour JSON (chapitre + choix) pour fiabilité.
+- Re-test régulier + boucle de feedback utilisateur.
+- (Option) 2e passe d'amélioration par IA sur les textes.
+
+--------------------------------------------------------
+RISQUE 4 : Sécurité / clé IA exposée
+--------------------------------------------------------
+Probabilité : Faible (si bien fait)
+Impact : Très élevé (fraude, piratage, surcoût)
+Mitigation :
+- Clé IA UNIQUEMENT côté serveur (Vercel Functions).
+- Jamais de clé dans l'app mobile ni dans le repo.
+- Variables d'environnement (pas de commit des .env).
+- Rate limiting par utilisateur sur l'API.
+- Quotas de génération côté serveur (anti-abus).
+
+--------------------------------------------------------
+RISQUE 5 : RGPD / régulation IA (AI Act)
+--------------------------------------------------------
+Probabilité : Moyenne
+Impact : Moyen (conformité)
+Mitigation :
+- Pas de données personnelles au démarrage (anonyme).
+- Politique de confidentialité claire.
+- Mention "contenu généré par IA" (exigence AI Act).
+- Si Mistral (EU) : données hébergées en Europe, RGPD simple.
+- Système de signalement des contenus inappropriés.
+
+--------------------------------------------------------
+RISQUE 6 : Contenu inapproprié généré
+--------------------------------------------------------
+Probabilité : Moyenne
+Impact : Élevé (suspension stores, réputation)
+Mitigation :
+- Politiques de contenu du fournisseur IA (filtres intégrés).
+- Consignes de sécurité dans le prompt (limites claires).
+- Catégorie d'âge appropriée sur les stores.
+- Signalement + modération des contenus signalés.
+- Interdiction des sujets sensibles dans les univers par défaut.
+
+--------------------------------------------------------
+RISQUE 7 : Concurrence qui copie le concept
+--------------------------------------------------------
+Probabilité : Élevée
+Impact : Moyen-Élevé
+Mitigation :
+- Construire vite la marque et la communauté FR.
+- Qualité d'expérience et de prompts = avantage difficile à
+  copier du jour au lendemain.
+- Continuer d'innover (univers, illustrations, audio).

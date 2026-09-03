@@ -1,0 +1,101 @@
+========================================
+CONFORMITÉ & CLASSIFICATION D'ÂGE (décisions)
+========================================
+Projet : Fable
+Date : 03/09/2026
+Statut : décisions prises "au mieux" (recherche + règles stores).
+Fichiers liés : 6-avant-le-code/decisions-produit.txt (§6-7),
+6-avant-le-code/checklist-maitresse.txt (§5), CONTEXTE.txt.
+
+================================================================
+1. CLASSIFICATION D'ÂGE SUR LES STORES (décision)
+================================================================
+CONTEXTE 2026 :
+- Apple a élargi ses tranches : 4+, 9+, 13+, 16+, 18+ (2026).
+- Questionnaire OBLIGATOIRE (échéance passée : janv. 2026),
+  avec des questions spécifiques sur les fonctionnalités IA
+  (assistants IA = évalués pour le contenu mature potentiel).
+- Google Play : questionnaire IARC (violence, contenu sexuel,
+  langage, substances, UGC, éléments interactifs).
+- NB : un app contenu généré par IA + achats intégrés + (futur)
+  UGC = sera évaluée avec prudence par les reviewers.
+
+DÉCISION FABLE :
+- MVP : classification visée 12+ (contenu adapté, violence
+  modérée possible, achats intégrés présents, IA signalée).
+- RÉÉVALUATION OBLIGATOIRE à 17+/18+ quand l'UGC arrivera
+  (v1.2) : le contenu utilisateur non modéré peut forcer une
+  classification supérieure. Prévoir ce passage dans le plan.
+- Répondre HONNÊTEMENT au questionnaire (ne jamais choisir une
+  note inférieure à ce que le contenu justifie - risque de
+  retrait + amendes).
+- Catégorie : Games (le questionnaire demande une catégorie
+  depuis 2026). NB : si partage social = déclarer l'intégration
+  sociale honnêtement (v1.2).
+
+================================================================
+2. ÂGE MINIMUM D'UTILISATION (décision)
+================================================================
+- Âge minimum défini : 10 ANS (tranche -10 = la plus jeune
+  proposée). Pas de publicité, contenu doux garanti pour cette
+  tranche.
+- (L'app n'est PAS classée "jeu pour enfants" : elle est
+  "tout public avec contenu adapté par l'âge déclaré".)
+
+================================================================
+3. RGPD / DONNÉES DES MINEURS (France) - RÈGLES À SUIVRE
+================================================================
+- SEUIL FRANCE : 15 ans. En dessous de 15 ans, le consentement
+  au traitement des données doit être CONJOINT (mineur +
+  parent) pour les services en ligne (art. 8 RGPD + loi
+  Informatique et Libertés - seuil abaissé à 15 en France).
+- RGPD par défaut : 16 ans (13-16 selon les pays) => si l'app
+  est utilisée dans d'autres pays de l'UE, vérifier le seuil
+  national.
+- COPPA (USA) : moins de 13 ans = consentement parental
+  vérifiable avant toute collecte de données personnelles.
+- IMPLICATION CONCRÈTE POUR FABLE :
+  * Si l'utilisateur déclare -15 ans : afficher une ÉTAPE DE
+    CONSENTEMENT PARENTAL à l'inscription (email du parent,
+    ou mention claire "demande à un parent de valider").
+  * Si -13 ans et marché US : consentement parental vérifiable
+    (email de confirmation du parent).
+  * Interface et mentions adaptées aux enfants (langage simple).
+  * Minimiser les données : pas de pub, pas de tracking tiers,
+    pas de données inutiles.
+- BASE LÉGALE recommandée : CONTRAT (exécution du service)
+  plutôt que consentement marketing => évite une partie du
+  consentement parental, MAIS la prudence s'impose (CNIL).
+
+================================================================
+4. CHANGEMENT D'ÂGE (décision - sous réserve du légal)
+================================================================
+- L'utilisateur PEUT modifier son âge (décision produit).
+- RÈGLES DE SÉCURITÉ :
+  * CHANGEMENT VERS LE HAUT (ex : 14 -> 18+) : autorisé avec
+    une confirmation explicite + avertissement sur le contenu
+    qui devient accessible. (Un mineur ne peut pas légalement
+    contourner : la confirmation n'est pas une vérification
+    d'identité, c'est un garde-fou.)
+  * CHANGEMENT VERS LE BAS (ex : 18 -> 14, pour accéder au
+    mode doux) : autorisé librement (restriction de contenu,
+    pas de risque).
+  * AUCUN contournement de l'âge vers le haut sans confirmation
+    (double tap + texte clair).
+- LIMITE PRAGMATIQUE : ne pas collecter de pièce d'identité au
+  MVP (trop intrusif, risque RGPD). La confirmation suffit pour
+  la conformité "efforts raisonnables" (art. 8(2)).
+- À DOCUMENTER dans la politique de confidentialité : comment
+  l'âge est utilisé et modifiable.
+
+================================================================
+5. AUTRES ÉLÉMENTS LÉGAUX (à créer - voir checklist §5)
+================================================================
+[ ] Politique de confidentialité (RGPD) - à rédiger
+[ ] Conditions d'utilisation - à rédiger
+[ ] Mentions "contenu généré par IA" (AI Act) - à inclure
+[ ] Politique de modération UGC (v1.2) - à préparer
+[ ] Droit des images générées (usage commercial) - vérifier
+[ ] Copyright du contenu généré (zone grise) - documenter
+[ ] Formulaire d'export / suppression des données (RGPD)
+[ ] Vérifier les seuils d'âge des pays cibles (UE : 13-16)

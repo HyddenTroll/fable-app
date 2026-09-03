@@ -1,0 +1,279 @@
+========================================
+DESIGN & UX - SPÉCIFICATION DES ÉCRANS (wireframes textuels)
+========================================
+Projet : Fable
+Date : 03/09/2026
+But : définir chaque écran (structure, contenu, règles) pour
+guider le code. Wireframes textuels - le design visuel
+(couleurs, typographie, assets) est noté en fin de document.
+Fichiers liés : 6-avant-le-code/decisions-produit.txt (règles
+de jeu), architecture-technique.txt (routes), economie-app.txt
+(freemium).
+
+LEGENDE :
+- [Écran] : nom + route (voir architecture §3)
+- CONTENU : les éléments affichés
+- ACTIONS : ce que fait l'utilisateur
+- RÈGLES : logique métier / conditions
+- LIENS : vers d'autres écrans
+
+================================================================
+FLUX GLOBAL (parcours utilisateur)
+================================================================
+1. Premier lancement : Splash -> Âge -> Auth -> Onboarding ->
+   Accueil -> Nouvelle partie
+2. Retour : Splash -> Accueil (session conservée)
+3. Nouvelle partie : Accueil -> Nouvelle partie -> Choix genre
+   -> Création héros -> Paramètres -> (génération bible) ->
+   Prologue -> Lecture -> ... -> Fin -> Résumé -> Accueil
+4. Payer : Paywall (ch.6) -> Fable+ | Boutique -> Crédits
+
+================================================================
+ÉCRAN 1 : SPLASH
+================================================================
+- CONTENU : logo Fable, nom, animation légère (optionnelle),
+  barre de chargement.
+- RÈGLES : ~1,5s, puis redirige selon session :
+  * pas de session -> Écran Âge
+  * session mais âge non défini -> Écran Âge
+  * session + âge -> Accueil
+- LIENS : Âge / Accueil.
+
+================================================================
+ÉCRAN 2 : ÂGE (1er lancement - obligatoire)
+================================================================
+- CONTENU : "Quel âge as-tu ?" + 4 grandes cartes :
+  * Moins de 10 ans / 10-15 ans / 16-18 ans / 18 ans et plus.
+  * Icônes simples, texte clair, pas de confusion.
+- ACTIONS : taper une tranche -> confirmation.
+- RÈGLES :
+  * Si -15 ans : étape suivante = CONSENTEMENT PARENTAL
+    (mention claire "demande à un parent de valider" + case à
+    cocher + email parent optionnel) [conformite-age.txt].
+  * Si -13 ans : même principe (COPPA si marché US).
+  * Si 18+ : une confirmation "le contenu peut contenir de la
+    violence, de l'horreur et des thèmes adultes".
+  * L'âge verrouille les genres adultes (hidden pour les -18).
+- LIENS : Auth (inscription/connexion) ou Accueil selon flux.
+
+================================================================
+ÉCRAN 3 : AUTH (connexion / inscription)
+================================================================
+- CONTENU : email + mot de passe. Boutons "Se connecter" /
+  "Créer un compte". (OAuth Google/Apple = V1, pas au MVP.)
+- RÈGLES : validation Zod, erreurs claires en français.
+  Mot de passe min 8 caractères. Lien "mot de passe oublié".
+- LIENS : Accueil (après connexion) / Inscription -> Âge
+  (si pas encore défini).
+
+================================================================
+ÉCRAN 4 : ACCUEIL (onglet principal)
+================================================================
+- CONTENU :
+  * En-tête : logo, profil (avatar/initiales), bouton boutique.
+  * Si une partie en cours : grande carte "Continuer
+    l'aventure" (titre, chapitre en cours, bouton).
+  * Bouton principal "Nouvelle aventure".
+  * Statut abonnement : badge "Fable+" ou lien "Passer à Fable+".
+  * Solde de crédits (badge).
+- ACTIONS : continuer, nouvelle partie, accéder boutique/profil.
+- RÈGLES : reprise de partie = dernier chapitre lu + résumé
+  affiché avant de continuer.
+- LIENS : Lecture, Nouvelle partie, Boutique, Profil.
+
+================================================================
+ÉCRAN 5 : CHOIX DU GENRE (nouvelle partie - étape 1)
+================================================================
+- CONTENU : grille de genres (cartes illustrées) :
+  Fantasy, Science-fiction, Policier, Horreur, Historique,
+  Romance (+ autres selon catalogue).
+  * Les genres réservés 18+ sont VERROUILLÉS (cadenas) pour
+    les -18 (non visibles ou grisés).
+  * Sous chaque genre, flèche "voir les sous-genres".
+- ACTIONS : choisir un genre OU ouvrir les sous-genres.
+- RÈGLES : si sous-genres -> afficher la liste (ex : Fantasy ->
+  High / Low / Dark / Urban / Mythique) avec mini-descriptions.
+- LIENS : Création héros.
+
+================================================================
+ÉCRAN 6 : CRÉATION DU HÉROS (étape 2)
+================================================================
+- CONTENU :
+  * Nom : champ texte + bouton "suggérer" (l'IA propose des
+    noms adaptés au genre) + "aléatoire".
+  * Trait de personnalité (optionnel) : cartes d'archétypes
+    (Courageux, Rusé, Prudent, Audacieux, Sarcastique, Loyal,
+    Solitaire) + option "Aucun".
+  * Bouton "Continuer".
+- ACTIONS : renseigner nom, choisir (ou non) un trait.
+- RÈGLES : nom requis (1-20 caractères). Le trait influence
+  les prompts (voir prompts-ia).
+- LIENS : Paramètres.
+
+================================================================
+ÉCRAN 7 : PARAMÈTRES DE LA PARTIE (étape 3)
+================================================================
+- CONTENU : 4 sélecteurs (valeurs par défaut = moyennes) :
+  * Difficulté : Facile / Moyenne / Difficile
+  * Longueur des chapitres : Court (~1500) / Moyen (~3000) /
+    Long (~5000)
+  * Style narratif : Classique / Sombre / Humoristique /
+    Lyrique / Cinématographique / Sobre (les styles adultes
+    filtrés selon l'âge)
+  * Nombre de choix : 2 / 3 / 4
+- ACTIONS : choisir les valeurs + "Commencer l'aventure".
+- RÈGLES : les choix conditionnent la bible (prompt).
+  Au chapitre 6 : ce réglage reste modifiable ? (V1 : non,
+    fixé par partie).
+- LIENS : génération -> Prologue.
+
+================================================================
+ÉCRAN 8 : GÉNÉRATION (transition)
+================================================================
+- CONTENU : animation "L'IA écrit ton histoire..." + texte de
+  chargement variable et rassurant ("La plume se lève...",
+  "Le monde prend forme...").
+- RÈGLES : appel à /api/game/create (bible) puis prologue.
+  En cas d'échec : bouton "Réessayer".
+- LIENS : Lecture (prologue).
+
+================================================================
+ÉCRAN 9 : LECTURE (le cœur de l'app)
+================================================================
+- CONTENU :
+  * Barre supérieure : titre du roman, chapitre en cours
+    (x/N), boutons "résumé de l'histoire" et "paramètres".
+  * Titre du chapitre : "Chapitre 3 : La forêt oubliée".
+  * Texte du chapitre : lecture agréable (serif ou lisible),
+    streaming "machine à écrire" pendant la génération.
+  * Option "image" (icône) : propose une illustration du
+    moment (coût 3 crédits).
+  * Couverture : affichée au prologue (image IA).
+  * Bas d'écran : les 2-4 CHOIX (boutons évocateurs).
+  * Compteur freemium : si utilisateur gratuit, "X chapitres
+    gratuits restants" (léger, discret).
+- ACTIONS :
+  * Lire, scroller.
+  * Taper un choix -> génération du chapitre suivant (streaming).
+  * Taper l'icône image -> dialogue crédits -> génération.
+  * Ouvrir le résumé.
+- RÈGLES :
+  * Streaming : le texte apparaît au fil de la génération.
+  * Après le choix, le choix du joueur est mémorisé + résumé
+    mis à jour (serveur).
+  * Chapitre 5 (fin du gratuit) : la fin du chapitre affiche
+    un CLIFFHANGER puis -> Écran Paywall (chapitre 6).
+  * Fin de roman : -> Écran Fin.
+- LIENS : Paywall, Fin, Boutique (pour crédits), Résumé.
+
+================================================================
+ÉCRAN 10 : RÉSUMÉ DE L'HISTOIRE (modale)
+================================================================
+- CONTENU : fil des chapitres (titres + 1 ligne de résumé
+  chacun), choix pris (libellés), personnages rencontrés.
+- ACTIONS : revenir à la lecture.
+- LIENS : Lecture.
+
+================================================================
+ÉCRAN 11 : PAYWALL FABLE+ (blocage après ch.5 gratuit)
+================================================================
+- CONTENU :
+  * Titre percutant : "Ton aventure continue..." (après le
+    cliffhanger du chapitre 5).
+  * Les bénéfices : chapitres illimités, tous les genres,
+    personnalisation complète, priorité de génération, sans pub.
+  * Prix : 4,99 €/mois, ou 39,99 €/an (badge "2 mois offerts").
+  * Bouton : "Commencer l'essai Fable+ (7 jours offerts)".
+  * Lien discret : "Pas maintenant" (revient au résumé/accueil).
+  * Mention "annulable à tout moment".
+- RÈGLES : l'abonnement = texte illimité (les images restent
+  en crédits - decision economie). Essai 7 jours proposé.
+- LIENS : Achats (Apple/Google) -> Lecture, Accueil.
+
+================================================================
+ÉCRAN 12 : FIN DU ROMAN
+================================================================
+- CONTENU :
+  * Titre "Fin" + type de fin (Victoire / Échec / Tragique /
+    Ouverte / Secrète) - adapté à l'âge.
+  * Texte du climax + dénouement + épilogue.
+  * Résumé de la partie : nb de chapitres lus, choix pris,
+    temps.
+  * Boutons : "Recommencer" (nouveau roman même genre),
+    "Autre genre", "Partager" (V1.2).
+  * (V1) Succès débloqués affichés.
+- RÈGLES : en mode doux (jeune), pas de "tragique". L'échec
+  tragique (18+) propose "Recommencer".
+- LIENS : Nouvelle partie, Accueil, (V1) Partage.
+
+================================================================
+ÉCRAN 13 : BOUTIQUE / CRÉDITS
+================================================================
+- CONTENU :
+  * Solde actuel de crédits (grand chiffre).
+  * "1 image = 3 crédits" (explication claire).
+  * Packs (cartes) : 30 = 0,99 € / 100 = 2,49 € / 250 = 5,49 €
+    / 600 = 9,99 €. Chaque carte indique le nb d'images.
+  * (Si non abonné) encart Fable+ : "Chapitres illimités pour
+    4,99 €/mois".
+- ACTIONS : acheter un pack (achat in-app), s'abonner.
+- RÈGLES : achat validé côté serveur (Apple/Google).
+- LIENS : Accueil, Lecture.
+
+================================================================
+ÉCRAN 14 : PROFIL (onglet)
+================================================================
+- CONTENU :
+  * Avatar/initiales, nom, âge (avec bouton "modifier l'âge" ->
+    confirmation + avertissement, règles conformite-age.txt).
+  * Statut : Fable+ / Gratuit + bouton passer à Fable+.
+  * Statistiques : romans terminés, chapitres lus, choix pris.
+  * (V1) Succès débloqués.
+  * Paramètres : son, musique, taille du texte, thème clair/
+    sombre, langue.
+  * Compte : déconnexion, supprimer mon compte (RGPD),
+    exporter mes données.
+- LIENS : Paywall, Paramètres, Boutique.
+
+================================================================
+ÉCRAN 15 : RÉGLAGES (paramètres globaux)
+================================================================
+- CONTENU :
+  * Son : musique d'ambiance (on/off), volume, bruitages.
+  * Lecture : taille du texte, interligne, thème (clair/sombre),
+    police (serif/sans).
+  * Génération : "streaming" (on/off par défaut on).
+  * À propos : version, mentions légales, politique de
+    confidentialité, "contenu généré par IA" (AI Act).
+- LIENS : Profil.
+
+================================================================
+DESIGN VISUEL (à affiner au moment du code)
+================================================================
+- THÈME : ambre/or + bleu nuit (suggestion, à valider).
+  Ambiance "livre enchanté" : fond nuit étoilé / parchemin.
+- TYPOGRAPHIE : titre en serif (style littéraire), texte de
+  lecture en serif lisible (ex : Playfair / Spectral) ; UI en
+  sans-serif (Inter). Taille de texte ajustable (accessibilité).
+- ICÔNES : dessinées sur mesure (plume, livre, étoile, dragon).
+- IMAGES : couvertures IA (FLUX), style "illustration de livre".
+- ANIMATIONS : splash, transition de génération (machine à
+  écrire), feedback des choix (toucher).
+- MODE SOMBRE : par défaut (lecture confortable) + clair.
+
+================================================================
+ACCESSIBILITÉ
+================================================================
+- Taille de texte réglable.
+- Contraste suffisant (thème sombre adapté).
+- Boutons larges (zones tactiles confortables).
+- Textes alternatifs pour les images IA (description courte).
+- Aucun contenu clignotant excessif.
+
+================================================================
+QUESTIONS OUVERTES DESIGN (à trancher au moment du code)
+================================================================
+[ ] Thème exact (ambre/or + bleu nuit ? ou autre direction)
+[ ] Police de lecture (Spectral ? autre serif FR-friendly)
+[ ] Animation machine à écrire : vitesse par défaut
+[ ] Musique d'ambiance : choisir la source (assets/IA/stock)

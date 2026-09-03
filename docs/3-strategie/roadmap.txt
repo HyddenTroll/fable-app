@@ -1,0 +1,80 @@
+========================================
+ROADMAP - PLAN D'EXÉCUTION
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+FONCTIONNALITÉS DÉTAILLÉES : 4-produit/fonctionnalites.txt
+(mécanique pur narratif, comptes dès v1, multimédia, social,
+personnalisation, système de crédits images)
+
+--------------------------------------------------------
+PHASE 0 - CADRAGE (fait)
+--------------------------------------------------------
+[x] Idée + CONTEXTE.txt
+[x] PESTEL, étude de marché, analyse concurrentielle
+[x] SWOT, 5 forces de Porter, business model, proposition de valeur
+[x] Positionnement, risques, roadmap
+[x] Choix fournisseur IA (choix-fournisseur-ia.txt)
+[x] Fonctionnalités définies (4-produit/fonctionnalites.txt)
+
+--------------------------------------------------------
+PHASE 1 - MVP (minimum viable product)
+--------------------------------------------------------
+[ ] Créer le projet Expo (TypeScript) dans D:\Fable
+[ ] Écran d'accueil : univers (fantasy) + création héros (nom)
+[ ] Écran principal : chapitre généré IA + 2-4 choix
+[ ] API Vercel : endpoint de génération (multi-fournisseur)
+[ ] Sauvegarde automatique de la partie (locale + cloud)
+[ ] Comptes utilisateurs Supabase (dès la v1)
+[ ] Réglages personnalisation (difficulté, longueur, style, nb choix)
+[ ] Limite freemium (X chapitres/jour)
+[ ] Tester sur téléphone avec Expo Go
+[ ] Déploiement web (Vercel) pour tests faciles
+
+--------------------------------------------------------
+PHASE 2 - PUBLICATION
+--------------------------------------------------------
+[ ] Dépôt GitHub (code public ou privé ?)
+[ ] Lien Vercel + domaine (ex : fable.app)
+[ ] Politique de confidentialité (RGPD) + mentions IA (AI Act)
+[ ] Page de destination (landing) : présentation + inscription
+[ ] Soumission App Store (compte développeur ~99 $/an)
+[ ] Soumission Google Play (compte ~25 $ une fois)
+[ ] ASO : titre, description, captures d'écran FR
+
+--------------------------------------------------------
+PHASE 3 - V1 (enrichissement) - voir 4-produit/fonctionnalites.txt
+--------------------------------------------------------
+[ ] Multi-genres : SF, policier, horreur, historique
+[ ] Statistiques de partie + succès / achievements
+[ ] Illustration de couverture (1 image IA par histoire)
+[ ] Images à la demande via crédits (à chaque passage)
+[ ] Musique d'ambiance par univers (licence à sécuriser)
+[ ] Notes et votes sur les histoires
+
+--------------------------------------------------------
+PHASE 4 - V1.2 (social complet)
+--------------------------------------------------------
+[ ] Partage réseaux sociaux (résumé, fin, moment fort)
+[ ] Classements / histoires populaires
+[ ] Création de contenu UGC + modération
+[ ] Système de crédits complet (quotas + packs + Fable+)
+
+--------------------------------------------------------
+PHASE 5 - MONÉTISATION & CROISSANCE
+--------------------------------------------------------
+[ ] Fable+ (4,99 €/mois) - voir business-model.txt
+[ ] Packs de crédits images (ex : 1 € = 10 images)
+[ ] Tracking analytics (rétention, conversion)
+[ ] Campagnes TikTok/Instagram (démos de parties)
+[ ] Partenariats presse/communauté LDVELH
+[ ] Version éducation / licences scolaires (option)
+
+--------------------------------------------------------
+PROCHAINES DÉCISIONS À PRENDRE
+--------------------------------------------------------
+1. Paramètres freemium : chapitres gratuits/jour, genres en
+   gratuit, crédits par image, prix des packs (voir §12 du
+   fichier fonctionnalités).
+2. Base de données : Supabase validé ? (recommandé)
+3. GitHub public ou privé ?

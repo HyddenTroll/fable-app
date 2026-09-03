@@ -1,0 +1,261 @@
+========================================
+ÉCONOMIE DE L'APPLICATION FABLE
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+But : chiffrer chaque fonctionnalité, fixer les prix, vérifier
+la rentabilité. Complète business-model.txt (vision globale) et
+répond aux questions ouvertes de 4-produit/fonctionnalites.txt §12.
+Fichiers liés : CONTEXTE.txt, choix-fournisseur-ia.txt,
+4-produit/fonctionnalites.txt, 3-strategie/roadmap.txt.
+
+========================================
+0. POURQUOI 5 CHAPITRES GRATUITS (et pas 3)
+========================================
+- 3 chapitres (~15-20 min de lecture) s'arrêtent AVANT que
+  l'histoire ne prenne : l'utilisateur ne vit ni nœud, ni
+  première conséquence de choix, ni cliffhanger => il part
+  frustré au lieu de s'abonner.
+- 5 chapitres permettent d'atteindre un premier climax et un
+  "j'en veux la suite" fort. C'est le moment de conversion
+  optimal (après un cliffhanger).
+- Le coût reste dérisoire : 5 × ~0,002 $ = ~0,01 $/utilisateur.
+  Ce n'est pas une question de coût mais de psychologie de
+  conversion : on ne lésine pas sur ce qui vend l'abonnement.
+- Référence marché : les apps de narration offrent plusieurs
+  chapitres gratuits (AI Dungeon ~25-50 tours, Episode plusieurs
+  chapitres). Personne ne donne 3 chapitres.
+
+========================================
+1. UNITÉS DE COÛT (sept. 2026)
+========================================
+STRUCTURE : un vrai roman (chapitre = unité). 1 génération IA
+= 1 chapitre (~800-1500 mots).
+A) TEXTE (chapitre généré) :
+   - ~2 000-2 500 tokens entrée (prompt, résumé de l'intrigue,
+     personnages, style) + ~1 200-1 500 tokens sortie.
+   - GPT-5.6 Luna (0,20/1,20 $/M) :
+     entrée ~0,0005 $ + sortie ~0,0018 $ = ~0,002 $/chapitre.
+   - Claude Sonnet 5 (2/10) pour les fins : ~0,018 $/chapitre.
+   - Prompt caching (-75 à -90 %) sur les entrées répétées.
+
+B) IMAGE IA (illustrations) :
+   Sources (recherche 2026) :
+   - DALL-E 3 (API)        : 0,04 - 0,12 $/image (qualité, prompt)
+   - FLUX.1 Dev (fal.ai)   : 0,01 - 0,03 $/image (bon compromis)
+   - FLUX.1 Schnell (fal)  : 0,003 - 0,005 $/image (rapide, budget)
+   - SD 3.5 hébergé        : à partir de 0,008 $/image
+   - SDXL (fal/Replicate)  : ~0,005 $/image
+   CHOIX FABLE :
+   - Couverture + images premium : FLUX.1 Dev via fal.ai
+     (~0,02 $/image) - bonne qualité à petit prix.
+   - Option haute qualité : DALL-E 3 (~0,05 $/image) pour les
+     moments forts si le budget le permet.
+   => Hypothèse moyenne retenue : ~0,02 $/image.
+
+C) FIXES :
+   - Vercel Hobby : 0 $ (passage payant si très gros trafic).
+   - Supabase : 0 $ (quota gratuit, 500 MAU compris sur le plan
+     gratuit ; passage payant à ~25 $/mois au-delà de 50k MAU).
+   - Domaine : ~12 €/an.
+   - Analytics + outils : ~0 $ (gratuits au départ).
+
+========================================
+2. COÛT PAR UTILISATEUR ET PAR MOIS
+========================================
+HYPOTHÈSES DE COMPORTEMENT :
+- DAU/MAU (utilisateurs actifs chaque jour) : ~25 % (moyenne
+  mobile). => tous les chiffres ci-dessous en "scénario
+  réaliste" = 100 % des MAU utilisent 25 % de leur quota max.
+- Scénario "worst case" = 100 % des MAU utilisent 100 % de
+  leur quota (budget de sécurité).
+
+UTILISATEUR GRATUIT (5 premiers chapitres offerts, ensuite bloqué) :
+- Texte : 5 chapitres × $0,002 = $0,01 par nouvel utilisateur
+  (coût d'acquisition produit, payé une fois).
+- Images (crédits gratuits si activés) : à définir.
+- Couverture : 1 image par histoire gratuite.
+- TOTAL GRATUIT : ~$0,02-0,04 par utilisateur, une seule fois.
+  => Très faible coût d'acquisition => pas de gaspillage.
+
+UTILISATEUR FABLE+ (chapitres illimités, images via crédits) :
+- Texte : 30 chapitres/jour max (utilisateur très actif)
+  => réaliste : $0,18/mois ; worst case : $0,45/mois
+  (5 chapitres/session × ~2 sessions/jour)
+- Images : via crédits (voir §3) : 1 image = 3 crédits.
+  Coût/image $0,02.
+  => réaliste : ~10 images/mois = $0,20/mois
+     worst case : ~30 images/mois = $0,60/mois
+- TOTAL FABLE+ : réaliste ~$0,40/mois, worst case ~$1,00/mois
+
+========================================
+3. OFFRE COMMERCIALE (prix public)
+========================================
+MODÈLE À 3 NIVEAUX (décision du projet) :
+  1. ESSAI GRATUIT LIMITÉ
+  2. FABLE+ (abonnement mensuel)
+  3. CRÉDITS (images, à la carte)
+
+A) ESSAI GRATUIT LIMITÉ :
+   - Les 5 PREMIERS CHAPITRES offerts (1er arc du roman :
+     incipit + nœud + cliffhanger de fin de chapitre 5).
+   - 1 univers accessible (fantasy).
+   - 1 illustration de couverture gratuite par histoire.
+   - Au chapitre 6 : blocage + écran Fable+.
+   => Assez pour créer l'envie (voir §0 "pourquoi 5"), coût
+      négligeable (~0,01 $/utilisateur).
+
+B) FABLE+ (abonnement 4,99 €/mois) :
+   - Chapitres de texte ILLIMITÉS.
+   - Tous les genres (fantasy, SF, policier, horreur, historique).
+   - Personnalisation complète (difficulté, longueur, style,
+     nb de choix).
+   - Génération prioritaire, sans publicité.
+   - NOTE : les images ne sont PAS incluses => payées en
+     crédits (séparées de l'abonnement, décision du projet).
+   => Positionnement validé : 4,99 € = prix d'entrée du marché
+      (Google AI Plus, ChatGPT Go). Abonnement annuel conseillé
+      à ~39,99 €/an (2 mois offerts) pour la rétention.
+
+C) PACKS DE CRÉDITS (achats intégrés, 1 image = 3 crédits) :
+   - 30 crédits (10 images)   = 0,99 €
+   - 100 crédits (33 images)  = 2,49 €
+   - 250 crédits (83 images)  = 5,49 €
+   - 600 crédits (200 images) = 9,99 €
+   => Prix moyen ~0,033 €/crédit, soit ~0,10 €/image pour
+      l'utilisateur (5x le coût réel ~0,02 $) => marge saine.
+   => Les crédits servent UNIQUEMENT aux images (le texte est
+      couvert par Fable+).
+
+D) RÈGLES DU SYSTÈME DE CRÉDITS :
+   - 1 image à la demande = 3 crédits (toujours).
+   - Aucun crédit gratuit n'est offert à Fable+ ; les crédits
+     sont achetés en packs (et éventuellement gagnés via des
+     succès, à décider).
+   - Les packs achetés ne expirent jamais.
+
+========================================
+4. MARGE BRUTE PAR PRODUIT
+========================================
+(Revenu avant frais store - coût IA)
+
+IMAGE À LA DEMANDE :
+   Revenu : ~0,10 € (3 crédits, tarif pack 100 crédits)
+   Coût  : ~0,02 $ (~0,018 €)
+   => Marge brute ~82 % avant store.
+
+ABONNEMENT FABLE+ (moyenne réaliste) :
+   Revenu : 4,99 €/mois
+   Coût IA : ~0,40 $ (~0,36 €) texte illimité + ~0,20 $
+   d'images en crédits (dont le coût est couvert par les packs)
+   Frais store : 15 % (petit développeur) = 0,75 €
+   => Net ~3,80 €/mois (marge ~76 % avant fixes).
+
+PACKS DE CRÉDITS (60 crédits exemple) :
+   Revenu : 1,99 €
+   Coût IA : 20 images × 0,02 $ = 0,40 $ (~0,36 €)
+   Frais store : 15 % = 0,30 €
+   => Net ~1,33 € (marge ~67 %).
+
+=> L'image IA est LE produit à plus forte marge et le meilleur
+   levier de monétisation "à la carte". Le texte (Fable+) est
+   quasi gratuit à produire => marge d'abonnement très élevée.
+
+========================================
+5. SCÉNARIOS DE CROISSANCE (mensuel)
+========================================
+Paramètres : 5 % de conversion Fable+ ; 5 % des MAU achètent
+un pack (moyenne 2,49 €) ; coûts = scénario réaliste ; frais
+store 15 %.
+
+MAU 1 000 :
+   Revenus : 50 abonnés × 4,99 € + 50 packs × 2,49 €
+            = 249,50 + 124,50 = ~374 €/mois
+   Coûts IA : ~70 $/mois  => NET ~290 €/mois
+
+MAU 5 000 :
+   Revenus : 250 × 4,99 + 250 × 2,49 = 1 247 + 622 = ~1 870 €
+   Coûts IA : ~350 $/mois => NET ~1 500 €/mois
+
+MAU 20 000 :
+   Revenus : 1 000 × 4,99 + 1 000 × 2,49 = 4 990 + 2 490
+            = ~7 480 €/mois
+   Coûts IA : ~1 400 $/mois => NET ~6 200 €/mois
+   (Supabase passe payant ~25 $/mois à ce volume)
+
+MAU 100 000 :
+   Revenus : 5 000 × 4,99 + 5 000 × 2,49 = 24 950 + 12 450
+            = ~37 400 €/mois
+   Coûts IA : ~7 000 $/mois + infra ~50 $/mois
+   => NET ~30 000 €/mois
+
+=> Structure : revenus × 5 quand MAU × 5 ; coûts IA ≈ 18-19 %
+   des revenus. TRÈS rentable, dépend surtout de l'acquisition.
+
+========================================
+6. SEUIL DE RENTABILITÉ
+========================================
+- Coûts fixes mensuels : ~1-3 € (domaine, outils) au départ,
+  ~25-50 €/mois dès 50k MAU (Supabase/analytics).
+- Coûts variables : texte ~0,002 $/chapitre, image ~0,02 $.
+- Un seul abonné Fable+ (4,99 €) couvre le coût IA de ~10-20
+  utilisateurs gratuits (0,02-0,04 $ chacun, coût une seule fois).
+- POINT MORT : dès ~60-80 MAU (5 % de conversion => 3-4
+  abonnés + quelques packs), les revenus couvrent les coûts.
+  => La rentabilité est quasi immédiate, avant même le
+  lancement public (phase de test avec quelques dizaines
+  d'utilisateurs).
+
+========================================
+7. SENSIBILITÉ (les 3 variables qui comptent)
+========================================
+1. TAUX DE CONVERSION (levier n°1) :
+   2 % => moitié moins de revenus ; 8 % => +60 %.
+   Leviers : cliffhanger de fin du chapitre 5, écran Fable+
+   bien placé, qualité littéraire suffisante pour créer le
+   "mur". C'est LE point à soigner en priorité.
+2. UTILISATION DES IMAGES (levier n°2) :
+   Si les utilisateurs génèrent 3x plus d'images que prévu,
+   les coûts images doublent. => Surveiller le coût moyen par
+   MAU chaque semaine ; ajuster le prix des crédits si >0,50 €.
+3. COÛT DU TEXTE :
+   Quasi négligeable en Luna (~0,002 $/chapitre). Reste
+   sensible seulement si on bascule tout en Claude Sonnet 5
+   (×9) => réserver Sonnet aux fins, garder Luna pour le volume.
+
+========================================
+8. DÉCISIONS CONCRÈTES (à valider)
+========================================
+[ ] Modèle 3 niveaux : essai gratuit limité + Fable+ + crédits
+    -> VALIDER (choix du projet)
+[ ] Essai gratuit : 5 premiers chapitres offerts + 1 univers
+    (fantasy) -> VALIDER
+[ ] Fable+ à 4,99 €/mois (texte illimité), 39,99 €/an
+    -> VALIDER
+[ ] Images NON incluses dans Fable+ : payées en crédits
+    -> VALIDER (choix du projet)
+[ ] Packs : 0,99 / 2,49 / 5,49 / 9,99 € -> VALIDER
+[ ] 1 image = 3 crédits (fixe) -> VALIDER
+[ ] Couverture incluse gratuitement dans chaque histoire
+    (1 par histoire) -> VALIDER
+[ ] Modèle image : FLUX.1 Dev via fal.ai (~0,02 $/image),
+    DALL-E 3 en option premium -> VALIDER
+[ ] Métriques à suivre : coût IA/MAU, % MAU utilisant les
+    crédits, taux de conversion (chapitre 6), coût moyen image
+    -> VALIDER
+
+========================================
+9. POINTS D'ATTENTION
+========================================
+- Les frais stores passent de 15 % à 30 % si le CA dépasse
+  1 M$/an => prévoir la bascule d'Apple/Google dans les
+  projections long terme.
+- Publicité : option à ne PAS activer (pollution UX, marque
+  "qualité") ; le freemium + packs suffisent.
+- À la croissance : surveiller le coût de Supabase et de
+  Vercel (les plans gratuits ont des limites).
+- UGC (V1.2) : modération = coût humain, à budgéter
+  séparément (pas d'IA de modération seule).
+- Les images stockées (S3/Vercel) coûtent ~0,02 $/Go/mois :
+  générer des WebP ~500 Ko => ~10 000 images/Go.
+- Réviser les prix/quotas après 1 mois de chiffres réels.

@@ -1,0 +1,121 @@
+========================================
+PROJET : FABLE
+========================================
+Application mobile "livre dont tu es le héros"
+avec texte généré par intelligence artificielle.
+
+Date de création : 03/09/2026
+
+========================================
+DÉCISIONS PRISES
+========================================
+- Nom du projet : Fable
+- Type : application mobile (iOS + Android)
+- Concept : livre dont vous êtes le héros, l'histoire est
+  générée dynamiquement par une IA en temps réel.
+- Emplacement du projet : D:\Fable
+- Déploiement prévu : GitHub (code source) + Vercel
+- Langue cible : français (créneau quasi vide)
+- Analyses stratégiques réalisées (voir dossiers 1, 2, 3)
+
+========================================
+STACK
+========================================
+- Mobile : Expo / React Native (TypeScript)
+  -> Un seul code pour iOS + Android.
+  -> Export web possible => déploiement Vercel.
+  -> Test sur téléphone via l'app Expo Go.
+- Backend : Vercel Serverless Functions (API)
+  -> La clé IA reste côté serveur (sécurité).
+  -> Pas de serveur à gérer, gratuit pour démarrer.
+- Base de données : Supabase (Postgres, gratuit)
+- Navigation : Expo Router | État : Zustand
+- Monorepo : apps/mobile + api + packages/shared + prompts + docs
+
+STRUCTURE DU PROJET (màj 03/09/2026) :
+```
+D:\Fable\
+├── apps/mobile/        # App Expo (TypeScript, Expo Router)
+├── api/                # API serverless Vercel (LLM, Supabase)
+├── packages/shared/    # Types partagés (app + API)
+├── prompts/            # Fichiers de prompts IA (à créer)
+├── docs/               # TOUTE la documentation (1 à 6 + CONTEXTE)
+└── package.json        # racine monorepo (workspaces)
+```
+
+========================================
+FOURNISSEUR IA - DÉCISION (sept. 2026)
+========================================
+Analyse complète : 2-analyse-strategique/choix-fournisseur-ia.txt
+Verdict : les modèles CLAUDE dominent la fiction créative
+(benchmark lechmazur/writing #1/#3/#11). GPT = fort en
+storytelling (mais risque d'AI-slop si non cadré). Mistral =
+fort en français formel mais faible en fiction.
+
+ARCHITECTURE MULTI-NIVEAUX RETENUE (màj 03/09/2026) :
+- Chapitres courants (volume) : GPT-5.6 Luna (0,20 $/1,20 $/M)
+  -> 4,5x moins cher que Haiku, ~0,001 $/chapitre.
+- Qualité (fins/Fable+) : Claude Sonnet 5 (2 $/10 $, prix
+  pérenne depuis 01/09/2026) -> ~0,009 $/chapitre.
+- Haute qualité (grandes fins) : Claude Opus 5 / Fable 5.
+- Fallback budget : Gemini 3.1 Flash-Lite (0,25/1,50).
+- Fallback RGPD (si exigence UE) : Mistral Large 3.
+- Claude Haiku 4.5 : à écarter pour le volume (dépassé en
+  prix par Luna et en qualité par Sonnet 5) ; garde un usage
+  intermédiaire possible.
+=> API Vercel codée avec couche d'abstraction (multi-fournisseur).
+
+========================================
+STRUCTURE & MODÈLE ÉCONOMIQUE (résumé)
+========================================
+STRUCTURE : un vrai roman. Histoire = roman (10-15 chapitres).
+1 génération IA = 1 chapitre (~800-1500 mots). Choix 2-5 en
+fin de chapitre. (On ne copie pas les codes du gamebook.)
+RÉFÉRENCE D'ÉCRITURE : 5-ecriture-narrative/
+- structure-romans-tous-genres.txt (arcs narratifs, chapitres,
+  codes de tous les genres, techniques d'écriture).
+- chefs-doeuvre-litteraires.txt (étude des plus grands romans :
+  7 mécanismes de génie, leçons transmissibles à l'IA, les
+  références par genre - qualité littéraire et règles anti-AI-slop).
+
+MODÈLE À 3 NIVEAUX (détail : 2-analyse-strategique/economie-app.txt) :
+- Essai gratuit limité : 5 premiers chapitres offerts
+  (cliffhanger) puis blocage.
+- Fable+ : 4,99 €/mois (texte illimité), 39,99 €/an.
+- Crédits : images à la demande, 1 image = 3 crédits,
+  packs 0,99 à 9,99 € (séparés de l'abonnement).
+- Coûts : texte ~0,002 $/chapitre (Luna), image ~0,02 $
+  (FLUX Dev), point mort dès ~60-80 MAU.
+- Rentable très tôt ; coûts IA ≈ 18-19 % des revenus.
+
+========================================
+QUESTIONS EN ATTENTE
+========================================
+[x] Fournisseur IA : CHOISI (Claude Haiku 4.5 + Sonnet 4.6)
+    -> màj : architecture multi-niveaux (Luna/Sonnet 5/Opus)
+[x] Base de données : Supabase (validée)
+[x] Compte utilisateur : OUI dès v1 (Supabase Auth)
+[x] Style de l'interface : ambre/or + bleu nuit (suggestion)
+[ ] GitHub : dépôt public ou privé ? (décider avant push)
+
+========================================
+PROCHAINES ÉTAPES (TODO) - màj 03/09/2026
+========================================
+FAIT :
+[x] Choisir le fournisseur IA (choix-fournisseur-ia.txt)
+[x] Monorepo initialisé (git init) + README + .env.example
+[x] Projet Expo créé (apps/mobile, TypeScript, typecheck OK)
+[x] Package partagé créé (packages/shared - types métier)
+[x] Squelette API créé (api/) : couche LLM multi-fournisseurs,
+    client Supabase, endpoint /health
+[x] Serveur Expo testé : démarre (HTTP 200)
+
+À FAIRE :
+1. Créer les prompts IA dans prompts/ (voir prompts-ia.txt)
+2. Écran d'accueil + choix genre + création héros (Expo Router)
+3. Écran lecture (chapitre + choix, streaming)
+4. API : /game/create (story bible) + /game/chapter
+5. Projet Supabase (schéma, RLS, Auth)
+6. Limite chapitres gratuits (quota serveur)
+7. Dépôt GitHub + déploiement Vercel
+8. Soumission App Store + Google Play (phase 2)

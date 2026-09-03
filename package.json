@@ -1,0 +1,15 @@
+{
+  "name": "fable",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fable - Livres dont vous êtes le héros générés par IA",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "api"
+  ],
+  "scripts": {
+    "dev:mobile": "npm run start --workspace @fable/mobile",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

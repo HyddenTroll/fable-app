@@ -1,0 +1,57 @@
+========================================
+POSITIONNEMENT
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+1. POSITIONNEMENT VISÉ
+--------------------------------------------------------
+Pour : les amateurs d'aventure et de lecture interactive
+(nostalgiques des LDVELH, fans de narration, curieux d'IA).
+Qui : veulent des histoires infinies, immersives, en français,
+où leurs choix comptent vraiment.
+Fable est : la première application mobile de livres dont vous
+êtes le héros générés par IA en français.
+Qui : réécrit chaque histoire en temps réel selon tes choix,
+avec chapitres, progression et sauvegarde.
+Contrairement à : AI Dungeon (anglais, bac à sable), Episode/
+Choices (contenu pré-écrit et fini), ChatGPT (pas un vrai jeu).
+
+--------------------------------------------------------
+2. ÉNONCÉ
+--------------------------------------------------------
+"Pour les amateurs d'aventure et de lecture interactive,
+Fable est l'application mobile de livres dont vous êtes le
+héros générés par IA en français, qui offre des histoires
+infinies où chaque choix compte, contrairement aux gamebooks
+classiques et aux apps pré-écrites qui s'épuisent après
+quelques lectures."
+
+--------------------------------------------------------
+3. ADJECTIFS DE MARQUE
+--------------------------------------------------------
+- Immersif
+- Infini
+- Intelligent
+- Personnel
+- Magique (clin d'oeil au nom "Fable")
+
+--------------------------------------------------------
+4. TON ET STYLE
+--------------------------------------------------------
+- Ton : chaleureux, littéraire mais accessible. Proche du
+  maître du jeu qui t'accompagne.
+- Style de l'app : sombre et envoûtant (idéal fantasy/horreur),
+  typographie de livre, fond "parchemin" ou nuit étoilée.
+- Texte de l'app et des histoires : écriture française soignée
+  (formulation, vocabulaire), pas de jargon technique.
+
+--------------------------------------------------------
+5. NOM / LOGO / IDENTITÉ (à définir)
+--------------------------------------------------------
+- Nom : Fable
+- Logo : à créer (livre ouvert / plume / étoile)
+- Couleurs : ambre/or + bleu nuit (suggestion)
+- Slogan provisoire : "Chaque choix écrit une nouvelle fable."
+-

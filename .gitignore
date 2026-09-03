@@ -1,0 +1,25 @@
+# Dépendances
+node_modules/
+.expo/
+dist/
+
+# Environnement - JAMAIS commité
+.env
+.env.*
+!.env.example
+
+# Build
+*.tsbuildinfo
+next-env.d.ts
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+*.log
+
+# Expo
+.expo-shared/
+web-build/
+
+# Vercel
+.vercel/

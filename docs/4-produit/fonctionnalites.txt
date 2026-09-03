@@ -1,0 +1,216 @@
+========================================
+FONCTIONNALITÉS DE L'APPLICATION
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+Statut : fonctionnalités validées par le créateur du projet.
+Fichiers liés :
+- CONTEXTE.txt (stack, IA, modèle éco)
+- 3-strategie/roadmap.txt (phasage)
+- 2-analyse-strategique/business-model.txt (freemium, crédits)
+- 1-etude-marche/clientele-cible.txt (personas Nathan/Léa/Théo)
+- 1-etude-marche/analyse-concurrentielle.txt (différenciation)
+
+========================================
+1. STRUCTURE & MÉCANIQUE (validé - décision du projet)
+========================================
+STRUCTURE = UN VRAI ROMAN (on ne copie pas les codes du
+gamebook ; on fait nos propres choix) :
+- Histoire = un ROMAN : intrigue complète avec arc narratif
+  (incipit, nœud, climax, dénouement), ~10-15 chapitres.
+- CHAPITRE = unité principale : numéroté et titré, ~800-1500
+  mots, écrit comme dans un vrai roman (voix narrative,
+  descriptions, dialogues, tension).
+- 1 GÉNÉRATION IA = 1 CHAPITRE (choix à la fin).
+- RÉFÉRENCE COMPLÈTE : 5-ecriture-narrative/
+  structure-romans-tous-genres.txt (arc narratif, chapitres,
+  codes de TOUS les genres, techniques d'écriture).
+MÉCANIQUE :
+- PUR NARRATIF : les choix narratifs sont la seule mécanique.
+- PAS de points de vie, d'inventaire, de dés ou de combat.
+- À la fin de chaque chapitre, 2 à 5 choix qui orientent la
+  suite du roman (conséquences, embranchements, multiples fins).
+=> Simplifie le code, centre l'expérience sur la qualité du récit
+   et la structure de roman (chapitres titrés, progression).
+
+========================================
+2. BASE DU JEU (validé)
+========================================
+- Écran d'accueil (profil, continuer une partie, nouvelle partie).
+- Choix de l'UNIVERS (voir multi-genres).
+- Création du héros : nom (et optionnellement un trait de
+  personnalité qui influence le récit).
+- Déroulement : roman généré par IA chapitre par chapitre +
+  2 à 5 choix à la fin de chaque chapitre.
+- Sauvegarde automatique de la partie en cours.
+- Historique des choix / replay du fil de l'histoire.
+
+========================================
+3. MULTI-GENRES (validé)
+========================================
+Genres prévus (au moins au lancement) :
+- Fantasy (prioritaire, le plus populaire - 45 % des ventes)
+- Science-fiction
+- Policier / enquête
+- Horreur
+- Historique
+=> Chaque genre = un style narratif et des règles de monde
+   différents dans le prompt de génération.
+
+========================================
+4. PROGRESSION & SUCCÈS (validé)
+========================================
+- Statistiques de partie : nb de chapitres lus, choix pris,
+  fins atteintes (et lesquelles), durée de session.
+- Succès / achievements : ex. "finir une histoire fantasy",
+  "choisir 100 fois la porte de droite", "atteindre une fin
+  secrète".
+- Niveau de "lecteur" / progression du profil (XP léger).
+=> Lié aux comptes (persistance) et au social (partage).
+
+========================================
+5. COMPTES & CLOUD (validé - DÈS LA V1)
+========================================
+- Compte utilisateur dès le lancement (Supabase Auth).
+- Synchronisation multi-appareils : parties, stats, succès,
+  réglages.
+- Identifiants : email/mot de passe (et réseaux sociaux en
+  option ultérieure).
+- Données RGPD : politique de confidentialité, export/suppression
+  du compte.
+=> Impact business-model : Supabase gratuit au départ, coût si
+   grosse base d'utilisateurs (voir 2-analyse-strategique).
+
+========================================
+6. SOCIAL / COMMUNAUTÉ (validé - TOUS LES NIVEAUX)
+========================================
+- Partage réseaux sociaux : résumé de partie, moment fort,
+  fin obtenue (image + texte générés).
+- Histoires populaires / classements : top des parties les plus
+  jouées ou votées.
+- Notes et votes : les joueurs notent les histoires.
+- CRÉATION DE CONTENU UGC : les utilisateurs créent et publient
+  leurs propres univers/prompts.
+=> Attention : l'UGC demande de la modération (signalement,
+   règles) et de la validation avant publication. Voir risques.
+=> L'UGC est le plus gros chantier de la liste.
+
+========================================
+7. MULTIMÉDIA (validé)
+========================================
+- MUSIQUE D'AMBIANCE : musique de fond par univers (licence à
+  vérifier : stock, IA, ou générateur audio).
+- ILLUSTRATION DE COUVERTURE : 1 image générée par IA au début
+  de chaque histoire (présentation du monde/héros).
+- IMAGES À LA DEMANDE : à n'importe quel passage, l'utilisateur
+  peut demander une illustration en échange de CRÉDITS.
+=> Système de crédits = nouveau levier de monétisation (voir §9).
+
+========================================
+8. PERSONNALISATION (validé - TOUTES LES DIMENSIONS)
+========================================
+- Difficulté : au choix (facile / moyenne / difficile) + modulé
+  par l'âge.
+- Longueur des chapitres : court ~1500 / moyen ~3000 /
+  long ~5000 mots (calqué sur le papier).
+- Style narratif : le maximum possible (classique, sombre,
+  humoristique, lyrique, cinématographique, sobre...) ; certains
+  styles réservés adultes.
+- Nombre de choix : 2 à 4 par fin de chapitre.
+- Prologue systématique ; fins multiples 2-5 ; couverture
+  générée après le prologue.
+=> Ces paramètres sont passés dans le prompt de génération IA.
+=> Détail complet : 6-avant-le-code/decisions-produit.txt
+
+========================================
+8bis. GESTION DES ÂGES (validé - TOUT ÂGE)
+========================================
+- Public : TOUT ÂGE (enfants et adultes).
+- Âge à l'inscription (au 1er lancement), 4 tranches :
+  -10 / 10-15 / 16-18 / 18+.
+- L'IA adapte contenu, violence, romance, horreur, échec selon
+  l'âge.
+- Contenus réservés adultes 18+ : horreur intense, dark fantasy,
+  dark romance, thriller violent, romance explicite.
+- Échec du héros : souple (jeune, pas de mort) à strict (18+,
+  fin tragique possible).
+- Âge modifiable avec confirmation (sous réserve du légal).
+=> Détail : 6-avant-le-code/decisions-produit.txt §5-6
+
+========================================
+9. MONÉTISATION - LIEN AVEC LE BUSINESS MODEL
+========================================
+- Modèle retenu (3 niveaux) :
+  * ESSAI GRATUIT LIMITÉ : les 5 premiers chapitres offerts
+    (= premier arc du roman, cliffhanger) => tout nouveau
+    texte ensuite nécessite Fable+.
+  * FABLE+ (abonnement mensuel) : chapitres de texte ILLIMITÉS,
+    tous les genres, personnalisation complète.
+  * CRÉDITS (images) : illustrations à la demande payées en
+    crédits (séparés de l'abonnement). 1 image = 3 crédits.
+- Les crédits servent UNIQUEMENT aux images (texte = Fable+).
+- Détails chiffrés, prix et marges : 2-analyse-strategique/
+  economie-app.txt
+
+========================================
+10. IMPACTS & POINTS D'ATTENTION
+========================================
+A) COÛT DES IMAGES IA :
+   - Une génération d'image coûte beaucoup plus cher qu'un
+     chapitre texte (centimes à dizaines de centimes selon le
+     modèle). => Système de crédits OBLIGATOIRE pour maîtriser
+     le coût. À étudier : modèles d'image budget, cache,
+     quotas par utilisateur.
+B) UGC = MODÉRATION :
+   - Contenu publié par les utilisateurs = risque de contenu
+     inapproprié. => Validation, signalement, politiques de
+     contenu. (voir 3-strategie/risques.txt)
+C) COMPTES DÈS V1 :
+   - Supabase (auth + DB) = gratuit au départ. Prévoir le coût
+     si croissance (au-delà des quotas gratuits).
+D) MUSIQUE D'AMBIANCE :
+   - Droits / licences à sécuriser (stock, ou IA, ou génération).
+E) SCOPE GLOBAL :
+   - Cette v1 est AMBITIEUSE (8 modules). Recommandation :
+     découper en phases (voir roadmap.txt et §11).
+
+========================================
+11. PHASAGE RECOMMANDÉ
+========================================
+MVP (à lancer en premier - coeur du jeu) :
+  [ ] Écran d'accueil + choix univers (1 genre : fantasy)
+  [ ] Création du héros (nom)
+  [ ] Roman IA chapitre par chapitre + 2-4 choix + sauvegarde
+  [ ] Comptes Supabase + synchro
+  [ ] Réglages de personnalisation (difficulté, longueur,
+      style, nb de choix)
+  [ ] Blocage après les 5 chapitres gratuits -> écran Fable+
+
+V1 (enrichissement) :
+  [ ] Multi-genres (SF, policier, horreur, historique)
+  [ ] Statistiques + succès
+  [ ] Illustration de couverture + images à la demande (crédits)
+  [ ] Musique d'ambiance
+  [ ] Notes et votes
+
+V1.2 (social complet) :
+  [ ] Partage réseaux sociaux
+  [ ] Classements / histoires populaires
+  [ ] Création UGC + modération
+
+========================================
+12. QUESTIONS OUVERTES (répondues dans economie-app.txt)
+========================================
+- Structure : vrai roman (chapitre = unité, ~800-1500 mots)
+- 1 génération IA = 1 chapitre (validé)
+- Gratuit : 5 premiers chapitres offerts (validé)
+- Crédits par image : 3 crédits = 1 image (validé)
+- Packs de crédits : 30/100/250/600 crédits = 0,99/2,49/5,49/9,99 €
+- Fable+ : 4,99 €/mois (150 crédits inclus), 39,99 €/an
+- Mode gratuit : 1 univers (fantasy) uniquement
+- Modèle d'image : FLUX.1 Dev (fal.ai ~0,02 $/image), DALL-E 3 en option
+- Musique d'ambiance : licence à définir (voir §7)
+- UGC : repoussé à la V1.2 (modération à budgéter)
+- Comptes : email/mot de passe au départ (réseaux sociaux en option)
+
+Détails chiffrés, marges et scénarios : 2-analyse-strategique/economie-app.txt

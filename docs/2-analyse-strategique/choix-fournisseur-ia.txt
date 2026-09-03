@@ -1,0 +1,165 @@
+========================================
+CHOIX DU FOURNISSEUR IA - ANALYSE & DÉCISION
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+Objectif : choisir le meilleur fournisseur pour la RÉDACTION
+de fiction interactive EN FRANÇAIS, au meilleur rapport
+qualité/prix, avec une latence acceptable en temps réel.
+
+--------------------------------------------------------
+1. LE CRITÈRE N°1 : QUALITÉ DE FICTION CRÉATIVE
+--------------------------------------------------------
+Benchmark de référence : "LLM Creative Story-Writing
+Benchmark" (lechmazur/writing) - 47 modèles, 67 178 jugements
+d'évaluateurs sur des histoires courtes (oct. 2025 - août 2026).
+
+Classement (qualité littéraire, score relatif) :
+  #1  Claude Opus 5 (xhigh)          4,2
+  #3  Claude Fable 5 (high)          3,2
+  #5  GPT-5.6 Sol (xhigh)            2,8
+  #7  GPT-5.6 Sol (high)             2,7
+  #10 Claude Opus 4.7 (adaptive)     2,1
+  #11 Claude Sonnet 4.6 (16K)        2,0
+  #14 Claude Opus 4.8 (xhigh)        1,2
+  #24 Mistral Medium 3.1             0,0  <-- milieu de tableau
+=> Les modèles CLAUDE dominent la fiction créative.
+   GPT est juste derrière. Mistral est nettement en retrait
+   sur la fiction libre (fort sur le français formel/pro).
+
+Avis de tests français indépendants (2026) :
+- "Claude = qualité de rédaction française inégalée : nuances,
+  registres, style soutenu." (OutilsIA, AzenFlow)
+- "Claude = choix par défaut pour la rédaction longue et
+  soignée, tonalité naturelle en français." (AzenFlow)
+- "GPT-5 = avantage sur la créativité libre, le storytelling,
+  mais tendance à l'AI-slop si pas cadré." (Ayinedjimi)
+- "Mistral = excellent en français formel, mais moins fin sur
+  la structure narrative complexe." (AzenFlow)
+- "Sur les tâches créatives en français (fiction, jeux de
+  mots), l'écart GPT/Mistral se resserre." (Ayinedjimi)
+
+--------------------------------------------------------
+2. LE CRITÈRE N°2 : PRIX (sept. 2026, $/M tokens)
+--------------------------------------------------------
+Modèle                          Entrée  Sortie  Context
+Claude Opus 5 / Fable 5         5-10    25-50   200K-1M
+Claude Sonnet 5                 2       10      200K   <- baisse pérenne (01/09/2026)
+Claude Sonnet 4.6               3       15      200K   <- dépassé par Sonnet 5
+Claude Haiku 4.5                1       5       200K
+GPT-5.6 Terra                   2       12      1M
+GPT-5.6 Luna (budget)           0,20    1,20    1M     <- -80% le 30/07/2026
+GPT-5.4-nano                    0,20    1,25    128K
+Gemini 3.1 Flash-Lite           0,25    1,50    1M
+Mistral Small 4                 0,15    0,60    256K
+Mistral Large 3                 0,50-2  1,50-6  256K
+DeepSeek V4 Flash               0,14    0,28    1M
+Remarques :
+- Le tier budget est dominé par GPT-5.6 Luna (0,20/1,20) :
+  il remplace officiellement GPT-5-nano et mini.
+- Claude Sonnet 5 est passé au prix pérenne 2/10 le 01/09/2026
+  (moins cher et meilleur que Sonnet 4.6 à 3/15).
+- Prompt caching : -75 à -90 % sur les entrées répétées.
+- Attention : DeepSeek = société chinoise (questions de
+  souveraineté des données pour une app grand public UE).
+
+Coût par chapitre (estimation : 2 000 tokens entrée + 500 sortie) :
+  Claude Haiku 4.5      : ~0,0045 $  (0,45 cent)
+  Claude Sonnet 5       : ~0,0090 $  (0,90 cent)
+  GPT-5.6 Luna          : ~0,0010 $  (0,10 cent)  <- 4,5x moins cher que Haiku
+  Gemini 3.1 Flash-Lite : ~0,0013 $  (0,13 cent)
+  Mistral Small 4       : ~0,0006 $  (0,06 cent)
+  DeepSeek V4 Flash     : ~0,0004 $  (0,04 cent)
+=> Le prix unitaire n'est pas bloquant ; la QUALITÉ littéraire
+   et la LATENCE restent les vrais critères.
+
+--------------------------------------------------------
+3. LE CRITÈRE N°3 : LATENCE (temps réel, jeu mobile)
+--------------------------------------------------------
+- Claude Haiku 4.5 : LE plus rapide. "Latence p50 < 800 ms",
+  temps jusqu'au 1er token quasi immédiat. "The latency king",
+  idéal quand la réponse se joue à la fraction de seconde.
+- Claude Sonnet 4.6 : rapide, ~10 s par cas complet.
+- GPT-5.6 Luna / mini : très rapides (< 600 ms).
+- Mistral Large 3 : PLUS LENT, ~13,4 s par cas (ORCFLO) ->
+  mauvais choix pour un jeu temps réel.
+=> Haiku 4.5 est le champion latence ; Sonnet 4.6 reste
+   acceptable pour les moments clés.
+
+--------------------------------------------------------
+4. CRITÈRES SECONDAIRES
+--------------------------------------------------------
+- Instruction following / format : Haiku 4.5 est moins fiable
+  (#29/32 ORCFLO) -> pour du JSON strict, préférer Sonnet ou
+  le contraindre par prompt + validation côté serveur.
+- Cohérence de sortie : Haiku 4.5 = 92,7 (#12) -> très stable
+  pour une production en volume.
+- Français : Claude et GPT excellents ; Mistral = meilleur sur
+  le français formel, mais pas sur la fiction.
+- RGPD / souveraineté : Mistral (France/EU) est le seul 100 %
+  UE. Claude/GPT = US (DPA + SCCs). Non bloquant pour un MVP
+  grand public sans données personnelles.
+- Écosystème / fiabilité API : Anthropic et OpenAI = les plus
+  matures et fiables.
+
+--------------------------------------------------------
+5. DÉCISION RECOMMANDÉE (mise à jour 03/09/2026)
+--------------------------------------------------------
+ARCHITECTURE MULTI-NIVEAUX (toutes via l'API côté serveur) :
+
+A) MODÈLE PRINCIPAL (chapitres courants, gros volume) : GPT-5.6 Luna
+   - 4,5x MOINS CHER que Claude Haiku (0,20 $/1,20 $).
+   - Les modèles GPT sont reconnus plus créatifs en fiction que
+     Haiku (GPT-5.6 Sol au #5 du benchmark littéraire).
+   - Très rapide (tier budget OpenAI, latence < 600 ms).
+   - Contrepartie : risque d'"AI-slop" si les prompts ne sont
+     pas cadrés => consignes de style strictes + format JSON.
+   - Coût ~0,001 $/chapitre.
+
+B) MODÈLE QUALITÉ (fins, moments clés, Fable+) : Claude Sonnet 5
+   - Prix pérenne 2 $/10 $ (baisse du 01/09/2026) : moins cher
+     que l'ancien Sonnet 4.6 ET meilleur.
+   - Meilleure plume littéraire FR (la famille Claude domine le
+     benchmark de fiction).
+   - Coût ~0,009 $/chapitre (réservé aux moments forts).
+
+C) MODÈLE HAUTE QUALITÉ (grandes fins, premium) : Claude Opus 5
+   ou Claude Fable 5 (n°1 et n°3 du benchmark littéraire).
+   - Réservé aux fins de partie spectaculaires / abonnés.
+
+D) FALLBACK BUDGET / RGPD :
+   - Gemini 3.1 Flash-Lite (0,25/1,50) si besoin d'un second
+     secours hors OpenAI.
+   - Mistral Large 3 uniquement en cas d'exigence RGPD UE
+     stricte (qualité fiction inférieure, latence plus lente).
+
+E) À ÉCARTER pour le volume : Claude Haiku 4.5
+   - Dépassé par Luna (moins cher) ET par Sonnet 5 (meilleur).
+   - Haiku garde un usage possible : modèle intermédiaire si
+     Luna produit du "AI-slop" rédhibitoire.
+
+=> Ne pas verrouiller un seul fournisseur : coder l'API Vercel
+   avec une couche d'abstraction (le prompt et le format JSON
+   restent identiques) pour pouvoir basculer/supporter 2 à 3
+   fournisseurs selon qualité, prix et disponibilité.
+
+--------------------------------------------------------
+6. PLAN DE TEST (à faire au moment du code)
+--------------------------------------------------------
+1. Créer un prompt de génération de chapitre en français.
+2. Tester GPT-5.6 Luna vs Claude Haiku 4.5 vs Claude Sonnet 5
+   sur 20 chapitres identiques (mêmes consignes).
+3. Évaluer : style littéraire, cohérence, longueur, format
+   JSON, latence ressentie.
+4. Garder : Luna en défaut (si qualité OK), Sonnet 5 en
+   premium, Haiku en intermédiaire.
+
+--------------------------------------------------------
+7. SOURCES
+--------------------------------------------------------
+- lechmazur/writing benchmark (github.com/lechmazur/writing)
+- OutilsIA, AzenFlow, Ayinedjimi, Just-Use-AI : comparatifs
+  LLM français 2026
+- ORCFLO Index (mai 2026) : qualité/coût/vitesse de 32 modèles
+- Anthropic / OpenAI / Mistral : pages pricing (sept. 2026)
+- perspectiveai.xyz : Mistral vs Claude (août 2026)

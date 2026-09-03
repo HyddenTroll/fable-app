@@ -1,0 +1,490 @@
+========================================
+STRUCTURE ET FONCTIONNEMENT DU ROMAN - TOUS GENRES
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+But : base de référence pour l'IA de génération de romans.
+L'IA doit respecter la structure des romans réels et les codes
+de chaque genre. Ce document est le "manuel de l'écrivain" du
+système (à utiliser dans les prompts).
+Fichiers liés : 4-produit/fonctionnalites.txt (structure roman
+validée), 2-analyse-strategique/choix-fournisseur-ia.txt.
+
+================================================================
+PARTIE A - LA STRUCTURE FONDAMENTALE D'UN ROMAN
+================================================================
+
+--------------------------------------------------------
+A1. L'ARC NARRATIF (la colonne vertébrale de toute histoire)
+--------------------------------------------------------
+Définition : l'arc narratif = l'enchaînement de tous les
+événements de l'histoire, la courbe de tension. C'est ce qui
+rend une histoire cohérente et satisfaisante, du début à la fin.
+
+Différence arc narratif / intrigue :
+- L'intrigue = les événements individuels (chaque carte).
+- L'arc narratif = l'ORDRE dans lequel on les raconte (la pile).
+- L'arc de personnage = la transformation intérieure du héros
+  (le voyage intérieur) - les deux se font en parallèle.
+
+Modèles d'arcs reconnus :
+1) La structure en 3 ACTES (le socle universel, Aristote +
+   Syd Field) :
+   - Acte I - L'exposition (~25 % du récit) :
+     statu quo, présentation des personnages et du monde,
+     INCIDENT DÉCLENCHEUR (perturbe l'équilibre),
+     premier point d'intrigue (le héros décide de relever le défi).
+   - Acte II - La confrontation (~50 %) :
+     action, obstacles, alliés, ennemis, succès et échecs,
+     MILIEU (point de non-retour), deuxième point d'intrigue
+     (le héros est testé et échoue, le lecteur doute).
+   - Acte III - La résolution (~25 %) :
+     pre-climax (décisions fortes), CLIMAX (affrontement décisif
+     qui répond à la question dramatique posée à l'acte I),
+     DÉNOUEMENT (bref : les conséquences, le nouveau monde).
+
+2) La PYRAMIDE DE FREYTAG (5 actes, 1863) - la courbe de tension :
+   - Exposition (introduction du contexte)
+   - Action croissante (montée de la tension)
+   - Climax (point culminant / point de non-retour)
+   - Action décroissante (chute, conséquences des décisions)
+   - Dénouement (résolution / nouvelle normalité)
+   => Forme : /|\. Parfaite pour le suspense, le thriller,
+   les tragédies. Idéale pour une montée en tension maîtrisée.
+
+3) LE VOYAGE DU HÉROS (Joseph Campbell, 1949 - monomythe ;
+   popularisé par Christopher Vogler, 12 étapes) :
+   Structure mythique universelle des quêtes et aventures.
+   1. Le monde ordinaire
+   2. L'appel de l'aventure (incident déclencheur)
+   3. Le refus de l'appel (hésitation)
+   4. La rencontre du mentor (guide : Gandalf, Dumbledore...)
+   5. Le passage du seuil (on quitte le monde connu)
+   6. Épreuves, alliés, ennemis
+   7. L'approche de la caverne (préparation à l'épreuve suprême)
+   8. L'épreuve suprême (la mort symbolique / le point de non-retour)
+   9. La récompense (on saisit le trésor)
+   10. Le chemin du retour
+   11. La résurrection (la dernière épreuve, le test final)
+   12. Le retour avec l'élixir (on revient transformé, avec un don)
+   => Idéal pour : fantasy, quêtes, récits d'initiation,
+   romans d'aventure.
+
+4) LE CERCLE NARRATIF (Dan Harmon) - 8 étapes cycliques :
+   Une version simplifiée du voyage du héros, basée sur la
+   transformation du personnage. Très utilisée en séries et
+   jeux de rôle. Le personnage finit par revenir dans un monde
+   qu'il ne voit plus comme avant.
+
+5) LA STRUCTURE EN 7 POINTS (Dan Wells) :
+   Simplifiée et orientée efficacité dramatique :
+   - Le point de départ (le héros avant)
+   - Le point d'accroche (l'appel)
+   - Le point de non-retour
+   - Le milieu (situation pivot)
+   - La crise
+   - Le climax (montée finale, avec pics de tension)
+   - La résolution
+   => Rapide à mettre en place, adaptable à tous les genres.
+   Se distingue par ses "points de pression" (indices qui
+   réintroduisent la tension).
+
+QUEL MODÈLE POUR FABLE ?
+- Base : structure en 3 ACTES (universelle, claire, ~10-15
+  chapitres = ~3-5 chapitres par acte).
+- Enrichie du Voyage du Héros pour la fantasy/l'aventure.
+- Utiliser la Pyramide de Freytag pour policier/horreur
+  (montée de tension continue).
+- Chaque roman doit avoir : une QUESTION DRAMATIQUE posée à
+  l'acte I, un CLIMAX qui y répond, un DÉNOUEMENT court.
+
+--------------------------------------------------------
+A2. LA STRUCTURE DU CHAPITRE (l'unité de lecture)
+--------------------------------------------------------
+FONCTION DU CHAPITRE :
+- Unité narrative : chaque chapitre = un moment de l'histoire
+  avec un début, un milieu et une fin.
+- Contrôle du rythme : chapitres courts = tension/urgence ;
+  chapitres longs = introspection, immersion, fantasy.
+- Point de respiration pour le lecteur.
+- Balise la progression (surtout sur mobile).
+
+LONGUEUR (repères du métier) :
+- Chapitre court : ~1 500 mots (thriller, action, romance
+  contemporaine, YA).
+- Chapitre moyen : ~2 500-3 000 mots (standard).
+- Chapitre long : ~3 500-5 000 mots (fantasy, sagas,
+  introspection).
+- Règle éditoriale : viser 15-20 MINUTES de lecture/chapitre.
+- Un chapitre contient 1 à 3 scènes (une scène = un lieu +
+  un objectif + un obstacle + une issue, ~800-2 500 mots).
+
+COMMENT TERMINER UN CHAPITRE (3 options, à VARIER) :
+1. Clôture satisfaisante : le chapitre referme un mini-arc.
+2. Suspension douce : la scène se prolonge entre les lignes.
+3. CLIFFHANGER : révélation/tension à la dernière phrase qui
+   force à tourner la page.
+   Règles du cliffhanger :
+   - NE PAS en abuser (1 sur 3-4 chapitres max, sinon effet
+     mécanique et saturation).
+   - Couper une scène à son moment le plus critique.
+   - Un cliffhanger ≠ climax : il monte la tension, le climax
+     est le moment fort unique de l'histoire.
+   - Il peut exister dans TOUS les genres (même la romance).
+   - Varier : révélation (info importante dévoilée), tension,
+     question émotionnelle, ouverture sur un danger.
+4. Autres fins possibles : introspection (plongée dans les
+   pensées du personnage), fin en douceur (pause apaisée).
+
+TITRES DE CHAPITRES :
+- Numéroter et/ou titrer. Le titre ajoute du sens et travaille
+  l'attente (très utilisé en littéraire et YA).
+- Hybride numéro + titre court = le plus polyvalent.
+- Le titre ne doit pas spoiler.
+- Dans un thriller : numérotation simple privilégiée (fluidité).
+
+--------------------------------------------------------
+A3. LES LONGUEURS D'UN LIVRE (repères)
+--------------------------------------------------------
+- Nouvelle : jusqu'à 15 000 mots.
+- Novella : 15 000 - 40 000/50 000 mots.
+- Court roman : 50 000 - 70 000 mots.
+- Roman : 70 000 - 100 000 mots (la norme).
+- Long roman : 100 000 - 150 000 mots (sagas, fantasy).
+- Très long roman : 150 000 - 200 000 mots.
+- NB : au-delà de 150 000 mots, structurer en tomes.
+- Nombre de chapitres d'un roman standard : 15 à 25.
+
+POUR FABLE :
+- Roman de lecture mobile : viser un roman "court" ou une
+  novella longue : ~40 000-60 000 mots => 10-15 chapitres de
+  ~3 000-4 000 mots. (adapté au mobile, rejouable)
+- Personnalisation : longueur des chapitres (court ~1 500 /
+  moyen ~2 500 / long ~4 000 mots).
+
+================================================================
+PARTIE B - LES CODES DE CHAQUE GENRE
+================================================================
+Règle d'or commune : chaque genre = un CONTRAT avec le lecteur
+(une promesse émotionnelle). L'IA doit RESPECTER la promesse
+du genre choisi. Le public accepte les codes s'ils sont bien
+respectés, et apprécie quand on les transcende intelligemment.
+
+--------------------------------------------------------
+B1. LA FANTASY (promesse : émerveillement, évasion, immersion)
+--------------------------------------------------------
+- Univers imaginaire avec magie, créatures mythiques (dragons,
+  elfes, nains), autres mondes.
+- ENJEU n°1 : la COHÉRENCE INTERNE (worldbuilding). Un système
+  de magie doit avoir des règles et des limites. Le monde doit
+  avoir une géographie, une histoire, des cultures (même si
+  seul 10 % apparaît dans le texte - l'iceberg de Hemingway).
+- Règle de magie : définir les règles (coût, limites,
+  conséquences) et NE JAMAIS les briser sans explication.
+- TOURS : la quête, la prophétie, l'élu, l'anneau/artefact,
+  le mentor, le mal ancien qui se réveille, la chute du royaume.
+- STRUCTURE : Voyage du Héros (quête en 12 étapes) ou 3 actes.
+- RYTHME : chapitres plus longs, descriptions du monde,
+  progression en escalier.
+- Sous-genres (à proposer dans l'app) :
+  * High fantasy (worldbuilding épique : Tolkien, Sanderson)
+  * Low fantasy (le surnaturel dans notre monde)
+  * Dark fantasy (morale ambiguë, violence, magie sombre :
+    Martin, Abercrombie)
+  * Urban fantasy (magie en ville moderne)
+  * Fantasy mythique / farytail (contes)
+  * Fantasy historique
+- Ambiance : merveilleux, enjeux élevés, sens de l'épopée.
+- NB : le merveilleux s'accepte SANS hésitation - la promesse
+  est l'immersion totale, pas le doute.
+
+--------------------------------------------------------
+B2. LA SCIENCE-FICTION (promesse : le vertige de l'inconnu
+et de l'avenir, les idées)
+--------------------------------------------------------
+- Explore des concepts scientifiques/technologiques avancés,
+  des mondes futuristes ou alternatifs.
+- ENJEU : la cohérence scientifique (hard SF) ou l'idée
+  centrale (concept-what if). Le futur doit se sentir réel.
+- TOURS : la technologie qui échappe au contrôle, le premier
+  contact, les voyages spatiaux, les IA conscientes, les
+  dystopies, les vaisseaux doués de conscience, le voyage
+  temporel, les mondes post-apocalyptiques, les mutants.
+- STRUCTURE : 3 actes ou pyramide de Freytag (mystère à
+  résoudre, tension).
+- SOUS-GENRES (à proposer dans l'app) :
+  * Space opera (épopée intergalactique, géopolitique spatiale,
+    guerres interstellaires : Star Wars, Dune, Perry Rhodan)
+  * Cyberpunk (mégalopoles futuristes, IA, cyber-espace,
+    punk, méga-corporations, high tech / low life)
+  * Dystopie (sociétés totalitaires oppressantes : 1984,
+    Brave New World)
+  * Post-apocalyptique (survie après l'effondrement)
+  * Hard SF (rigueur scientifique : Clarke, Egan)
+  * Uchronie (histoire alternative)
+  * Steampunk (technologie à vapeur, XIXe rétro-futuriste)
+- AMBIANCE : sens de l'échelle, du vertige, questionnement
+  sur l'humanité et la technologie.
+
+--------------------------------------------------------
+B3. LE ROMAN POLICIER / THRILLER (promesse : tension et
+résolution du mystère)
+--------------------------------------------------------
+- Cœur du genre : le MYSTÈRE (whodunit = "qui a fait ça ?")
+  et/ou le SUSPENSE (thriller).
+- Les 6 éléments canoniques du polar (définition classique) :
+  1. Un crime ou un délit
+  2. Un mobile
+  3. Un coupable
+  4. Une victime
+  5. Un mode opératoire
+  6. Une enquête (qui structure le récit)
+- THÈMES récurrents : justice, morale, impunité, vengeance,
+  vérité, mensonge, manipulation, crime, violence, pouvoir,
+  traumatisme.
+- STRUCTURE : pyramide de Freytag (montée de tension continue,
+  révélation progressive), narrateurs souvent peu fiables,
+  récits non linéaires possibles, coup de théâtre final.
+- RÈGLES : le suspense est central. Faire monter la tension,
+  distiller les indices, fausses pistes, révélation satisfaisante.
+- FIN : la question "qui/comment/pourquoi" doit trouver une
+  réponse satisfaisante et logique.
+- SOUS-GENRES (à proposer dans l'app) :
+  * Roman d'enquête / whodunit (énigme ludique : Agatha Christie)
+  * Roman noir (ambiance sombre, anti-héros, société)
+  * Thriller psychologique (les méandres de l'esprit, narrateur
+    peu fiable, identité, perception de la réalité, ambiguïté
+    morale - le suspense naît de l'incertitude intérieure)
+  * Thriller d'action / à enjeux
+  * Polar procédural (suivi d'une figure d'enquêteur sur
+    plusieurs romans)
+  * Polar de terroir (enquête liée à un territoire)
+  * Cosy mystery (enquête légère en village)
+  * Polar historique (U. Eco, Le Nom de la rose)
+  * Espionnage
+- AMBIANCE : tension, paranoïa, réalisme, ancrage social.
+
+--------------------------------------------------------
+B4. L'HORREUR (promesse : la peur fondamentale et existentielle)
+--------------------------------------------------------
+- But : provoquer la peur - non pas la tension du thriller
+  (qui sera résolue), mais la peur profonde : l'inconnu, la
+  mort, la perte d'identité, le mal inexplicable.
+- MÉCANISME CLÉ : la peur vient rarement de la description
+  du monstre. Elle vient de l'ANTICIPATION, du PRESSENTIMENT,
+  de la SUGGESTION.
+  => Lovecraft : les horreurs cosmiques ne sont jamais décrites
+  en détail - c'est leur indicibilité qui les rend terrifiantes.
+- L'horreur quotidienne : une ombre au mauvais endroit, un son
+  qui n'aurait pas dû exister, un comportement légèrement décalé
+  chez une personne familière - les petites transgressions du
+  réel familier sont plus efficaces que les monstres explicites.
+- STRUCTURE : montée lente de l'angoisse (pyramide de Freytag),
+  pics de terreur bien espacés, dénouement parfois inquiétant
+  (la menace peut survivre).
+- RÈGLES : la règle de la suggestion (ne pas tout montrer),
+  construire l'atmosphère, maintenir la tension, jouer avec les
+  peurs archaïques (obscurité, isolement, folie, perte de contrôle).
+- SOUS-GENRES (à proposer dans l'app) :
+  * Horreur psychologique (folie, perception, paranoïa)
+  * Horreur gothique (manoirs, secrets de famille, atmosphère)
+  * Horreur surnaturelle / fantômes
+  * Dark fantasy (croisement horreur + fantasy : magie sombre,
+    morale ambiguë, violence, trahison, souffrance)
+  * Horreur cosmique / lovecraftienne (indicible, ancien,
+    indifférent à l'humain)
+  * Slasher / survie
+- AMBIANCE : angoisse, malaise, sentiment d'isolement.
+
+--------------------------------------------------------
+B5. LE ROMAN HISTORIQUE (promesse : immersion dans une époque)
+--------------------------------------------------------
+- Fiction ayant pour toile de fond une période historique, avec
+  des personnages réels et fictifs.
+- ENJEU n°1 : l'exactitude historique (décors, usages, mœurs,
+  langage de l'époque, événements, personnages réels).
+- CE QU'IL NE FAUT PAS : contredire les faits établis sans
+  raison narrative. Une liberté délibérée doit être perceptible.
+- On peut mêler : conversations entre figures historiques,
+  pensées intimes, détails domestiques de la vie quotidienne,
+  personnages fictifs évoluant dans un décor réel.
+- STRUCTURE : 3 actes, en intégrant les contraintes de l'époque
+  (le destin du personnage est souvent contraint par l'histoire).
+- SOUS-GENRES : historique pur, uchronie (histoire alternative),
+  policier historique, romance historique, saga familiale,
+  péplum, médiéval, Renaissance, XIXe, guerres...
+- AMBIANCE : le temps réel, la précision, le sens de l'époque.
+
+--------------------------------------------------------
+B6. LA ROMANCE (promesse : la connexion émotionnelle et la
+satisfaction du happy end)
+--------------------------------------------------------
+- Genre LE PLUS LU au monde. Se concentre sur la relation
+  entre les personnages principaux : la rencontre, l'histoire
+  sentimentale, le développement émotionnel.
+- CONTRAT quasi obligatoire : une fin heureuse / satisfaisante
+  pour le couple (HEA - Happy Ever After) ou au moins
+  émotionnellement résolue (HFN - Happy For Now).
+- MOTEUR : le conflit qui sépare les personnages (obstacles
+  internes et externes) et leur rapprochement progressif.
+- TENSION : l'émotion, le désir, l'incompréhension, les
+  obstacles, le "will they / won't they ?".
+- STRUCTURE : souvent en "beats" de rencontre -> attirance ->
+  obstacles -> rapprochement -> climax émotionnel -> réunion.
+- SOUS-GENRES (à proposer dans l'app) :
+  * Romance contemporaine
+  * Romance historique
+  * New romance (jeunes adultes, transitions)
+  * Dark romance (amour et danger/morale sombre)
+  * Romance paranormale (vampires, loups-garous...)
+  * Romantasy (romance + fantasy, très en vogue)
+  * Homoromance / LGBTQ+
+- AMBIANCE : émotion, connexion, chaleur, épanouissement.
+
+--------------------------------------------------------
+B7. AUTRES GENRES (à prévoir dans l'app)
+--------------------------------------------------------
+- LE FANTASTIQUE (différent de la fantasy) : le surnaturel fait
+  IRRUPTION dans un monde réaliste, avec Doute et Hésitation.
+  La question "est-ce réel ou imaginaire ?" reste ouverte.
+  (≠ fantasy qui assume le merveilleux sans hésiter.)
+- LE ROMAN D'AVENTURE : quête, voyage, action, rebondissements,
+  exotisme. Voyage du Héros.
+- LA FICTION CONTEMPORAINE / LITTÉRAIRE : la psychologie des
+  personnages prime sur l'intrigue, le style et la voix
+  comptent autant que le "quoi", thèmes complexes (ambiguïté
+  morale, relations, identité), fin souvent ouverte.
+- LE THRILLER / LE SUSPENSE : montée de tension rapide,
+  chapitres courts, enjeux urgents.
+- LE WESTERN : la frontière, la justice personnelle, le
+  pionnier, les grands espaces.
+- LE BILDUNGSROMAN (roman d'apprentissage) : le héros grandit,
+  initié au monde.
+- LA DISTOPIE / UTOPIE : exploration d'une société alternative.
+- LA SATIRE : moquer la société via l'humour.
+- LE RÉALISME MAGIQUE : le surnaturel présenté comme normal.
+- LA LITTÉRATURE JEUNESSE (YA) : héros adolescent, chapitres
+  courts, rythme rapide, thèmes d'initiation.
+
+================================================================
+PARTIE C - TECHNIQUES NARRATIVES (transversales)
+================================================================
+
+--------------------------------------------------------
+C1. LE POINT DE VUE (POV)
+--------------------------------------------------------
+- Narration à la 1ère personne ("je") : immersion intime,
+  parfait pour thriller psychologique, romance, journal.
+- Narration à la 3e personne interne ("il", focalisée sur un
+  personnage) : le standard du roman, bonne immersion + liberté.
+- Narration omnisciente : le narrateur sait tout (sagas).
+- Narration à la 2e personne ("tu") : rare, immersive, utilisée
+  dans les récits interactifs.
+=> POUR FABLE : 2e personne ("tu es...") pour l'immersion
+  interactive, OU 3e personne interne pour un effet roman
+  classique. À décider par univers/paramètre.
+
+--------------------------------------------------------
+C2. LE STYLE ET LA VOIX
+--------------------------------------------------------
+- Style narratif (personnalisable dans Fable) :
+  * Classique (voix sobre, correcte, description + action)
+  * Sombre (atmosphère lourde, vocabulaire inquiétant)
+  * Humoristique (décalage, ironie, rythme vif)
+  * Lyrique (phrases travaillées, images, poésie)
+  * Cinématographique (plans, coupes, dialogues secs)
+- Registre de langue : adapté à l'époque (roman historique) et
+  au personnage (jeune/adulte).
+- L'IA doit avoir une VOIX constante (pas changer de ton entre
+  les chapitres) et des tournures françaises naturelles (éviter
+  les calques de l'anglais et "l'AI-slop").
+
+--------------------------------------------------------
+C3. LES OUTILS DE TENSION
+--------------------------------------------------------
+- Le cliffhanger (fin de chapitre en suspens).
+- Le suspense / la question ouverte (information retenue).
+- La fausse piste (polar).
+- Le foreshadowing (indice posé tôt, payé plus tard).
+- Le compte à rebours / deadline.
+- La révélation (à placer aux bons moments).
+- Le danger immédiat vs la menace lointaine.
+- L'ironie dramatique (le lecteur sait ce que le personnage
+  ignore).
+
+--------------------------------------------------------
+C4. LA COHÉRENCE (critique pour l'IA)
+--------------------------------------------------------
+- Les personnages doivent être constants : motivations, peurs,
+  tics, buts - ne pas changer sans raison.
+- Les règles du monde (magie, science, époque) : stables.
+- Les conséquences des choix : logiques et visibles.
+- La mémoire de l'histoire : le résumé (story bible) doit être
+  rappelé à chaque génération pour la cohérence longue.
+- Les fins multiples (interactif) : chaque fin doit découler
+  logiquement des choix faits.
+
+================================================================
+PARTIE D - APPLICATION À FABLE (le "prompt roman")
+================================================================
+POUR CHAQUE NOUVEAU ROMAN, L'IA DOIT AVOIR UN PLAN (story bible)
+généré une fois, puis respecté :
+1. GENRE (et sous-genre) + promesse du genre.
+2. QUESTION DRAMATIQUE centrale (répondue au climax).
+3. STRUCTURE : 3 actes (ou voyage du héros pour l'aventure) +
+   ~10-15 chapitres répartis : Acte I = 3-5, Acte II = 5-7,
+   Acte III = 2-3.
+4. HÉROS : nom, âge, désir conscient, besoin inconscient,
+   peur, trait de personnalité (si choisi par le joueur).
+5. MONDE : règles, géographie, culture, tonalité.
+6. PERSONNAGES CLÉS : mentor, allié(s), antagoniste (avec
+   motivation), figures secondaires.
+7. LES CHOIX : à la fin de chaque chapitre, 2-5 choix qui
+   orientent la suite. Les choix doivent avoir des
+   CONSÉQUENCES visibles (pas de fausses options).
+8. TON / STYLE : selon la personnalisation choisie.
+
+PAR CHAPITRE, L'IA GÉNÈRE (1 génération = 1 chapitre) :
+- Titre (numéro + titre court non-spoiler).
+- Corps du chapitre (~1 500-4 000 mots selon paramètre) :
+  un début qui relance, un développement (1-3 scènes), une fin
+  variée (clôture / suspense doux / cliffhanger).
+- 2-5 choix à la fin, écrits de façon évocatrice ("Ouvrir la
+  porte qui grince" plutôt que "Ouvrir la porte").
+- Le chapitre 5 (fin de l'essai gratuit) doit se terminer sur
+  UN CLIFFHANGER pour maximiser la conversion.
+
+FIN DU ROMAN :
+- Climax + dénouement court + EPILOGUE : le sort du héros et
+  de ses proches, le monde après l'histoire.
+- Possibilité de fins multiples (selon les choix).
+
+RÈGLES ANTI-"AI-SLOP" (qualité littéraire) :
+- Éviter les formules creuses ("dans un monde où...", "il était
+  une fois un jeune homme destiné à...").
+- Éviter les superlatifs vides et le vocabulaire redondant.
+- Varier la longueur des phrases et des paragraphes.
+- Montrer, ne pas dire (des actions et des détails concrets
+  plutôt que des déclarations abstraites).
+- Rythme : alterner action / dialogue / description /
+  introspection.
+- Français naturel et soigné (pas de calque de l'anglais).
+
+================================================================
+SOURCES
+================================================================
+- Recherches web sept. 2026 : structures narratives (3 actes,
+  voyage du héros, pyramide de Freytag, cercle narratif,
+  7 points), conventions de genres, structure des chapitres.
+- Références : Joseph Campbell (1949), Christopher Vogler,
+  Syd Field, Gustav Freytag (1863), Dan Harmon, Dan Wells.
+- Guides : écrivain-en-herbe.fr, homoromance-editions.com,
+  librinova.com, publiersonlivre.fr, ecrire-et-etre-lu.com,
+  quillbot.com, Wikipédia (space opera, genres SF).
+
+================================================================
+QUALITÉ LITTÉRAIRE - VOIR AUSSI
+================================================================
+- 5-ecriture-narrative/chefs-doeuvre-litteraires.txt
+  (étude des plus grands romans : les 7 mécanismes de génie,
+  les leçons transmissibles à l'IA, les références par genre).

@@ -1,0 +1,55 @@
+========================================
+PROPOSITION DE VALEUR
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+1. DÉFINITION
+--------------------------------------------------------
+"Fable est une application mobile de livres dont vous êtes le
+héros. Chaque histoire est générée en temps réel par une IA :
+tu es le héros, tu choisis tes actions, et l'aventure se
+réécrit à l'infini. En français, sur ton téléphone."
+
+--------------------------------------------------------
+2. PROBLÈME RÉSOLU
+--------------------------------------------------------
+- Les livres dont vous êtes le héros classiques ont un nombre
+  limité de chemins : on les connaît par cœur après quelques
+  lectures ("j'ai tout rejoué").
+- Les apps de narration pré-écrites (Episode, Choices) se
+  terminent et font payer chapitre par chapitre.
+- Les chats IA (ChatGPT...) ne sont pas structurés en jeu :
+  pas de chapitres, pas de choix fermés, pas de sauvegarde,
+  pas de vraie progression, qualité incohérente.
+=> Fable = l'infini de l'IA + la structure et le plaisir du
+   vrai livre-jeu + le français.
+
+--------------------------------------------------------
+3. VALEURS APPORTÉES AU CLIENT
+--------------------------------------------------------
+- Infini / rejouabilité : aucune partie n'est identique.
+- Immersion : tes choix ont de vraies conséquences.
+- Progression : personnage, inventaire, historique, sauvegarde.
+- En français : du contenu de qualité dans la langue natale.
+- Mobile d'abord : des sessions de 5 à 20 min.
+- Simple à prendre en main : format connu de tous.
+- Surprise : le récit s'adapte à tes décisions.
+
+--------------------------------------------------------
+4. LEAN CANVAS (résumé)
+--------------------------------------------------------
+Problème : contenu narratif fini et épuisable (gamebooks,
+apps pré-écrites) ; chats IA non structurés pour le jeu.
+Solution : gamebook mobile dont les chapitres et choix sont
+générés par IA en français, avec sauvegarde et progression.
+Métrique clé : chapitres générés/utilisateur/jour (rétention) ;
+taux de conversion Fable+.
+Avantage différenciant : seul "vrai gamebook IA" en français,
+structuré, avec progression.
+Canaux : App Store / Google Play, version web Vercel,
+TikTok/Instagram (démo de parties), bouche-à-oreille.
+Coûts : API IA (~0,001 $/chapitre avec GPT-5.6 Luna), Vercel,
+stores (15-30 %).
+Revenus : freemium, Fable+ 4,99 €/mois, packs de crédits.

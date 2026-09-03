@@ -1,0 +1,78 @@
+========================================
+ANALYSE CONCURRENTIELLE
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+1. CONCURRENTS DIRECTS (interactive fiction IA)
+--------------------------------------------------------
+AI DUNGEON (Latitude) - leader mondial
+  - Atouts : premier du genre (2019), histoires infinies,
+    scénarios communautaires, multi-joueur, images IA, web+iOS+Android+Steam
+  - Faiblesses : majoritairement anglais, qualité inégale sur le
+    mode gratuit, interface "bac à sable" (pas guidé style gamebook)
+  - Prix : gratuit limité, 9,99 à 49,99 $/mois
+  - Plateformes : Web, iOS, Android, Steam
+
+DORIAN - plateforme interactive fiction nouvelle génération
+  - Atouts : orientation "choix + images cinématiques", fort sur
+    le récit à embranchements classique amélioré par l'IA
+  - Faiblesses : catalogue anglophone, modèle plutôt "stories
+    scénarisées" que génération ouverte
+  - Prix : freemium avec achats intégrés
+  - Plateformes : iOS, Android
+
+NOVELAI - écriture assistée par IA
+  - Atouts : très bonne qualité littéraire, contrôle fin (tokens,
+    modèles spécialisés), axé écrivains
+  - Faiblesses : pas orienté jeu mobile grand public, complexe,
+    anglais par défaut
+  - Prix : abonnement ~10 à 25 $/mois
+  - Plateformes : Web, iOS, Android
+
+CHARACTER.AI - IA de personnages / roleplay
+  - Atouts : immense base d'utilisateurs, gratuit, très social
+  - Faiblesses : pas du tout structuré en "livre dont tu es le
+    héros" avec chapitres et choix ; univers incohérents
+  - Prix : gratuit, premium optionnel
+  - Plateformes : Web, iOS, Android
+
+--------------------------------------------------------
+2. CONCURRENTS INDIRECTS
+--------------------------------------------------------
+- Apps de narration scénarisée mobile : Episode (Pocket Gems),
+  Choices (Pixelberry) - énormes bases d'utilisateurs, mais
+  contenu 100 % pré-écrit (pas d'IA, contenu limité).
+- Chats IA généralistes : ChatGPT, Claude, Gemini - le public peut
+  jouer à "un livre dont tu es le héros" gratuitement dans le chat.
+- Livres-jeux papier : Fighting Fantasy, Loup Solitaire, La Saga
+  de Dagda (Olicard) - concurrence nostalgie, prix 12-27 €.
+- Jeux narratifs vidéo : visual novels, RPG textuels.
+
+--------------------------------------------------------
+3. TABLEAU COMPARATIF
+--------------------------------------------------------
+Critère              | Fable   | AI Dungeon | Dorian | NovelAI | Character.AI
+Histoire générée IA  | OUI     | OUI        | OUI    | OUI     | OUI
+Format gamebook choix| OUI     | Partiel    | OUI    | Non     | Non
+Français natif       | OUI     | Non        | Non    | Non     | Partiel
+Structure guidée     | OUI     | Non        | OUI    | Non     | Non
+Sauvegarde de partie | OUI     | OUI        | OUI    | OUI     | OUI
+Prix                 | ?       | Gratuit+ 10-50$| Freemium | 10-25$ | Gratuit
+
+--------------------------------------------------------
+4. AVANTAGE DIFFÉRENCIANT DE FABLE
+--------------------------------------------------------
+- LA seule app mobile qui combine :
+  1. Le format familier "livre dont vous êtes le héros"
+     (chapitre, 2-4 choix, numérotation, sauvegarde).
+  2. Une histoire 100 % générée par IA (donc infinie, jamais la
+     même partie).
+  3. Le français natif de qualité (créneau quasi vide).
+- Contre ChatGPT/Character.AI : Fable offre une vraie structure
+  de jeu (chapitres, choix fermés, progression) au lieu d'un
+  chat libre incohérent.
+- Contre AI Dungeon : expérience guidée, grand public, FR.
+- Contre Episode/Choices : contenu infini au lieu de scénarios
+  pré-écrits payants par chapitre.

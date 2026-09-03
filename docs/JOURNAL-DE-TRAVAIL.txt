@@ -1,0 +1,161 @@
+========================================
+JOURNAL DE TRAVAIL - FABLE
+========================================
+Ce fichier consigne TOUT ce qui a été fait, dans l'ordre.
+À mettre à jour à chaque session de travail.
+Date de création : 03/09/2026
+
+================================================================
+SESSION 1 - 03/09/2026 : Analyse stratégique complète
+================================================================
+FAIT :
+1. Création du projet et du dossier D:\Fable
+2. Création de CONTEXTE.txt (vision globale)
+3. Arborescence d'analyse stratégique en fichiers txt :
+   - 1-etude-marche : PESTEL, étude de marché, analyse
+     concurrentielle, clientèle cible
+   - 2-analyse-strategique : SWOT, 5 forces de Porter,
+     business-model, proposition de valeur
+   - 3-strategie : positionnement, risques, roadmap
+4. Remplissage complet avec données réelles (recherches web) :
+   - Marché interactive fiction : 6,4 Mds$ (2025) -> 14,8 Mds$
+     (2034), CAGR 9,8%
+   - Storybooks IA : 3,2 Mds$ -> 18,7 Mds$, CAGR 21,8%
+   - Concurrence : AI Dungeon, Dorian, NovelAI, Character.AI
+   - Personas : Nathan (34, nostalgique), Léa (24, créative),
+     Théo (16, joueur mobile)
+5. Choix du fournisseur IA (choix-fournisseur-ia.txt) :
+   - Benchmark lechmazur/writing : Claude domine la fiction
+   - Décision : multi-niveaux
+     * Chapitres courants : GPT-5.6 Luna (0,20/1,20 $, ~0,001 $/chapitre)
+     * Qualité (fins) : Claude Sonnet 5 (2/10 $)
+     * Haute qualité : Claude Opus 5 / Fable 5
+     * Fallback : Gemini Flash-Lite, Mistral (RGPD)
+6. Économie de l'app (economie-app.txt) :
+   - Modèle 3 niveaux : essai gratuit (5 chapitres) + Fable+
+     (4,99 €/mois, texte illimité) + crédits (images)
+   - 1 image = 3 crédits, packs 0,99 à 9,99 €
+   - Coût image : ~0,02 $ (FLUX.1 Dev via fal.ai)
+   - Point mort : ~60-80 MAU
+   - Marge image ~82 %, Fable+ ~76 %
+
+================================================================
+SESSION 2 - 03/09/2026 : Fonctionnalités & structure roman
+================================================================
+FAIT :
+1. Fonctionnalités validées (4-produit/fonctionnalites.txt) :
+   - Pur narratif, comptes dès v1, social complet, multimédia,
+     personnalisation
+   - Décision clé : structure = VRAI ROMAN (pas gamebook)
+2. Étude poussée des structures narratives (5-ecriture-narrative/
+   structure-romans-tous-genres.txt) :
+   - 3 actes, pyramide de Freytag, voyage du héros (12 étapes),
+     cercle narratif, 7 points
+   - Structure du chapitre (1500/3000/5000 mots)
+   - Codes de tous les genres (fantasy, SF, polar, horreur,
+     historique, romance + autres)
+   - Techniques narratives, anti-AI-slop
+3. Étude des chefs-d'oeuvre littéraires (5-ecriture-narrative/
+   chefs-doeuvre-litteraires.txt) :
+   - 7 mécanismes de génie (thèmes, personnages, prose, etc.)
+   - Références par genre (Tolkien, Dune, Christie, Poe, Austen...)
+   - 10 leçons transmissibles à l'IA
+
+================================================================
+SESSION 3 - 03/09/2026 : Checklist, décisions produit & légal
+================================================================
+FAIT :
+1. Checklist maîtresse (6-avant-le-code/checklist-maitresse.txt) :
+   - 10 domaines à penser avant le code
+2. Décisions produit (6-avant-le-code/decisions-produit.txt) :
+   - Tous les genres au MVP + sous-genres optionnels
+   - Nom du héros libre, trait de personnalité optionnel
+   - Difficulté au choix, chapitres 1500/3000/5000
+   - Styles narratifs : maximum possible
+   - 2-4 choix, fins multiples 2-5, prologue systématique,
+     couverture après le prologue
+   - GESTION DES ÂGES (clé) : 4 tranches
+     (-10 / 10-15 / 16-18 / 18+)
+   - Contenus réservés 18+ : horreur intense, dark fantasy,
+     dark romance, thriller violent, romance explicite
+   - Échec adapté à l'âge (souple -> tragique)
+3. Conformité & classification (6-avant-le-code/conformite-age.txt) :
+   - Classification store : 12+ au MVP, 17+ à l'UGC (v1.2)
+   - Âge minimum : 10 ans
+   - RGPD France : consentement parental < 15 ans
+   - COPPA : < 13 ans aux US
+   - Changement d'âge : confirmation vers le haut
+
+================================================================
+SESSION 4 - 03/09/2026 : Prompts IA & architecture technique
+================================================================
+FAIT :
+1. Prompts IA définis (6-avant-le-code/prompts-ia.txt) :
+   - 5 prompts : story bible, prologue, chapitre, fin, résumé
+   - + prompt image, règles anti-AI-slop, modèle par prompt
+   - Format JSON pour chaque prompt
+2. Architecture technique (6-avant-le-code/architecture-technique.txt) :
+   - Stack : Expo + TypeScript + Expo Router + Zustand + Supabase
+   - Monorepo : apps/mobile + api + packages/shared + prompts + docs
+   - Endpoints API : create, chapter, end, image, credits,
+     subscribe, user, health
+   - Schéma Supabase : 9 tables (profiles, games, chapters,
+     credits_transactions, purchases + V1/V1.2)
+   - Sécurité : RLS, clés serveur, quotas, rate limiting
+3. Design & UX (6-avant-le-code/design-ux.txt) :
+   - 15 écrans spécifiés (splash, âge, auth, accueil, genres,
+     héros, paramètres, génération, lecture, résumé, paywall,
+     fin, boutique, profil, réglages)
+   - Thème : ambre/or + bleu nuit
+
+================================================================
+SESSION 5 - 03/09/2026 : DÉBUT DU CODE
+================================================================
+FAIT :
+1. Structure monorepo créée :
+   - docs/ (toute la documentation déplacée ici)
+   - apps/, api/, packages/shared/, prompts/
+2. Git initialisé (git init)
+3. Fichiers racine :
+   - package.json (workspaces : apps/*, packages/*, api)
+   - .gitignore (jamais de .env, node_modules, .expo)
+   - .env.example (toutes les clés requises documentées)
+   - README.md (structure + démarrage rapide)
+4. Projet Expo créé (apps/mobile) :
+   - Template blank-typescript (Expo 57, React 19.2, RN 0.86)
+   - Package renommé @fable/mobile + script typecheck
+   - Support web ajouté (react-dom, react-native-web)
+   - Typecheck : OK
+5. Package partagé (packages/shared) :
+   - src/types.ts : types métier (âges, genres, personnalisation,
+     story bible, chapitres, crédits, Fable+, API)
+   - Typecheck : OK
+6. Squelette API (api/) :
+   - lib/llm/provider.ts : couche d'abstraction LLM
+     * Interface LLMProvider (anthropic, openai)
+     * Router (choix fournisseur selon type de prompt)
+     * Mapping des modèles (Sonnet 5, GPT-5.6 Luna)
+   - lib/db.ts : client Supabase (service role, côté serveur)
+   - api/health.ts : endpoint de test (VercelRequest/Response)
+   - vercel.json : config fonctions Vercel
+   - Typecheck : OK
+7. Test de démarrage Expo :
+   - Metro bundler démarre, HTTP 200 sur localhost:8081
+   - NB : Node 20.10.0 < requis 20.19.4 (avertissement, OK)
+
+ÉTAT FINAL SESSION 5 :
+- Le monorepo compile et typecheck intégralement (mobile +
+  shared + api)
+- Le serveur Expo démarre
+- Structure prête à accueillir les écrans et l'API réelle
+
+================================================================
+PROCHAINE SESSION (à faire)
+================================================================
+1. Rédiger les prompts complets dans prompts/ (voir prompts-ia.txt)
+2. Créer les écrans Expo Router (accueil, genres, héros,
+   paramètres, lecture)
+3. API réelle : /game/create (story bible) + /game/chapter
+4. Projet Supabase : schéma + RLS + Auth
+5. Quota chapitres gratuits (côté serveur)
+6. GitHub + Vercel

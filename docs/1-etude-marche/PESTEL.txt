@@ -1,0 +1,100 @@
+========================================
+PESTEL - ANALYSE DU MACRO-ENVIRONNEMENT
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+P - POLITIQUE
+--------------------------------------------------------
+- Réglementation IA en Europe : AI Act adopté (2024),
+  obligations de transparence sur le contenu généré par IA
+  (marquage/mention pour les consommateurs).
+- Soutien public au numérique en France : aides à l'innovation,
+  crédit d'impôt, dispositifs type France Num, Bpifrance.
+- Politiques de protection des données (CNIL, RGPD) renforcées.
+- Contexte géopolitique : tensions US/EU sur les données
+  (CLOUD Act) => intérêt pour des fournisseurs européens (Mistral).
+
+--------------------------------------------------------
+E - ÉCONOMIQUE
+--------------------------------------------------------
+- Coût des API IA en baisse continue : ~0,10 à 1 $/M tokens en
+  entrée et ~0,30 à 5 $/M en sortie sur les modèles budget
+  (Mistral Small, GPT-5 nano, Claude Haiku).
+- Concurrence féroce entre fournisseurs IA => baisse des prix
+  (Gemini Flash ~0,30 $, DeepSeek ~0,27 $ par M tokens entrée).
+- Pouvoir d'achat : un abonnement de 3 à 5 €/mois est dans la
+  fourchette des apps de divertissement acceptée par le marché.
+- Frais stores : 15 % (App Store sous 1 M$ de CA) à 30 %.
+- Marché du divertissement numérique résilient en période
+  d'inflation (petites dépenses récurrentes).
+
+--------------------------------------------------------
+S - SOCIOLOGIQUE
+--------------------------------------------------------
+- Retour en force des livres dont vous êtes le héros :
+  succès récent "La Saga de Dagda" (Fabien Olicard) qui a fait
+  12x les espérances de vente et a été en rupture 4 fois en 3 mois.
+  => preuve d'une demande non servie.
+- Nostalgie des 30-45 ans qui ont grandi avec Gallimard
+  (Le Sorcier de la Montagne de Feu, Loup Solitaire).
+- Engouement massif pour l'IA : +1 milliard d'utilisateurs
+  d'IA dans le monde chaque mois (2026).
+- Lecture sur mobile : pratique dominante chez les moins de 35 ans.
+- Appétence pour l'expérience personnalisée / immersive.
+
+--------------------------------------------------------
+T - TECHNOLOGIQUE
+--------------------------------------------------------
+- Les modèles IA sont désormais excellents en français
+  (Claude, GPT, Mistral) => texte créatif de qualité.
+- Streaming de tokens : l'effet "frappe à la volée" masque la
+  latence (1-3 s) et donne une impression de génération instantanée.
+- Coûts de calcul en baisse rapide et modèles "budget" très
+  performants pour la narration (GPT-5 nano, Haiku, Mistral Small).
+- Contextes longs (128K à 1M tokens) : permet de garder toute
+  l'histoire en mémoire pour la cohérence.
+- Prompt caching : -75 à -90 % sur les entrées répétées.
+- Écosystème mobile mature (Expo/React Native) + déploiement
+  serverless Vercel quasi gratuit au départ.
+
+--------------------------------------------------------
+E - ENVIRONNEMENTAL
+--------------------------------------------------------
+- L'IA générative consomme beaucoup d'énergie (datacenters).
+- Pression réglementaire/sociétale sur l'empreinte carbone.
+- Mitigation : utiliser des modèles légers et économes
+  (budget models), limiter les générations inutiles.
+- Positionnement éventuel : "des histoires infinies, sans papier
+  ni transport" (argument éco vs livre physique).
+
+--------------------------------------------------------
+L - LÉGAL
+--------------------------------------------------------
+- RGPD : limiter les données personnelles, politique de
+  confidentialité obligatoire sur les stores.
+- AI Act : transparence sur le contenu généré par IA
+  (mention "contenu généré par IA" dans l'app).
+- Droits d'auteur du contenu généré : zone grise juridique
+  (débats en cours). L'utilisateur n'acquiert pas de droit
+  exclusif sur les textes générés.
+- Conditions d'utilisation des API IA : interdiction de
+  violences, contenus adultes, respect des politiques de sécurité.
+- Régulation des stores : catégories d'âge, signalement contenu.
+
+--------------------------------------------------------
+SYNTHÈSE
+--------------------------------------------------------
+Opportunités :
+- Marché en forte croissance (interactive fiction + AI storybooks)
+- Baisse continue des coûts IA = marge qui s'améliore
+- Regain d'intérêt du public pour les livres dont vous êtes le héros
+- Niche francophone peu servie par les concurrents anglophones
+- Fournisseur européen possible (Mistral) = argument RGPD/data
+
+Menaces :
+- Régulation IA qui évolue (AI Act) => conformité à surveiller
+- Dépendance technologique et prix des API IA
+- Zone grise juridique sur le copyright du contenu généré
+- Consommation énergétique (critique potentielle)

@@ -1,0 +1,88 @@
+========================================
+SWOT - DIAGNOSTIC STRATÉGIQUE
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+FORCES (interne)
+--------------------------------------------------------
+- Concept différenciant : gamebook classique + IA générative
+  = histoire infinie, jamais la même partie.
+- Marché porteur : positionné sur le segment qui croît le plus
+  (storybooks IA, CAGR ~21,8 %).
+- Coût de développement et d'exploitation faibles :
+  Expo (mobile) + Vercel serverless + API IA budget
+  (quelques centimes de $ par chapitre).
+- Français natif de qualité = créneau quasi vide (concurrents
+  anglophones : AI Dungeon, Dorian, NovelAI).
+- Léger et rapide à lancer : MVP possible en quelques semaines.
+- Marque forte à construire : "Fable" = conte/histoire,
+  mémorable, évoque le genre.
+
+--------------------------------------------------------
+FAIBLESSES (interne)
+--------------------------------------------------------
+- Dépendance aux API IA : coût variable, latence, fiabilité,
+  qualité selon le modèle.
+- Pas de communauté, pas de marque connue au démarrage.
+- Mono-développeur : vitesse et capacité de support limitées.
+- Qualité littéraire variable selon les modèles et prompts.
+- Texte seul au départ (pas d'illustrations ni de son).
+- Concurrence indirecte des chats IA gratuits (ChatGPT...).
+
+--------------------------------------------------------
+OPPORTUNITÉS (externe)
+--------------------------------------------------------
+- Marché de l'interactive fiction : 6,4 Mds $ (2025) ->
+  14,8 Mds $ (2034), CAGR 9,8 %.
+- Marché des storybooks IA : 3,2 Mds $ (2025) -> 18,7 Mds $
+  (2034), CAGR 21,8 % (le plus dynamique).
+- Regain massif du genre papier LDVELH (ruptures en librairie
+  2025) => demande prouvée qui migre vers le digital.
+- Niche francophone (~300 M de locuteurs) non servie.
+- Segment éducation en croissance (CAGR ~13 %).
+- Baisse continue des coûts IA = marge qui s'améliore.
+- 1 milliard d'utilisateurs d'IA par mois = audience éduquée.
+
+--------------------------------------------------------
+MENACES (externe)
+--------------------------------------------------------
+- Géants établis : Character.AI (gratuit, massif), AI Dungeon,
+  NovelAI - capacité à copier le concept rapidement.
+- Apps pré-écrites type Episode/Choices avec énormes bases
+  d'utilisateurs et budgets marketing.
+- Le public peut déjà "jouer" à un gamebook dans ChatGPT gratuit.
+- Coût de l'IA qui peut monter si l'usage explose.
+- Régulation IA évolutive (AI Act) et zone grise juridique.
+- Copies rapides du concept une fois prouvé.
+
+--------------------------------------------------------
+STRATÉGIES (croisement S/O, F/O, S/M, F/M)
+--------------------------------------------------------
+S + O :
+- Se positionner vite sur la niche FR avant les géants :
+  "le gamebook IA en français" = argument n°1 de marketing.
+- Exploiter le regain du genre papier (articles presse,
+  communauté LDVELH) pour capter la demande.
+- Profiter des coûts IA faibles pour offrir un freemium généreux
+  (levier de croissance).
+
+F + O :
+- Utiliser la faible barrière d'entrée pour sortir un MVP vite,
+  tester la demande réelle avec de vrais utilisateurs.
+- Choisir dès le départ un fournisseur IA bon marché et un
+  système multi-fournisseurs (pas de dépendance unique).
+
+S + M :
+- Mettre l'accent sur le français et la structure "vrai
+  gamebook" (chapitres, choix, sauvegarde) que les chats IA
+  n'offrent pas.
+- Construire la communauté et la marque FR rapidement pour
+  creuser l'écart avant les imitations.
+
+F + M :
+- Contrôler les coûts IA (plafond de générations, cache,
+  modèle budget) pour tenir un freemium rentable.
+- Se conformer tôt à l'AI Act / RGPD (transparence, signalement)
+  pour éviter les blocages stores.

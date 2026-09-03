@@ -1,0 +1,66 @@
+========================================
+LES 5 FORCES DE PORTER
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+1. POUVOIR DE NÉGOCIATION DES CLIENTS
+--------------------------------------------------------
+Force : FORTE
+- Justification : l'app est gratuite à installer, il y a
+  énormément d'alternatives gratuites (Character.AI, ChatGPT,
+  AI Dungeon en gratuit). Le coût de bascule est nul. Le client
+  impose donc le freemium et exige de la qualité pour payer.
+
+--------------------------------------------------------
+2. POUVOIR DE NÉGOCIATION DES FOURNISSEURS
+--------------------------------------------------------
+Force : FORTE (mais en baisse)
+- Justification : les API IA sont concentrées (OpenAI,
+  Anthropic, Google, Mistral) et peuvent changer prix/conditions.
+  App Store / Play Store prélèvent 15-30 %. MAIS la concurrence
+  entre fournisseurs IA fait baisser les prix => pouvoir
+  modérable si on reste multi-fournisseurs.
+
+--------------------------------------------------------
+3. MENACE DES PRODUITS DE SUBSTITUTION
+--------------------------------------------------------
+Force : FORTE
+- Substituts : chats IA gratuits (ChatGPT/Claude/Gemini),
+  apps de narration pré-écrites (Episode, Choices), livres-jeux
+  papier, jeux vidéo narratifs, réseaux sociaux (temps de loisir).
+- Justification : le temps de loisir est le vrai concurrent ;
+  beaucoup d'options gratuites captent l'attention.
+
+--------------------------------------------------------
+4. MENACE DES NOUVEAUX ENTRANTS
+--------------------------------------------------------
+Force : MOYENNE à FORTE
+- Justification : barrière technique faible (API IA + Expo +
+  Vercel = à la portée d'un seul développeur). La vraie barrière
+  à construire : la marque, la communauté, la qualité des
+  prompts/scénarios et la base d'utilisateurs. Les studios
+  existants (Latitude, Pocket Gems) peuvent entrer rapidement.
+
+--------------------------------------------------------
+5. INTENSITÉ DE LA RIVALITÉ CONCURRENTIELLE
+--------------------------------------------------------
+Force : MOYENNE
+- Justification : marché en forte croissance (tout le monde
+  progresse), mais plusieurs acteurs se positionnent sur
+  "IA + narration" (AI Dungeon, Dorian, NovelAI, Hidden Door,
+  Mythia...). La niche FR est encore peu disputée => fenêtre
+  de tir limitée dans le temps.
+
+--------------------------------------------------------
+CONCLUSION
+--------------------------------------------------------
+- L'industrie est peu attractive structurellement (clients et
+  substituts puissants, entrée facile). Le succès dépendra
+  d'UNE barrière construite par l'opérationnel : marque FR +
+  communauté + qualité d'expérience + contrôle des coûts.
+- Stratégie : foncer vite sur la niche francophone, créer une
+  communauté fidèle, différencier par le format gamebook
+  structuré (que les substituts gratuits n'offrent pas), et
+  maîtriser le coût unitaire par partie.

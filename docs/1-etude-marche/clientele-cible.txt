@@ -1,0 +1,60 @@
+========================================
+CLIENTÈLE CIBLE - PERSONAS
+========================================
+Projet : Fable (livre dont tu es le héros + IA)
+Date : 03/09/2026
+
+--------------------------------------------------------
+PERSONA 1 : NATHAN, 34 ans, le nostalgique
+--------------------------------------------------------
+Nom : Nathan
+Âge : 34
+Profil : Cadre en informatique, a grandi avec "Le Sorcier de la
+Montagne de Feu" et "Loup Solitaire" (Gallimard, années 90).
+A été marqué par la saga récente "La Saga de Dagda".
+Problème / besoin : Il a tout rejoué ses vieux livres, il connaît
+toutes les fins par cœur. Il cherche le même frisson mais en
+illimité.
+Motivation d'achat : Nostalgie + promesse d'aventure infinie.
+Il accepte de payer un abonnement (~5 €/mois).
+Freins : Temps, veut une expérience de qualité littéraire.
+
+--------------------------------------------------------
+PERSONA 2 : LÉA, 24 ans, la créative connectée
+--------------------------------------------------------
+Nom : Léa
+Âge : 24
+Profil : Étudiante/jeune pro, passionnée de visual novels, de
+RPG et d'IA. Suit les tendances tech sur TikTok. Utilise déjà
+ChatGPT pour s'amuser.
+Problème / besoin : Les apps type Episode/Choices sont payantes
+chapitre par chapitre et se terminent. Elle veut des histoires
+personnalisées, en français, où ses choix comptent vraiment.
+Motivation d'achat : Curiosité + personnalisation + contenu
+illimité. Réseaux sociaux = vecteur de bouche-à-oreille.
+Freins : Faible tolérance à la qualité inégale, veut une belle
+interface.
+
+--------------------------------------------------------
+PERSONA 3 : THÉO, 16 ans, le joueur mobile
+--------------------------------------------------------
+Nom : Théo
+Âge : 16
+Profil : Lycéen, joue beaucoup sur mobile (jeux narratifs, RPG).
+A de l'argent de poche mais pas de carte bancaire (frein pour
+payer seul).
+Problème / besoin : Ennui, cherche des expériences narrées qui
+le plongent dans des mondes (fantasy, SF, horreur).
+Motivation d'achat : Offre gratuite généreuse puis achats via
+Play Store (cartes cadeaux). 
+Freins : Budget limité, attention courte.
+
+--------------------------------------------------------
+SYNTHÈSE
+--------------------------------------------------------
+Cible prioritaire : Nathan (nostalgiques 30-45) = volonté de
+payer la plus forte et demande prouvée (succès du papier).
+Cible de croissance : Léa (jeunes adultes) = diffusion virale.
+Cible secondaire : Théo (ados) = gratuit + achats intégrés.
+Note : le marché adulte représente ~35 % des ventes des LDVELH
+en 2024 => ne pas négliger le positionnement "adultes".

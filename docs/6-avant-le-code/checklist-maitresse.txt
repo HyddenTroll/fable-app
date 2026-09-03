@@ -1,0 +1,248 @@
+========================================
+CHECKLIST MAÎTRESSE - TOUT CE QU'IL RESTE À PENSER
+========================================
+Projet : Fable
+Date : 03/09/2026
+But : liste exhaustive de tout ce qui doit être décidé/créé
+avant, pendant et après le code. À cocher au fur et à mesure.
+Fichiers liés : tout le projet (1 à 5 + CONTEXTE).
+
+LEGENDE : [ ] à faire / [x] fait / (?) à décider
+
+================================================================
+0. CE QUI EST DÉJÀ FIXÉ (récap)
+================================================================
+[x] Concept, positionnement, marché, SWOT, concurrence (1,2,3)
+[x] Fournisseur IA : multi-niveaux (Luna + Sonnet 5 + Opus)
+[x] Modèle éco 3 niveaux (5 chapitres gratuits + Fable+ + crédits)
+[x] Fonctionnalités (pur narratif, roman, comptes, social,
+    multimédia, personnalisation)
+[x] Structure roman + codes de tous les genres (5)
+[x] Étude des chefs-d'oeuvre (qualité littéraire) (5)
+
+================================================================
+1. DÉCISIONS PRODUIT (VALIDÉES - 03/09/2026)
+================================================================
+[x] Genres au MVP : TOUS les genres dès le lancement
+    (fantasy, SF, policier, horreur, historique, romance...)
+[x] Sous-genres : les deux - genre seul OU sous-genres proposés
+    par l'IA (à l'écran de choix d'univers)
+[x] Nom du héros : l'utilisateur décide (libre ou suggestions)
+[x] Trait de personnalité : optionnel, l'utilisateur peut en
+    choisir un ou pas
+[x] Difficulté : au choix de l'utilisateur (niveaux proposés)
+[x] Longueur des chapitres : COURT ~1500 / MOYEN ~3000 /
+    LONG ~5000 mots (calqué sur le papier)
+[x] Styles narratifs : LE MAXIMUM possible (classique, sombre,
+    humoristique, lyrique, cinématographique, sobre...)
+[x] Nombre de choix : 2 à 4 par fin de chapitre
+[x] Fins multiples : 2-5 fins possibles selon les choix
+[x] Échec du héros : ADAPTÉ À L'ÂGE (souple pour les jeunes :
+    pas de mort, conséquences + continuation ; plus strict
+    pour les adultes : fin tragique possible)
+[x] Prologue : SYSTÉMATIQUE en début de roman (1 génération
+    dédiée qui accroche)
+[x] Couverture image : générée APRÈS le prologue (à partir du
+    ton réellement écrit)
+[x] PUBLIC CIBLE : TOUT ÂGE (enfants ET adultes) - géré par
+    l'ÂGE À L'INSCRIPTION (au 1er lancement, simple, sans
+    contrôle parental)
+[x] Contenu : l'IA ADAPTE tout le contenu (violence, horreur,
+    échec, romance) selon l'âge déclaré
+[x] Horreur & styles adultes : certains styles/genres réservés
+    aux adultes (ex : dark fantasy, horreur intense, dark
+    romance, gore)
+[x] Tranches d'âge : -10 / 10-15 / 16-18 / 18+ (4 niveaux)
+[x] Contenus réservés 18+ : horreur intense, dark fantasy,
+    dark romance, thriller violent, romance explicite
+[x] Âge modifiable : oui avec confirmation (voir conformite-age.txt)
+
+=> DÉTAIL COMPLET : 6-avant-le-code/decisions-produit.txt
+=> CONFORMITÉ : 6-avant-le-code/conformite-age.txt
+=> PROMPTS IA : 6-avant-le-code/prompts-ia.txt
+
+================================================================
+2. ARCHITECTURE TECHNIQUE (DÉCIDÉE - architecture-technique.txt)
+================================================================
+[x] Stack : Expo SDK + TypeScript + Expo Router + Zustand
+[x] Backend : API TypeScript Vercel serverless + Supabase
+    (Postgres + Auth + Storage)
+[x] Monorepo simple : apps/mobile + api + packages/shared + prompts
+[x] Structure app Expo Router (routes par écran)
+[x] Couche d'abstraction LLM (interface provider + router)
+[x] Endpoints API définis (create, chapter, end, image, credits,
+    subscribe, user, health)
+[x] Règles serveur : quotas + âge + rate limiting côté serveur
+[x] Schéma Supabase : profiles, games, chapters,
+    credits_transactions, purchases, + V1 (achievements,
+    univers, ratings), V1.2 (ugc_stories, reports)
+[x] Stockage images : Supabase Storage (WebP ~500 Ko)
+[x] Sécurité : RLS, clés serveur, secure-store, Zod, validation
+    achats serveur
+[x] Tests/CI : Jest + RN Testing Library + GitHub Actions +
+    EAS Build + Vercel
+[ ] Décisions mineures à l'implémentation : REST (défaut),
+    PostHog (analytics), Sentry (crash)
+
+=> DÉTAIL COMPLET : 6-avant-le-code/architecture-technique.txt
+
+================================================================
+3. LES PROMPTS IA (défini - voir 6-avant-le-code/prompts-ia.txt)
+================================================================
+[x] Architecture : 5 prompts (story bible, prologue, chapitre,
+    fin, résumé) + prompt image
+[x] Règles anti-AI-slop définies
+[x] Modèles par prompt (Sonnet pour bible/fin, Luna pour chapitres)
+[x] Format JSON défini pour chaque prompt
+[ ] Rédiger les prompts COMPLETS finaux (versions en dur)
+[ ] Tests qualité (20 chapitres Luna vs Sonnet vs Haiku)
+[ ] Valider parsing JSON
+[ ] Tester adaptation à l'âge (chaque tranche)
+[ ] Tester cohérence longue (15 chapitres)
+[ ] Mettre en place le streaming
+
+================================================================
+4. DESIGN & UX (à penser avant le code)
+================================================================
+[ ] Wireframes des écrans :
+    - accueil (continuer / nouvelle partie)
+    - choix univers + genre
+    - création héros
+    - lecture (chapitre + choix)
+    - image à la demande (crédits)
+    - paywall Fable+ (après chapitre 5)
+    - boutique crédits
+    - profil / stats / succès
+    - paramètres (personnalisation)
+    - réglages (son, langue, compte)
+[ ] Thème visuel : ambre/or + bleu nuit (suggestion)
+[ ] Typographie : serif (livre) vs sans-serif (mobile) ?
+[ ] Mode lecture : défilement continu ? pages ? taille du texte ?
+[ ] Musique d'ambiance : par univers - licence ?
+[ ] Son : bruitages UI (boutons, choix) ?
+[ ] Animations de génération (machine à écrire) ?
+[ ] Accessibilité : taille texte, contraste, dark mode ?
+[ ] Notifications push (rappels, suite des histoires) ?
+[ ] Icône app + splash screen + captures stores
+
+================================================================
+5. LÉGAL & CONFORMITÉ
+================================================================
+[x] Classification d'âge : 12+ au MVP, réévaluer 17+ à l'UGC
+    (voir conformite-age.txt)
+[x] Âge minimum : 10 ans ; RGPD : consentement parental si -15
+    en France (voir conformite-age.txt)
+[x] Changement d'âge : vers le haut = confirmation, vers le bas
+    = libre (voir conformite-age.txt)
+[ ] Politique de confidentialité (RGPD) - à rédiger
+[ ] Conditions d'utilisation (CGU) - à rédiger
+[ ] Mentions "contenu généré par IA" (AI Act) - à inclure
+[ ] Classification d'âge (stores) : à compléter via questionnaire
+[ ] Signaler un contenu (UGC) + politique de modération (v1.2)
+[ ] CGU des fournisseurs IA (pas d'entraînement sur nos
+    données si opt-out)
+[ ] Droits sur les images générées (usage commercial)
+[ ] Copyright du contenu généré (zone grise) - à documenter
+[ ] Comptes : export et suppression des données (RGPD)
+
+================================================================
+6. BRANDING & ACQUISITION
+================================================================
+[ ] Nom de domaine : fable.app ? fable-ia.com ? vérifier
+    disponibilité
+[ ] Logo (à créer)
+[ ] Slogan : "Chaque choix écrit une nouvelle fable."
+[ ] Page de destination (landing) avant le lancement
+[ ] Comptes réseaux sociaux (TikTok, Instagram, X)
+[ ] Matériel de démo (vidéos de parties)
+[ ] ASO : titre, sous-titre, mots-clés, captures stores
+[ ] Compte développeur Apple (~99 $/an) + Google (~25 $)
+[ ] Enquête de prix : tester 4,99 € vs d'autres prix ?
+
+================================================================
+7. DONNÉES & MÉTRIQUES
+================================================================
+[ ] Événements analytics : nouvelle partie, chapitre lu,
+    chapitre 6 atteint (paywall), achat, image générée,
+    partage, conversion Fable+
+[ ] KPI : DAU/MAU, rétention J1/J7, coût IA/MAU, conversion
+    au chapitre 6, coût moyen image, LTV, CAC
+[ ] Outil analytics : PostHog ? Amplitude ? Supabase analytics ?
+[ ] Dashboard de suivi (coûts IA en temps réel) ?
+
+================================================================
+8. SÉCURITÉ
+================================================================
+[ ] Clés IA uniquement côté serveur (jamais dans l'app)
+[ ] .env jamais commité (+ .gitignore)
+[ ] Rate limiting sur les endpoints (anti-abus)
+[ ] Quotas serveur par utilisateur (chapitres + images)
+[ ] Vérification des achats in-app (serveur de validation
+    Apple/Google)
+[ ] Protection du contenu payant (le serveur refuse la
+    génération si non abonné)
+[ ] Anti-fraude crédits (pas de génération gratuite illimitée)
+[ ] Sanitization / modération des entrées UGC (v1.2)
+
+================================================================
+9. PLAN DE LANCEMENT
+================================================================
+[ ] Bêta fermée (TestFlight + Google Play Beta) - ~20-50
+    testeurs pour valider qualité et coûts
+[ ] Lancement : App Store + Google Play + Web (Vercel)
+[ ] Au démarrage : tous les genres ou fantasy seul ?
+[ ] Contenu de lancement : combien d'histoires prégénérées ?
+    (couvertures, musiques)
+[ ] Première campagne : TikTok/Instagram (démos)
+[ ] Communauté : Discord ? (pour la phase test)
+
+================================================================
+10. APRÈS LE LANCEMENT (v1, v1.2)
+================================================================
+[ ] V1 : multi-genres, stats/succès, images crédits, musique,
+    notes/votes (voir roadmap)
+[ ] V1.2 : partage, classements, UGC (voir roadmap)
+[ ] Monétisation avancée : packs, essai 7 jours Fable+
+[ ] Option éducation / licences scolaires
+
+================================================================
+CODE - ÉTAT D'AVANCEMENT (màj 03/09/2026)
+================================================================
+[x] Monorepo créé (apps/mobile + api + packages/shared + docs)
+[x] Git initialisé + README + .gitignore + .env.example
+[x] Projet Expo (TypeScript) créé et typecheck OK
+[x] Package shared (types métier) créé et typecheck OK
+[x] Squelette API : couche LLM multi-fournisseurs + Supabase +
+    endpoint /health + typecheck OK
+[x] Serveur Expo testé (démarre, HTTP 200)
+[ ] Prompts IA complets dans prompts/
+[ ] Écrans Expo Router (accueil, genres, héros, paramètres, lecture)
+[ ] API réelle /game/create + /game/chapter
+[ ] Projet Supabase (schéma + RLS + Auth)
+[ ] Quota chapitres gratuits serveur
+[ ] Dépôt GitHub
+[ ] Déploiement Vercel
+
+=> TOUT LE DÉTAIL : docs/JOURNAL-DE-TRAVAIL.txt
+
+================================================================
+PROCHAINE ÉTAPE RECOMMANDÉE
+================================================================
+Puisque "il faut penser à tout", voici l'état d'avancement :
+[x] §1 Décisions produit + âges -> FAIT (decisions-produit.txt)
+[x] §5 Légal / classification -> FAIT (conformite-age.txt)
+[x] §3 Prompts IA (architecture) -> FAIT (prompts-ia.txt)
+[x] §2 Architecture technique -> FAIT (architecture-technique.txt)
+[x] §4 Design & UX -> FAIT (design-ux.txt)
+[ ] §6 Branding & acquisition
+[ ] §7 Métriques / analytics
+[ ] §8 Sécurité (déjà esquissée dans §2)
+[ ] §9 Plan de lancement
+
+=> La CONCEPTION est quasi complète. Il reste :
+   - §6, §7, §9 (à faire, rapides)
+   - OU directement commencer le CODE (init Expo + Supabase).
+
+=> STRATÉGIQUEMENT : commencer le code dès maintenant est
+   pertinent (le §6/§7 peuvent se faire en parallèle du code,
+   et le §9 se décidera à la fin).

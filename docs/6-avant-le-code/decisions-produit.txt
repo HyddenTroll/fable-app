@@ -1,0 +1,138 @@
+========================================
+DÉCISIONS PRODUIT - DÉTAIL
+========================================
+Projet : Fable
+Date : 03/09/2026
+Statut : validé par le créateur du projet.
+Fichiers liés : 4-produit/fonctionnalites.txt,
+5-ecriture-narrative/structure-romans-tous-genres.txt,
+6-avant-le-code/checklist-maitresse.txt
+
+================================================================
+1. GENRES ET UNIVERS
+================================================================
+- TOUS les genres dès le MVP (pas de limitation) :
+  * Fantasy (prioritaire - 45 % des ventes)
+  * Science-fiction
+  * Policier / thriller
+  * Horreur
+  * Historique
+  * Romance
+  (et les autres : fantastique, aventure, dystopie...)
+- SOUS-GENRES : les deux options possibles pour l'utilisateur :
+  * Choisir un genre seul (l'IA choisit l'ambiance)
+  * OU choisir un sous-genre précis (high/low/dark fantasy,
+    cyberpunk, space opera, cosy mystery, thriller psychologique,
+    horreur cosmique, romance historique, uchronie...)
+- Écran "choix d'univers" : genre + (option) sous-genre.
+
+================================================================
+2. CRÉATION DU HÉROS
+================================================================
+- NOM : l'utilisateur décide (champ libre + suggestions IA
+  optionnelles à la volée).
+- TRAIT DE PERSONNALITÉ : OPTIONNEL. L'utilisateur peut :
+  * ne pas en choisir (le héros se révèle par les choix),
+  * choisir un archétype (courageux, rusé, prudent, audacieux,
+    sarcastique, loyal, solitaire...)
+  -> le trait influence la voix du récit et les options
+  proposées (mais n'enferme pas le joueur).
+
+================================================================
+3. PERSONNALISATION DU RÉCIT (paramètres de génération)
+================================================================
+- DIFFICULTÉ : au choix de l'utilisateur.
+  * Facile : le héros surmonte presque toujours ; les erreurs
+    ont des conséquences légères.
+  * Moyenne : équilibre, certains choix risquent l'échec.
+  * Difficile : les mauvais choix mènent à des échecs, pertes
+    et fins prématurées possibles.
+  (Modulé aussi par l'ÂGE - voir §6.)
+- LONGUEUR DES CHAPITRES (calqué sur le papier) :
+  * Court : ~1 500 mots
+  * Moyen : ~3 000 mots
+  * Long : ~5 000 mots
+  (=> l'app adapte la longueur d'un roman : 10-15 chapitres)
+- STYLES NARRATIFS : le MAXIMUM possible. Au moins :
+  * Classique (voix sobre, équilibrée)
+  * Sombre (atmosphère lourde, inquiétante)
+  * Humoristique (décalage, ironie)
+  * Lyrique (images, poésie)
+  * Cinématographique (plans, dialogues secs, rythme)
+  * Sobre / minimaliste (phrases courtes, efficaces)
+  (=> extensible ; certains styles peuvent être réservés selon
+  l'âge, voir §6)
+- NOMBRE DE CHOIX : 2 à 4 par fin de chapitre (variable).
+
+================================================================
+4. DÉROULEMENT D'UN ROMAN
+================================================================
+- PROLOGUE : systématique. 1 génération dédiée au début qui
+  accroche (hook : une scène, une question, un danger).
+- CHAPITRES : 10-15 (3 actes : 3-5 / 5-7 / 2-3).
+- FIN DES CHAPITRES : 2-4 choix + fin de chapitre variée
+  (clôture / suspense doux / cliffhanger).
+- CHAPITRE 5 : se termine sur un CLIFFHANGER (fin de l'essai
+  gratuit, écran Fable+ au chapitre 6).
+- FINS MULTIPLES : 2-5 fins possibles selon les choix faits.
+  L'IA connaît les embranchements et conclut logiquement.
+- COUVERTURE IMAGE : générée APRÈS le prologue, à partir du
+  ton réellement écrit (style, ambiance, personnage).
+
+================================================================
+5. GESTION DE L'ÉCHEC DU HÉROS (selon l'âge)
+================================================================
+- PRINCIPE : l'échec s'adapte à l'âge déclaré.
+- JEUNES (mode "doux") : PAS de mort du héros. Un échec =
+  une conséquence (perte, blessure légère, détour, complicat-
+  ions) puis l'histoire continue. Toujours une porte de sortie.
+- ADOLESCENTS : échec possible mais avec rebond (le héros
+  peut perdre gros mais survivre et se relever).
+- ADULTES (mode "strict") : l'échec peut mener à une FIN
+  TRAGIQUE du roman (la partie se termine dramatiquement), on
+  peut recommencer. Les enjeux sont réels.
+- L'IA adapte : le risque de mort, la gravité des conséquences
+  et les options de secours selon la tranche d'âge.
+
+================================================================
+6. GESTION DU PUBLIC - TOUT ÂGE
+================================================================
+- PUBLIC CIBLE : TOUT ÂGE (enfants ET adultes).
+- MÉCANISME : ÂGE À L'INSCRIPTION (au 1er lancement, simple,
+  sans compte parent / contrôle parental au MVP).
+- TRANCHES D'ÂGE (validées) : 4 niveaux
+  * -10 ans   : contenu très doux, pas de violence/mort,
+    pas d'horreur ni romance, échec souple (conséquences
+    légères, toujours une porte de sortie).
+  * 10-15 ans : tensions modérées, horreur douce, romance
+    naissante, échec avec rebond possible.
+  * 16-18 ans : contenus plus matures, échec avec enjeux
+    réels mais rebond.
+  * 18+       : contenu complet, échec tragique possible
+    (fin de roman prématurée), tous les genres.
+- CONTENUS RÉSERVÉS AUX ADULTES 18+ (validés) :
+  * Horreur intense / gore / cosmique
+  * Dark fantasy
+  * Dark romance
+  * Thriller violent
+  * Romance explicite / érotique
+  => NON proposés aux mineurs (ni même affichés dans les
+     choix de genre pour les -18).
+- L'IA reçoit l'ÂGE dans le prompt et adapte :
+  le vocabulaire, la violence, la romance, l'horreur, le
+  risque d'échec, les thèmes, la longueur tolérée.
+- ÂGE MODIFIABLE : OUI, avec confirmation, SOUS RÉSERVE du
+  cadre légal (voir checklist-maitresse §5 - à vérifier :
+  ce que dit la loi / les stores sur le changement d'âge et
+  le consentement parental pour les mineurs).
+
+================================================================
+7. QUESTIONS OUVERTES (à trancher rapidement)
+================================================================
+[x] Tranches d'âge : -10 / 10-15 / 16-18 / 18+ (validées)
+[x] Contenus réservés adultes : horreur intense, dark fantasy,
+    dark romance, thriller violent, romance explicite (validés)
+[x] Âge modifiable : OUI avec confirmation, sous réserve du légal
+[ ] Âge minimum d'utilisation (stores : 4+ ? 12+ ?) - à définir
+    avec la classification d'âge (checklist §5)
+[ ] Vérification légale du changement d'âge (à étudier)

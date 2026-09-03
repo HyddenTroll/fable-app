@@ -1,0 +1,295 @@
+========================================
+ARCHITECTURE TECHNIQUE - DÉCISIONS
+========================================
+Projet : Fable
+Date : 03/09/2026
+Statut : décisions prises sur la base des meilleures pratiques
+2026 (recherche web). Le créateur a délégué les choix techniques.
+Fichiers liés : 6-avant-le-code/prompts-ia.txt,
+2-analyse-strategique/choix-fournisseur-ia.txt, CONTEXTE.txt.
+
+================================================================
+1. STACK GLOBAL (résumé)
+================================================================
+- Mobile : Expo SDK (React Native) - TypeScript
+- Navigation : EXPO ROUTER (file-based routing) - standard
+  officiel Expo, basé sur React Navigation, deep links gratuits,
+  web-ready (déploiement Vercel du même code).
+- État global : ZUSTAND (léger, simple) + persist (MMKV pour
+  la persistance rapide côté mobile).
+- Backend : API TypeScript sur Vercel (serverless functions).
+- Base de données + Auth + Storage : SUPABASE (Postgres).
+- Images IA : FLUX.1 Dev via fal.ai (voir economie-app.txt).
+- Tests : Jest + React Native Testing Library (+ Playwright
+  pour le web si besoin).
+- CI/CD : GitHub Actions + EAS Build (Expo Application Services).
+
+Pourquoi ce choix : c'est la stack dominante des apps Expo +
+Supabase en 2026 (Coinbase, Shopify utilisent Expo ; Supabase
+est le backend préféré des petites équipes React Native). Vue
+d'ensemble de la tendance : React + TypeScript, Zustand (pas
+Redux), Expo Router (pas React Navigation manuel), Supabase,
+Zod pour la validation, tRPC possible.
+
+================================================================
+2. STRUCTURE DU REPO (monorepo simple)
+================================================================
+fable/
+├── apps/
+│   └── mobile/            # app Expo (Expo Router)
+│       └── app/           # routes = fichiers
+├── api/                   # Vercel serverless functions
+│   └── api/               # endpoints (voir §5)
+├── packages/
+│   └── shared/            # types + utilitaires partagés
+├── prompts/               # fichiers de prompts IA (texte)
+├── docs/                  # toute la documentation (1-6)
+├── .env.example           # variables d'environnement (exemple)
+├── .gitignore
+└── package.json
+
+=> Un seul repo (simple, versionné), dossier mobile + dossier
+   api + package partagé pour les types.
+
+================================================================
+3. STRUCTURE DE L'APP EXPO (dossiers)
+================================================================
+apps/mobile/src/
+├── app/                    # routes Expo Router
+│   ├── (auth)/             # connexion / inscription / âge
+│   │   ├── login.tsx
+│   │   ├── signup.tsx
+│   │   └── age.tsx         # sélection d'âge au 1er lancement
+│   ├── (tabs)/             # onglets : accueil, bibliothèque, profil
+│   │   ├── index.tsx       # accueil (continuer / nouvelle partie)
+│   │   ├── library.tsx     # histoires / genres
+│   │   └── profile.tsx     # profil, stats, succès, paramètres
+│   ├── game/
+│   │   ├── [gameId].tsx    # écran de lecture (chapitre + choix)
+│   │   ├── new-game.tsx    # choix univers + héros + paramètres
+│   │   └── end.tsx         # fin du roman (fins multiples)
+│   ├── shop/
+│   │   └── credits.tsx     # boutique crédits
+│   └── settings.tsx        # réglages (son, style, compte)
+├── components/             # composants réutilisables
+├── features/               # logique par domaine (auth, game, credits)
+├── hooks/                  # hooks custom
+├── lib/                    # clients (supabase, api, llm)
+├── state/                  # stores Zustand
+├── types/                  # types (partagés avec packages/shared)
+└── utils/                  # utilitaires
+
+================================================================
+4. ARCHITECTURE DE L'API (Vercel serverless)
+================================================================
+api/
+├── api/
+│   ├── game/
+│   │   ├── create.ts       # POST : crée une story bible + roman
+│   │   ├── chapter.ts      # POST : génère le prologue ou un chapitre
+│   │   ├── end.ts          # POST : génère la fin (climax)
+│   │   └── [gameId].ts     # GET : récupère l'état d'une partie
+│   ├── image/
+│   │   └── generate.ts     # POST : génère une image (crédits)
+│   ├── credits/
+│   │   └── balance.ts      # GET : solde crédits
+│   ├── user/
+│   │   └── profile.ts      # GET/PUT : profil, âge, réglages
+│   ├── subscribe/
+│   │   └── verify.ts       # POST : vérifie un achat in-app
+│   └── health.ts           # GET : santé du service
+├── lib/
+│   ├── llm/                # couche d'abstraction multi-fournisseurs
+│   │   ├── provider.ts     # interface LLMProvider
+│   │   ├── anthropic.ts    # implémentation Claude
+│   │   ├── openai.ts       # implémentation OpenAI
+│   │   ├── router.ts       # choisit le modèle selon le type de prompt
+│   │   └── cache.ts        # prompt caching / mise en cache
+│   ├── prompts/            # chargement des prompts (voir 6-avant-le-code)
+│   ├── images/             # client fal.ai / DALL-E
+│   ├── db.ts               # client Supabase
+│   ├── auth.ts             # vérification JWT / session
+│   └── quota.ts            # quotas par utilisateur (chapitres, crédits)
+└── types.ts
+
+COUCHE D'ABSTRACTION LLM (clé) :
+- interface LLMProvider { generate(request): Promise<stream> }
+- Router : selon le TYPE de prompt (bible/prologue/chapitre/
+  fin/résumé/image) => modèle choisi (voir §8 prompts-ia.txt).
+- Permet de basculer un type de prompt vers un autre fournisseur
+  sans toucher au code métier.
+
+================================================================
+5. ENDPOINTS API (détail + règles métier)
+================================================================
+1) POST /api/game/create
+   - Body : { genre, sousGenre?, heros, params, age }
+   - Sert à : générer la STORY BIBLE (Claude Sonnet 5).
+   - Vérifie : compte, quota (nouvelle partie gratuite),
+     contenu autorisé pour l'âge.
+   - Retour : { gameId, bible, prologue }
+2) POST /api/game/chapter
+   - Body : { gameId, choix? , type: prologue|chapitre }
+   - Génère le prologue OU le chapitre suivant (Luna pour les
+     chapitres, Sonnet pour le prologue).
+   - Vérifie : abonnement OU chapitres gratuits restants
+     (les 5 premiers chapitres gratuits - compteur serveur).
+   - Streaming : retourne le texte en streaming (machine à
+     écrire).
+   - Met à jour le résumé (prompt résumé) et stocke le chapitre.
+3) POST /api/game/end
+   - Body : { gameId, typeFin? }
+   - Génère le climax + dénouement + épilogue (Sonnet/Opus).
+   - Vérifie : abonnement actif (la fin est un moment fort).
+4) GET /api/game/[gameId]
+   - Retourne l'état : chapitres lus, choix, résumé, position.
+5) POST /api/image/generate
+   - Body : { gameId?, description }
+   - Consomme des CRÉDITS (3 par image) - vérifie le solde.
+   - Génère via FLUX (fal.ai) / DALL-E. Stocke l'image.
+6) GET /api/credits/balance
+   - Retourne le solde de crédits de l'utilisateur.
+7) POST /api/subscribe/verify
+   - Vérifie un achat in-app (validation serveur Apple/Google).
+8) GET/PUT /api/user/profile
+   - Profil, âge (avec règles de conformite-age.txt), réglages.
+
+RÈGLES SERVEUR OBLIGATOIRES (sécurité + économie) :
+- Les quotas (chapitres gratuits, crédits) sont COMPTÉS CÔTÉ
+  SERVEUR (jamais fiables côté app).
+- L'âge est vérifié à chaque génération (filtre contenu).
+- Rate limiting par utilisateur (anti-abus).
+- La clé IA n'existe QUE côté serveur.
+
+================================================================
+6. SCHÉMA SUPABASE (tables Postgres)
+================================================================
+profiles
+  - id (uuid, PK, = auth.users.id)
+  - email (auth)
+  - age (int)                      # tranche d'âge
+  - age_confirmed_at (timestamp)
+  - display_name (text)
+  - preferences (jsonb)            # genre fav, style, longueur
+  - credits_balance (int)          # solde crédits
+  - is_premium (bool)
+  - premium_expires_at (timestamptz)
+  - created_at, updated_at
+
+games
+  - id (uuid PK)
+  - user_id (FK profiles)
+  - genre, sous_genre (text)
+  - title (text)
+  - story_bible (jsonb)            # bible du roman
+  - resume (text)                  # résumé courant (cohérence)
+  - status (enum: active, finished, failed)
+  - chapter_count (int)
+  - free_chapters_used (int)       # quota gratuit
+  - hero_name (text), hero_trait (text)
+  - params (jsonb)                 # difficulté, style, longueur, nb choix
+  - ending_type (text)             # fin obtenue (si fini)
+  - created_at, updated_at
+
+chapters
+  - id (uuid PK)
+  - game_id (FK games)
+  - chapter_number (int)           # 0 = prologue
+  - title (text)
+  - content (text)                 # le texte du chapitre
+  - choices (jsonb)                # [ {libelle, conséquence} ]
+  - player_choice (int)            # choix choisi par le joueur
+  - cover_image_url (text)         # pour le prologue
+  - created_at
+
+credits_transactions
+  - id (uuid PK)
+  - user_id (FK profiles)
+  - amount (int)                   # + ou -
+  - type (enum: purchase, image_use, free, bonus)
+  - reference (text)               # pack, gameId
+  - created_at
+
+purchases
+  - id (uuid PK)
+  - user_id
+  - store (enum: apple, google)
+  - product_id (text)              # pack ou abonnement
+  - transaction_id (text, unique)
+  - status (enum: pending, verified, refunded)
+  - created_at
+
+achievements  (V1)
+  - id, user_id, code (text), unlocked_at
+univers/genres  (contenu de référence)
+  - id, code (text), name, description, min_age (int)
+  - subgenres (jsonb)              # liste des sous-genres
+  - adult_only (bool)              # réservé 18+
+story_ratings / votes  (V1)
+  - id, game_id, user_id, rating (1-5), created_at
+ugc_stories  (V1.2 - UGC)
+  - id, user_id, bible (jsonb), status (pending/approved/rejected),
+    report_count, created_at
+reports  (V1.2)
+  - id, user_id, target_type, target_id, reason, status
+
+SÉCURITÉ BDD :
+- Row Level Security (RLS) ACTIVÉE sur toutes les tables.
+- Les données sensibles (bible, chapitres) ne sont lisibles que
+  par leur propriétaire (RLS policy user_id = auth.uid()).
+- Jamais de service key dans l'app (uniquement côté API).
+
+================================================================
+7. STOCKAGE DES IMAGES
+================================================================
+- Supabase Storage (bucket "images") - gratuit, intégré.
+- Format : WebP, ~500 Ko (léger, rapide).
+- URL signée / publique selon usage (couverture partageable).
+- Nettoyage : supprimer les images orphelines (cron).
+
+================================================================
+8. SÉCURITÉ (récap - voir aussi checklist §8)
+================================================================
+- Clés IA + service key Supabase : UNIQUEMENT côté API (env).
+- .env jamais commité ; .gitignore contient .env*, *.local.
+- Rate limiting serveur (chapitres, images, auth).
+- Quotas serveur (chapitres gratuits, crédits).
+- Validation des achats in-app côté serveur (Apple/Google).
+- Stockage tokens : expo-secure-store (Keychain/Keystore).
+- RLS sur Supabase.
+- Zod pour valider les entrées API.
+
+================================================================
+9. TESTS & CI/CD
+================================================================
+- Tests unitaires : Jest (logique, parsing JSON prompts,
+  utilitaires).
+- Tests composants : React Native Testing Library.
+- Tests E2E (flows critiques) : Detox (mobile) / Playwright (web).
+- CI : GitHub Actions (lint, typecheck, tests) sur chaque push.
+- Build & deploy mobile : EAS Build + EAS Update.
+- Deploy API : Vercel (auto sur push main).
+
+================================================================
+10. DÉCISIONS RESTANTES (questions)
+================================================================
+[ ] tRPC vs REST simple pour l'API ?
+    (recommandation : REST simple au MVP - moins de complexité)
+[ ] Analytics : PostHog vs Amplitude vs Supabase Analytics ?
+    (recommandation : PostHog - gratuit au démarrage, auto-hébergé)
+[ ] Erreurs/crash : Sentry ? (recommandation : Sentry, gratuit
+    au petit volume)
+[ ] Musique d'ambiance : service/asset à choisir (voir §4 design)
+
+=> Ces choix seront tranchés à l'implémentation (par défaut :
+   REST, PostHog, Sentry).
+
+================================================================
+11. PROCHAINE ÉTAPE
+================================================================
+Une fois ce §2 validé, on peut :
+- initialiser le repo Expo (npx create-expo-app)
+- créer le projet Supabase + schéma
+- écrire les premiers endpoints
+=> C'est le DÉBUT DU CODE. On peut aussi faire le §4 (design/
+   wireframes) avant pour définir les écrans précisément.

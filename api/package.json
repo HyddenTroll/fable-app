@@ -1,0 +1,22 @@
+{
+  "name": "fable-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@fable/shared": "*",
+    "@anthropic-ai/sdk": "^0.60.0",
+    "openai": "^6.0.0",
+    "@supabase/supabase-js": "^2.70.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "@types/node": "^24.0.0",
+    "@vercel/node": "^5.0.0"
+  }
+}
