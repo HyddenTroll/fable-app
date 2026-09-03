@@ -275,6 +275,16 @@ FAIT :
 7. Fin améliorée : stats de partie + boutons.
 8. Vérifications : typecheck OK, bundle web 1.2MB OK, serveur
    HTTP 200 (test, puis arrêté - l'utilisateur lance lui-même).
+9. Commit + push : "Tous les écrans : onglets accueil/profil,
+   auth, paywall, boutique, réglages + blocage 5 chapitres
+   gratuits" (648018c)
+10. PRÉCISION URL (confirmé avec l'utilisateur) :
+   - npm start -> http://localhost:8081/ (port par défaut)
+   - Si le port 8081 est occupé, Expo propose un autre port
+     (ex : 8082) -> l'URL exacte est affichée dans le terminal
+   - Téléphone : QR code Expo Go (même Wi-Fi ou mode tunnel)
+11. Le serveur n'est PAS lancé par moi : l'utilisateur le lance
+   lui-même (cd /d D:\Fable\apps\mobile && npm start)
 
 ================================================================
 PROCHAINE SESSION (à faire)
