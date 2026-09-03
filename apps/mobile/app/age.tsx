@@ -9,7 +9,7 @@ export default function AgeScreen() {
 
   const handleSelect = (code: string) => {
     setAge(code);
-    router.push('/home');
+    router.push('/auth');
   };
 
   return (

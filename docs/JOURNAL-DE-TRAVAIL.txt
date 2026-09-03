@@ -214,11 +214,75 @@ FAIT :
    [ ] Déploiement Vercel (repo + config)
 
 ================================================================
+SESSION 8 - 03/09/2026 : STRATÉGIE DE DEV (perf/ergo/léger)
+================================================================
+FAIT :
+1. Stratégie de dev documentée (docs/6-avant-le-code/
+   strategie-dev.txt) - 3 piliers :
+   - PERFORMANCE : New Architecture, Hermes, re-rendus évités,
+     FlatList, animations Reanimated, streaming, mesures
+   - ERGONOMIE : onglets bas (pouce), lecture confortable,
+     accessibilité (44px, contraste AA), retour tactile
+   - LÉGÈRETÉ : bundle minimal, code-splitting Expo Router,
+     politique stricte des dépendances, images WebP
+   - Politique de librairies : à ajouter seulement au besoin,
+     à éviter (Redux, styled-components, libs UI monolithiques)
+2. Application au prototype :
+   - src/theme/index.ts : thème central (couleurs, espacements,
+     radii, typo, touchTarget) - fini les couleurs en dur
+   - src/components/Button.tsx : bouton réutilisable avec
+     retour tactile (pressed) + accessibilité
+   - home.tsx : thème + Button
+   - new-game.tsx : thème + FlatList (genres) + Button +
+     stocke gameParams dans le store
+   - game/[gameId].tsx : thème + feedback tactile sur les choix +
+     utilise les VRAIS params utilisateur (genre, style, nb
+     choix) au lieu du hack précédent
+   - store.ts : ajout de gameParams (persisté)
+3. Vérifications :
+   - Typecheck mobile : OK
+   - Export web : bundle 1.2MB, aucune erreur
+4. Commit + push : "Stratégie de dev (perf/ergo/léger) + thème
+   central, bouton tactile, FlatList, params dans le store"
+
+================================================================
+SESSION 9 - 03/09/2026 : TOUS LES ÉCRANS + STRUCTURE APP
+================================================================
+FAIT :
+1. Explication de la structure d'une app (Expo Router) :
+   - 1 fichier dans app/ = 1 écran
+   - Le système de fichiers définit la navigation
+   - [gameId] = route dynamique, _layout.tsx = cadre commun
+2. Navigation restructurée avec ONGLETS :
+   - app/_layout.tsx : Stack racine (âge, auth, (tabs),
+     new-game, game, paywall, shop, settings)
+   - app/(tabs)/_layout.tsx : onglets bas (Accueil + Profil)
+   - app/(tabs)/index.tsx : Accueil (continuer / nouvelle
+     partie, badge crédits, lien connexion)
+   - app/(tabs)/profile.tsx : Profil (compte, stats, succès
+     placeholder, Fable+, déconnexion)
+3. Nouveaux écrans :
+   - app/auth.tsx : connexion/inscription (mock)
+   - app/paywall.tsx : Fable+ (4,99 €/mois, 7 jours offerts)
+   - app/shop.tsx : boutique crédits (packs depuis @fable/shared)
+   - app/settings.tsx : réglages (son, lecture, à propos)
+4. Flux onboarding complet :
+   index -> âge -> auth -> (tabs) accueil
+5. PAYWALL FONCTIONNEL : après le 5e chapitre gratuit, un
+   non-abonné est redirigé vers l'écran Fable+ (blocage ch.6).
+6. Store enrichi : email, isPremium, credits (mock), addCredits,
+   spendCredits.
+7. Fin améliorée : stats de partie + boutons.
+8. Vérifications : typecheck OK, bundle web 1.2MB OK, serveur
+   HTTP 200 (test, puis arrêté - l'utilisateur lance lui-même).
+
+================================================================
 PROCHAINE SESSION (à faire)
 ================================================================
-1. Créer le repo GitHub + push initial
-2. Déployer sur Vercel
-3. Rédiger les prompts complets dans prompts/
-4. API réelle : /game/create (story bible) + /game/chapter
-5. Projet Supabase : schéma + RLS + Auth
-6. Quota chapitres gratuits (côté serveur)
+1. Rédiger les prompts complets dans prompts/
+2. API réelle : /game/create (story bible) + /game/chapter
+3. Projet Supabase : schéma + RLS + Auth
+4. Quota chapitres gratuits (côté serveur)
+5. Brancher l'app sur l'API (fin du mock)
+6. Thème visuel final (ambre/or + bleu nuit) sur les écrans
+7. Re-test sur téléphone (Expo Go)

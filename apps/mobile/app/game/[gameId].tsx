@@ -15,6 +15,7 @@ export default function GameScreen() {
   const params = useLocalSearchParams<{ gameId: string }>();
   const game = useAppStore((s) => s.currentGame);
   const gameParams = useAppStore((s) => s.gameParams);
+  const isPremium = useAppStore((s) => s.isPremium);
   const updateCurrentGame = useAppStore((s) => s.updateCurrentGame);
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -69,6 +70,14 @@ export default function GameScreen() {
 
   const handleChoice = (index: number) => {
     if (isGenerating) return;
+
+    // PAYWALL : après le 5e chapitre gratuit, un non-abonné est bloqué
+    // Le chapitre courant est le N°5 (number === 5) -> le 6e serait payant
+    if (!isPremium && current.number >= 5) {
+      router.push('/paywall');
+      return;
+    }
+
     setPressedChoice(index);
     setIsGenerating(true);
     setStreamText('');
