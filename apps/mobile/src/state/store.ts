@@ -12,9 +12,11 @@ interface AppState {
   age: string | null;
   userName: string | null;
   currentGame: MockGameState | null;
+  gameParams: GameParams | null;
   setAge: (age: string) => void;
   setUserName: (name: string) => void;
   setCurrentGame: (game: MockGameState | null) => void;
+  setGameParams: (params: GameParams | null) => void;
   updateCurrentGame: (updates: Partial<MockGameState>) => void;
   reset: () => void;
 }
@@ -25,16 +27,18 @@ export const useAppStore = create<AppState>()(
       age: null,
       userName: null,
       currentGame: null,
+      gameParams: null,
       setAge: (age) => set({ age }),
       setUserName: (userName) => set({ userName }),
       setCurrentGame: (currentGame) => set({ currentGame }),
+      setGameParams: (gameParams) => set({ gameParams }),
       updateCurrentGame: (updates) =>
         set((state) => ({
           currentGame: state.currentGame
             ? { ...state.currentGame, ...updates }
             : state.currentGame,
         })),
-      reset: () => set({ age: null, userName: null, currentGame: null }),
+      reset: () => set({ age: null, userName: null, currentGame: null, gameParams: null }),
     }),
     { name: 'fable-store' },
   ),

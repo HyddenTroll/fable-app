@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
+import { Button } from '@/components/Button';
+import { colors, spacing, radii } from '@/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -11,18 +13,10 @@ export default function HomeScreen() {
   const ageLabel = age ?? 'inconnu';
 
   const continueGame = () => {
-    if (currentGame) {
-      router.push(`/game/${currentGame.gameId}`);
-    }
+    if (currentGame) router.push(`/game/${currentGame.gameId}`);
   };
 
-  const startNew = () => {
-    router.push('/new-game');
-  };
-
-  const resetApp = () => {
-    setCurrentGame(null);
-  };
+  const startNew = () => router.push('/new-game');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -43,15 +37,15 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity style={styles.primaryButton} onPress={startNew}>
-        <Text style={styles.primaryText}>+ Nouvelle aventure</Text>
-      </TouchableOpacity>
+      <Button label="+ Nouvelle aventure" onPress={startNew} />
 
       <View style={styles.debugBox}>
         <Text style={styles.debugTitle}>Prototype - debug</Text>
-        <Text style={styles.debugText}>Ce prototype utilise des données fictives (pas d'IA réelle).</Text>
+        <Text style={styles.debugText}>
+          Ce prototype utilise des données fictives (pas d'IA réelle).
+        </Text>
         {currentGame && (
-          <TouchableOpacity onPress={resetApp}>
+          <TouchableOpacity onPress={() => setCurrentGame(null)}>
             <Text style={styles.debugLink}>Réinitialiser la partie en cours</Text>
           </TouchableOpacity>
         )}
@@ -61,34 +55,22 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#101024' },
-  content: { padding: 24, gap: 16 },
-  title: { color: '#E8B84B', fontSize: 36, fontWeight: 'bold', textAlign: 'center' },
-  subtitle: { color: '#9a9ab0', textAlign: 'center' },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xxl, gap: spacing.lg },
+  title: { color: colors.primary, fontSize: 36, fontWeight: 'bold', textAlign: 'center' },
+  subtitle: { color: colors.textSecondary, textAlign: 'center' },
   continueCard: {
-    backgroundColor: '#1c1c3a',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E8B84B',
-    marginTop: 16,
+    borderColor: colors.primary,
+    marginTop: spacing.lg,
   },
-  continueTitle: { color: '#fff', fontSize: 18, fontWeight: '600' },
-  continueMeta: { color: '#9a9ab0', marginTop: 6 },
-  primaryButton: {
-    backgroundColor: '#E8B84B',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  primaryText: { color: '#101024', fontSize: 17, fontWeight: 'bold' },
-  debugBox: {
-    backgroundColor: '#181830',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-  },
-  debugTitle: { color: '#E8B84B', fontWeight: 'bold' },
-  debugText: { color: '#9a9ab0', marginTop: 6, lineHeight: 18 },
-  debugLink: { color: '#E8B84B', marginTop: 10, textDecorationLine: 'underline' },
+  continueTitle: { color: colors.text, fontSize: 18, fontWeight: '600' },
+  continueMeta: { color: colors.textSecondary, marginTop: 6 },
+  debugBox: { backgroundColor: colors.surfaceAlt, borderRadius: radii.lg, padding: spacing.lg },
+  debugTitle: { color: colors.primary, fontWeight: 'bold' },
+  debugText: { color: colors.textSecondary, marginTop: 6, lineHeight: 18 },
+  debugLink: { color: colors.primary, marginTop: 10, textDecorationLine: 'underline' },
 });

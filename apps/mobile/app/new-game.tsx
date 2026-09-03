@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput,
+  View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { GameParams } from '@fable/shared';
-import { GENRES, HERO_TRAITS, NARRATIVE_STYLES, CHAPTER_LENGTHS, DIFFICULTIES } from '@/data/mock';
+import {
+  GENRES, HERO_TRAITS, NARRATIVE_STYLES, CHAPTER_LENGTHS, DIFFICULTIES,
+} from '@/data/mock';
 import { createMockGame } from '@/services/mockStory';
 import { useAppStore } from '@/state/store';
+import { Button } from '@/components/Button';
+import { colors, spacing, radii } from '@/theme';
 
 type Step = 'genre' | 'hero' | 'params';
 
 export default function NewGameScreen() {
   const router = useRouter();
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
+  const setGameParams = useAppStore((s) => s.setGameParams);
 
   const [step, setStep] = useState<Step>('genre');
   const [genreCode, setGenreCode] = useState<string>('fantasy');
@@ -36,6 +41,7 @@ export default function NewGameScreen() {
       maxChoices,
     };
     const { gameId, title, genreLabel, prologue } = createMockGame(params);
+    setGameParams(params);
     setCurrentGame({
       gameId,
       title,
@@ -49,20 +55,22 @@ export default function NewGameScreen() {
     router.push(`/game/${gameId}`);
   };
 
-  const canContinue =
-    step === 'hero' ? heroName.trim().length > 0 : true;
+  const canContinue = step === 'hero' ? heroName.trim().length > 0 : true;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
       <Text style={styles.stepTitle}>
         {step === 'genre' ? '1. Choisis ton univers' :
          step === 'hero' ? '2. Ton héros' : '3. Personnalisation'}
       </Text>
 
       {step === 'genre' && (
-        <>
-          {GENRES.map((g) => (
-            <View key={g.code} style={styles.genreBlock}>
+        <FlatList
+          data={GENRES}
+          keyExtractor={(g) => g.code}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item: g }) => (
+            <View style={styles.genreBlock}>
               <TouchableOpacity
                 style={[styles.genreCard, genreCode === g.code && styles.selected]}
                 onPress={() => { setGenreCode(g.code); setSubGenre(null); }}
@@ -90,19 +98,19 @@ export default function NewGameScreen() {
                 </View>
               )}
             </View>
-          ))}
-        </>
+          )}
+        />
       )}
 
       {step === 'hero' && (
-        <>
+        <View style={styles.formContent}>
           <Text style={styles.label}>Nom du héros</Text>
           <TextInput
             style={styles.input}
             value={heroName}
             onChangeText={setHeroName}
             placeholder="Entre un nom..."
-            placeholderTextColor="#6a6a8a"
+            placeholderTextColor={colors.textMuted}
           />
           <Text style={styles.label}>Trait de personnalité (optionnel)</Text>
           <View style={styles.chipsRow}>
@@ -116,11 +124,11 @@ export default function NewGameScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </>
+        </View>
       )}
 
       {step === 'params' && (
-        <>
+        <View style={styles.formContent}>
           <Text style={styles.label}>Difficulté</Text>
           <View style={styles.chipsRow}>
             {DIFFICULTIES.map((d) => (
@@ -172,93 +180,80 @@ export default function NewGameScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </>
+        </View>
       )}
 
       <View style={styles.navRow}>
         {step !== 'genre' && (
-          <TouchableOpacity
-            style={[styles.button, styles.secondary]}
+          <Button
+            label="Retour"
+            variant="secondary"
             onPress={() => setStep(step === 'params' ? 'hero' : 'genre')}
-          >
-            <Text style={styles.secondaryText}>Retour</Text>
-          </TouchableOpacity>
+            style={styles.flexButton}
+          />
         )}
         {step === 'params' ? (
-          <TouchableOpacity style={styles.button} onPress={startGame}>
-            <Text style={styles.primaryText}>Commencer l'aventure</Text>
-          </TouchableOpacity>
+          <Button label="Commencer l'aventure" onPress={startGame} style={styles.flexButton} />
         ) : (
-          <TouchableOpacity
-            style={[styles.button, !canContinue && styles.disabled]}
-            disabled={!canContinue}
+          <Button
+            label="Continuer"
             onPress={() => setStep(step === 'genre' ? 'hero' : 'params')}
-          >
-            <Text style={styles.primaryText}>Continuer</Text>
-          </TouchableOpacity>
+            disabled={!canContinue}
+            style={styles.flexButton}
+          />
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#101024' },
-  content: { padding: 24, gap: 12 },
-  stepTitle: { color: '#E8B84B', fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  genreBlock: { marginBottom: 4 },
+  container: { flex: 1, backgroundColor: colors.background, padding: spacing.xxl },
+  listContent: { gap: spacing.md },
+  formContent: { gap: spacing.xs },
+  stepTitle: { color: colors.primary, fontSize: 20, fontWeight: 'bold', marginBottom: spacing.lg },
+  genreBlock: { marginBottom: spacing.xs },
   genreCard: {
-    backgroundColor: '#1c1c3a',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
   },
-  selected: { borderColor: '#E8B84B' },
-  genreName: { color: '#fff', fontSize: 17, fontWeight: '600' },
-  genreDesc: { color: '#9a9ab0', marginTop: 4 },
-  subGenreRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 8, paddingTop: 8 },
+  selected: { borderColor: colors.primary },
+  genreName: { color: colors.text, fontSize: 17, fontWeight: '600' },
+  genreDesc: { color: colors.textSecondary, marginTop: spacing.xs },
+  subGenreRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingHorizontal: spacing.sm, paddingTop: spacing.sm },
   subGenreChip: {
-    backgroundColor: '#181830',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radii.xl,
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
   },
-  selectedChip: { borderColor: '#E8B84B', backgroundColor: '#2a2a50' },
-  subGenreText: { color: '#d0d0e0' },
-  label: { color: '#fff', fontSize: 15, marginTop: 8 },
+  selectedChip: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
+  subGenreText: { color: colors.textBody },
+  label: { color: colors.text, fontSize: 15, marginTop: spacing.sm },
   input: {
-    backgroundColor: '#1c1c3a',
-    borderRadius: 10,
-    padding: 14,
-    color: '#fff',
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    color: colors.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
     marginTop: 6,
   },
-  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: 6 },
   chip: {
-    backgroundColor: '#181830',
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radii.xl,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
   },
-  navRow: { flexDirection: 'row', gap: 12, marginTop: 24, justifyContent: 'flex-end' },
-  button: {
-    backgroundColor: '#E8B84B',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    flex: 1,
-  },
-  secondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#2c2c5a' },
-  secondaryText: { color: '#d0d0e0' },
-  primaryText: { color: '#101024', fontSize: 16, fontWeight: 'bold' },
-  disabled: { opacity: 0.4 },
+  navRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xxl },
+  flexButton: { flex: 1 },
 });

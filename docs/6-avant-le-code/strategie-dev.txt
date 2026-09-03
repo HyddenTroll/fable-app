@@ -1,0 +1,222 @@
+========================================
+STRATÉGIE DE DÉVELOPPEMENT - PERFORMANCE, ERGONOMIE, LÉGÈRETÉ
+========================================
+Projet : Fable
+Date : 03/09/2026
+But : principes directeurs pour que l'app soit la plus
+performante, ergonomique et légère possible sur iOS et Android.
+Ce document guide TOUT le développement (choix de libs, code,
+écrans). À relire avant chaque ajout.
+Fichiers liés : 6-avant-le-code/architecture-technique.txt,
+design-ux.txt, CONTEXTE.txt.
+
+================================================================
+A. PRINCIPES FONDAMENTAUX (les 3 piliers)
+================================================================
+1. PERFORMANCE : l'app doit être fluide (60 fps), réactive,
+   rapide à démarrer, économe en batterie. La génération IA est
+   l'opération lente -> TOUT le reste doit être instantané.
+2. ERGONOMIE : confort d'usage mobile (lecture longue, pouce,
+   une main), accessibilité, réduction de la fatigue visuelle.
+3. LÉGÈRETÉ : petit bundle, démarrage rapide, mémoire maîtrisée,
+   réseau minimisé. Sur mobile, la légèreté EST la performance.
+
+RÈGLE D'OR : ne jamais ajouter une dépendance sans justifier
+son coût (poids, mémoire, complexité). "Quand on peut s'en
+passer, on s'en passe."
+
+================================================================
+B. PERFORMANCE (iOS + Android)
+================================================================
+B1. ARCHITECTURE NATIVE MODERNE
+- New Architecture activée (newArchEnabled: true) - déjà fait.
+  => JSI natif, transitions 60fps, meilleure mémoire.
+- Hermes (moteur JS par défaut d'Expo) : bundle plus petit,
+  démarrage plus rapide. Vérifier qu'il est actif.
+
+B2. RENDU & RÉ-RENDUS
+- Éviter les ré-rendus inutiles :
+  * Split des composants (ne pas re-rendre tout l'écran à chaque
+    touche).
+  * useMemo / useCallback seulement quand justifié.
+  * Zustand : sélectionner des slices (pas tout le store).
+- Les listes : FlatList (ou FlashList pour les grandes listes),
+  JAMAIS ScrollView pour des données dynamiques.
+- Pas de styles créés à la volée dans le render (les extraire
+  en StyleSheet constants).
+
+B3. ANIMATIONS
+- Utiliser React Native Reanimated (sur Worklets) pour les
+  animations UI (transition lecture, feedback).
+- Pas de LayoutAnimation expérimental ; pas d'animation JS
+  thread (fps bas).
+- ANIMATION CLÉ : "machine à écrire" du streaming -> implémenter
+  en texte incrémental simple (pas de re-render de tout le
+  chapitre à chaque frame : découper en paragraphes).
+
+B4. RÉSEAU & DONNÉES
+- Streaming : le texte du chapitre arrive en flux -> affichage
+  progressif, pas d'attente totale.
+- Cacher/mémoïser les réponses (SWR/React Query pour l'état
+  serveur) pour éviter les re-fetch.
+- Limiter la taille des payloads (le résumé au lieu du texte
+  intégral).
+- Images : WebP ~500 Ko, lazy loading, taille adaptée au device.
+
+B5. MÉMOIRE & BATTERIE
+- Libérer les gros textes hors écran (un chapitre lu -> garder
+  le texte mais ne pas le monter tant qu'il n'est pas visible).
+- Pas de polling en arrière-plan.
+- Musique : stop quand l'app passe en arrière-plan.
+- Limiter les images en mémoire (cache contrôlé).
+
+B6. MESURE
+- Mesurer au lieu de deviner :
+  * expo-profiling / React DevTools (re-rendus).
+  * Flipper/Reactotron (Perf Monitor) en dev.
+  * Sentry Performance (en prod).
+  * Métriques clés : temps de démarrage (JS bundle), jank,
+    mémoire, taille du bundle.
+
+================================================================
+C. ERGONOMIE (mobile-first)
+================================================================
+C1. NAVIGATION & POUCE
+- Onglets en bas (thumb zone) : Accueil / Bibliothèque / Profil.
+- Boutons principaux dans la moitié basse de l'écran.
+- Retour : geste natif (swipe back iOS / back Android) via
+  Expo Router (natif par défaut).
+- Pas de menu hamburger (coûteux en découverte) : navigation
+  plate, peu de niveaux.
+
+C2. LECTURE (le coeur de l'expérience)
+- Texte : interligne généreux (1.6+), taille ajustable,
+  contraste élevé.
+- Police : serif lisible pour le texte long, sans-serif pour
+  l'UI (voir design-ux.txt).
+- Lecture confortable sur fond sombre par défaut (fatigue
+  réduite), mode clair dispo.
+- Largeur de texte : pas trop large (max ~70 chars/ligne).
+- Le streaming "machine à écrire" doit rester rapide (ne pas
+  frustrer) et le texte final reste éditable/scrollable.
+
+C3. ACCESSIBILITÉ
+- Tailles tactiles >= 44px.
+- Textes alternatifs (accessibilityLabel) sur les images.
+- Dynamic Type / font scaling respecté.
+- Contraste WCAG AA minimum.
+- Pas de contenu clignotant (épilepsie) - l'animation de
+  génération est douce.
+
+C4. RETOUR VISUEL
+- Feedback tactile immédiat sur chaque action (pressed state).
+- États de chargement visibles (spinner léger, jamais d'écran
+  figé).
+- Gestion des erreurs : message clair + bouton réessayer.
+
+================================================================
+D. LÉGÈRETÉ (bundle & ressources)
+================================================================
+D1. TAILLE DU BUNDLE
+- Expo Router : code-splitting automatique par route (lazy) ->
+  seul le code de l'écran visité est chargé. NE PAS regrouper
+  tout dans un seul écran.
+- Imports : importer uniquement ce qui est nécessaire
+  (tree-shaking). Éviter les imports de libs entières.
+- Surveiller la taille : "Web Bundled 1.2MB" actuel -> viser
+  le minimum pour le mobile (le .hbc Android est compressé).
+
+D2. DÉPENDANCES (politique stricte)
+- AVANT d'ajouter une lib : chercher si Expo la supporte
+  officiellement (npx expo install).
+- Privilégier les libs natives/optimisées (Reanimated, FlashList)
+  plutôt que les portages JS lourds.
+- Éviter : libs UI monolithiques, Redux (Zustand suffit),
+  lodash entier (importer les fonctions une à une).
+- Supprimer les dépendances inutilisées.
+
+D3. RESSOURCES
+- Images : WebP compressées, dimensions adaptées (2x max).
+- Polices : embarquées uniquement si besoin (sinon system font).
+- Sons/musique : formats légers (mp3/aac), tailles raisonnables.
+
+D4. RÉSEAU (léger)
+- Minimiser les appels : un seul appel par action utilisateur.
+- Pagination/chargement progressif pour les listes.
+- Pas de préchargement inutile.
+
+================================================================
+E. STRUCTURE DE CODE (ergonomie développeur)
+================================================================
+- Organisation par FEATURE (pas par type) :
+  src/features/<feature>/... (auth, game, credits, profile)
+- Les écrans restent minces (pas de logique métier dans les
+  composants) -> hooks/services dédiés.
+- Types partagés dans @fable/shared (déjà fait).
+- Conventions :
+  * TypeScript strict partout.
+  * Nommage clair en français pour l'UI, anglais pour le code.
+  * StyleSheet constants (pas de styles inline dynamiques).
+- REVUE : avant de merger, vérifier taille de bundle + pas de
+  dépendance ajoutée inutilement.
+
+================================================================
+F. APPLICATION IMMÉDIATE AU PROTOTYPE (à faire)
+================================================================
+[ ] Activer/désactiver correctement Hermes (vérifier perf).
+[ ] Vérifier que le code-splitting par route fonctionne
+    (Expo Router le fait de base - ne pas tout importer dans
+    _layout).
+[ ] Passer les listes (genres, etc.) en FlatList si elles
+    grandissent.
+[ ] Extraire les styles dupliqués (thème : couleurs, espacements)
+    dans src/theme/.
+[ ] Réduire le poids : vérifier que zustand est le seul state
+    manager, pas de libs inutiles.
+[ ] Ajouter les états pressed (retour tactile) sur les boutons.
+[ ] Mesurer le temps de démarrage (bundle) au build.
+
+================================================================
+G. LIBRAIRIES RECOMMANDÉES (stack minimale)
+================================================================
+DÉJÀ PRÉSENTES (suffisantes) :
+- expo-router (navigation + code-splitting)
+- zustand (état client, léger)
+- @fable/shared (types)
+
+À AJOUTER QUAND NÉCESSAIRE (au moment du besoin, pas avant) :
+- @tanstack/react-query : état serveur + cache (quand l'API
+  sera branchée)
+- react-native-reanimated : animations UI (machine à écrire,
+  transitions) - supporté par Expo
+- @shopify/flash-list : grandes listes si besoin
+- expo-audio (ex-av) : musique d'ambiance
+- @sentry/react-native : crash + performance (prod)
+
+À ÉVITER (coût > bénéfice) :
+- Redux (zustand suffit), styled-components (perf RN),
+  libs UI complètes (le design est simple), lodash complet.
+
+================================================================
+H. OBJECTIFS CHIFFRÉS (cibles)
+================================================================
+- Taille bundle Android (.hbc) : viser < 3 MB (actuel ~2.7 MB,
+  donc OK - surveiller).
+- Démarrage : viser < 2 s sur un milieu de gamme.
+- Scrolling : 60 fps sans jank.
+- Re-rendus : pas de re-render de l'écran de lecture à chaque
+  frappe (le streaming est incrémental).
+- Mémoire : stable en session longue (chapitres accumulés).
+
+================================================================
+I. RÈGLES DE TRAVAIL POUR LA SUITE
+================================================================
+1. TOUTE nouvelle fonctionnalité = passer par ce document
+   (est-ce performant ? ergonomique ? léger ?).
+2. TOUTE nouvelle dépendance = justification écrite + vérifier
+   le support Expo.
+3. Après chaque feature : vérifier typecheck + taille de bundle.
+4. Test régulier sur appareil réel (Expo Go) - pas seulement
+   web.
+5. Le prototypage rapide est OK (mock), mais le code final
+   suit ces principes.

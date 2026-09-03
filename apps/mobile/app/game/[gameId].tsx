@@ -5,8 +5,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { generateMockChapter } from '@/services/mockStory';
-import type { GameParams } from '@fable/shared';
 import type { MockChapter } from '@/data/mock';
+import { colors, spacing, radii } from '@/theme';
 
 const TOTAL_CHAPTERS = 8;
 
@@ -14,10 +14,12 @@ export default function GameScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ gameId: string }>();
   const game = useAppStore((s) => s.currentGame);
+  const gameParams = useAppStore((s) => s.gameParams);
   const updateCurrentGame = useAppStore((s) => s.updateCurrentGame);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamText, setStreamText] = useState('');
+  const [pressedChoice, setPressedChoice] = useState<number | null>(null);
 
   // Streaming simulé : affiche le texte chapitre par chapitre
   const streamTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,6 +44,13 @@ export default function GameScreen() {
   }
 
   const current: MockChapter = game.chapters[game.currentIndex];
+  const gParams = gameParams ?? {
+    genre: 'fantasy',
+    difficulty: 'moyenne',
+    chapterLength: 'moyen',
+    style: 'classique',
+    maxChoices: 3,
+  };
 
   const simulateStreaming = (text: string, onDone: () => void) => {
     setStreamText('');
@@ -60,18 +69,13 @@ export default function GameScreen() {
 
   const handleChoice = (index: number) => {
     if (isGenerating) return;
+    setPressedChoice(index);
     setIsGenerating(true);
     setStreamText('');
 
     const nextNumber = current.number + 1;
     const next = generateMockChapter(
-      {
-        genre: game.genreLabel === 'Fantasy' ? 'fantasy' : 'science_fiction',
-        difficulty: 'moyenne',
-        chapterLength: 'moyen',
-        style: 'classique',
-        maxChoices: 3,
-      } as GameParams,
+      gParams,
       nextNumber,
       TOTAL_CHAPTERS,
       current.choices[index]?.libelle ?? '',
@@ -88,6 +92,7 @@ export default function GameScreen() {
           endingType: next.endingType,
         });
         setIsGenerating(false);
+        setPressedChoice(null);
 
         if (next.isEnd) {
           router.push('/game/end');
@@ -114,7 +119,7 @@ export default function GameScreen() {
 
         {isGenerating && (
           <View style={styles.generatingRow}>
-            <ActivityIndicator color="#E8B84B" />
+            <ActivityIndicator color={colors.primary} />
             <Text style={styles.generatingText}>L'IA écrit la suite...</Text>
           </View>
         )}
@@ -126,8 +131,10 @@ export default function GameScreen() {
           {current.choices.map((c, i) => (
             <TouchableOpacity
               key={i}
-              style={styles.choiceButton}
+              style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
               onPress={() => handleChoice(i)}
+              accessibilityRole="button"
+              accessibilityLabel={c.libelle}
             >
               <Text style={styles.choiceText}>{c.libelle}</Text>
             </TouchableOpacity>
@@ -139,32 +146,35 @@ export default function GameScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#101024' },
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
     paddingTop: 56,
-    paddingBottom: 12,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#2c2c5a',
+    borderBottomColor: colors.border,
   },
-  gameTitle: { color: '#E8B84B', fontSize: 14, fontWeight: '600' },
-  chapterPos: { color: '#9a9ab0', fontSize: 12, marginTop: 2 },
+  gameTitle: { color: colors.primary, fontSize: 14, fontWeight: '600' },
+  chapterPos: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
   body: { flex: 1 },
-  bodyContent: { padding: 20, paddingBottom: 24 },
-  chapterTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 14 },
-  chapterText: { color: '#e8e8f0', fontSize: 17, lineHeight: 27 },
-  cursor: { color: '#E8B84B' },
-  generatingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20 },
-  generatingText: { color: '#9a9ab0' },
-  choices: { padding: 16, borderTopWidth: 1, borderTopColor: '#2c2c5a', gap: 10 },
-  choicesLabel: { color: '#9a9ab0', fontSize: 13, textTransform: 'uppercase' },
+  bodyContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
+  chapterTitle: { color: colors.text, fontSize: 22, fontWeight: 'bold', marginBottom: spacing.md },
+  chapterText: { color: colors.textBody, fontSize: 17, lineHeight: 27 },
+  cursor: { color: colors.primary },
+  generatingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: spacing.xl },
+  generatingText: { color: colors.textSecondary },
+  choices: { padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border, gap: 10 },
+  choicesLabel: { color: colors.textSecondary, fontSize: 13, textTransform: 'uppercase' },
   choiceButton: {
-    backgroundColor: '#1c1c3a',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
+    minHeight: 48,
+    justifyContent: 'center',
   },
-  choiceText: { color: '#fff', fontSize: 15, lineHeight: 21 },
-  meta: { color: '#9a9ab0', textAlign: 'center', marginTop: 40 },
+  choicePressed: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
+  choiceText: { color: colors.text, fontSize: 15, lineHeight: 21 },
+  meta: { color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
 });
