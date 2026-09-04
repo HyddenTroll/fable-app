@@ -493,13 +493,51 @@ URLS FINALES :
 - Repo : https://github.com/HyddenTroll/fable-app
 
 ===============================================================
+SESSION 13 - 04/09/2026 : APP BRANCHÉE SUR L'API RÉELLE
+===============================================================
+CONTEXTE : l'app mobile tournait en mock. Branchement sur les
+endpoints réels. 4 décisions produit tranchées AVANT le code :
+1. Streaming : expo/fetch (ReadableStream natif) sur mobile, fetch
+   standard sur web. Vérifié dans le SDK (FetchResponse.body =
+   ReadableStream<Uint8Array>).
+2. Échec réseau à 70 % : JETER le partiel + revenir au choix
+   précédent avec bouton "Réessayer". (Le serveur ne décompte rien,
+   le partiel n'est pas acquis.)
+3. État structuré : le SERVEUR possède, le store AFFICHE (heroState
+   dans Zustand, jamais fusionné/recalculé comme source de vérité).
+4. Paywall : au CLIC seulement (pas de compteur affiché).
+
+FAIT :
+1. src/services/api.ts : client API réel. createGame, readGame,
+   streamChapter (parseur SSE sur ReadableStream). Gère 402 ->
+   ApiError.paywall.
+2. new-game.tsx : branche sur createGame (bible+prologue réels),
+   état de chargement, erreurs.
+3. game/[gameId].tsx : branche sur streamChapter (machine à écrire
+   réelle), affiche l'état structuré (blessures/inventaire/PNJ) reçu
+   du serveur, erreur réseau -> jeter + réessayer, 402 -> /paywall.
+4. store.ts : ajout heroState (affiché, pas source de vérité).
+5. BUGS API corrigés au passage :
+   - Bible/prologue TRONQUÉS à 3000 tokens (JSON coupé -> 502).
+     maxTokens 6000 pour generateJson. Corrigé et testé.
+   - Migration 0004 (bible_text, state) N'ÉTAIT PAS APPLIQUÉE ->
+     "Impossible de créer la partie". Appliquée via supabase db push.
+6. TEST FLUX COMPLET RÉEL (validé) :
+   - create : partie "Le Dernier Nom du Soleil", freeRemaining 4
+   - chapter : 2968 événements text SSE, chapitre 1 (11,8k chars),
+     3 choix, état (blessure paume + PNJ Liora/Ysilde/Maëlys), coût
+     0,0089 $, freeRemaining 3.
+   - Le format SSE correspond exactement au parseur client.
+
+===============================================================
 PROCHAINE SESSION (à faire)
 ===============================================================
-1. [VERCEL] OPENAI_API_KEY en variable d'environnement de prod - FAIT
-2. Brancher l'app mobile sur /api/game/create + /api/game/chapter
-3. Thème visuel final (ambre/or + bleu nuit) sur les écrans
-4. Re-test sur téléphone (Expo Go)
-5. [TICKET CACHÉ] Rouvrir quand volume réel : cache explicite GPT-5.6
+1. [TICKET CACHÉ] Rouvrir quand volume réel : cache explicite GPT-5.6
    via Responses API (vérifier d'abord la doc officielle)
-6. [RÉGRESSION] Test cohérence complet 20 chapitres + séparation
-   âge/type, quand l'app sera branchée
+2. [RÉGRESSION] Test cohérence complet 20 chapitres + séparation
+   âge/type
+3. Re-test sur téléphone (Expo Go) - le streaming expo/fetch doit être
+   validé en conditions réelles
+4. Continuer une partie au retour (actuellement le store garde le jeu
+   courant en session, mais pas de rechargement via /api/game/read
+   après redémarrage)
