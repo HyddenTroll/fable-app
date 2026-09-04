@@ -1,0 +1,228 @@
+========================================
+CE QUE LES LECTEURS ATTENDENT - ÉTUDE DES BEST-SELLERS PAR GENRE
+========================================
+Projet : Fable
+Date : 05/09/2026
+But : guider l'IA génératrice avec les recettes des livres qui ont
+marché. 47 livres étudiés (6-8 par genre), 48 "lois du genre" tirées
+des retours presse et lecteurs (Babelio, Goodreads, BookTok, presse).
+Ces lois sont INJECTÉES dans le prompt de la story bible quand le
+genre correspond (api/lib/prompts.ts -> LOIS_PAR_GENRE).
+Fichiers liés : structure-romans-tous-genres.txt,
+chefs-doeuvre-litteraires.txt.
+
+================================================================
+1. HORREUR (8 livres étudiés)
+================================================================
+Simetierre / Ça (Stephen King) - Le Silence des agneaux (Thomas
+Harris) - Ring (Koji Suzuki) - House of Leaves (Danielewski) -
+Dracula (Bram Stoker) - La Conjuration primitive (Maxime Chattam) -
+The Haunting of Hill House (Shirley Jackson)
+
+LOIS DU GENRE (injectées à l'IA) :
+1. L'empathie d'abord : on ne tremble que pour ceux qu'on aime -
+   l'horreur doit frapper des personnages attachants et ce qui leur
+   est cher (famille, amis, enfance, identité), pas seulement leur vie.
+2. Suggestion plutôt que gore : la peur se nourrit de ce que le
+   lecteur imagine ; montrer peu, faire monter l'angoisse par des
+   détails anodins qui prennent sens, doser les révélations.
+3. Le contraste fait la tension : alterner temps calmes (quotidien,
+   chaleur, humour) et scènes d'angoisse pour que la montée soit
+   progressive et que les pics ne s'émoussent pas.
+4. Peur personnelle et spécifique : chaque protagoniste a sa phobie,
+   sa blessure ou son deuil que le récit exploite - le monstre
+   générique ne fait peur à personne.
+5. Anticipation et compte à rebours : énoncer le danger et ses
+   règles (7 jours, cycle de 27 ans, victime captive) transforme le
+   temps qui passe en angoisse continue : le lecteur sait, et c'est
+   ce savoir qui fait peur.
+6. La fin doit durer : l'horreur survit à la dernière page - fin
+   ambiguë, image qui hante, menace résiduelle ou prix payé ; jamais
+   de retour à la normale parfait.
+7. Ancrer l'incroyable dans l'ordinaire : maison de banlieue,
+   cassette VHS, chambre d'enfant - la menace qui pervertit les
+   objets et lieux familiers rend l'effroi contagieux.
+8. La forme est une arme : cadre clos, récit fragmenté (lettres,
+   journaux, témoignages), structure qui se dérègle augmentent
+   l'impression d'emprisonnement et d'impuissance.
+
+================================================================
+2. FANTASY (8 livres étudiés)
+================================================================
+Le Seigneur des Anneaux (Tolkien) - Le Trône de fer (GRR Martin) -
+Le Nom du vent (Rothfuss) - Harry Potter (Rowling) - La Passe-miroir
+(Christelle Dabos) - La Quête d'Ewilan (Bottero) - Terremer (Le
+Guin) - Mistborn (Sanderson)
+
+LOIS DU GENRE :
+1. Monde cohérent avec profondeur d'archive : l'univers doit sembler
+   préexister au récit (histoire, mythes, cartes, peuples), et toute
+   règle annoncée (magie, politique, géographie) doit être respectée
+   - l'incohérence tue l'immersion.
+2. Promesse de l'épique : des enjeux qui grandissent (sauver le
+   monde, le royaume, les siens), une menace qui monte en puissance
+   et un dénouement où la victoire a un prix.
+3. Apprentissage du héros : progression visible en compétences et en
+   maturité (maître, école, épreuves qualifiantes) ; le lecteur
+   grandit avec lui.
+4. La magie a des règles ou un coût : magie "dure" explicitable ou
+   "douce" payée en conséquences ; jamais de pouvoir gratuit qui
+   résout tout sans contrepartie.
+5. Personnages ambivalents : antagonistes aux motivations
+   compréhensibles, héros avec faiblesses, erreurs et pertes - pas de
+   manichéisme naïf.
+6. Une quête comme colonne vertébrale : objectif clair, lointain et
+   irréversible, structure en étapes qui chacune transforme le héros.
+7. Tension réelle sans armure de héros : la défaite doit être
+   possible, la survie se mérite, la victoire se paie.
+8. Merveille semée avec parcimonie : moments de découverte espacés
+   pour rester marquants, pas dilués en catalogue.
+
+================================================================
+3. SCIENCE-FICTION (8 livres étudiés)
+================================================================
+Dune (Herbert) - Fondation (Asimov) - Neuromancien (Gibson) - La
+Servante écarlate (Atwood) - Le Problème à trois corps (Liu Cixin) -
+Seul sur Mars (Weir) - La Guerre éternelle (Haldeman) - Ready Player
+One (Cline)
+
+LOIS DU GENRE :
+1. L'idée d'abord : un concept central unique et fort (le "novum") -
+   le faire sentir dès les premières pages, puis le décliner partout.
+2. Monde crédible et cohérent : règles physiques, technologiques et
+   sociales explicites, tenues avec des conséquences logiques sur
+   l'économie, la politique et le quotidien - pas de deus ex machina.
+3. L'humain au centre de la technologie : désirs, peurs, relations
+   et choix moraux portent le récit ; des héros avec défauts et deuils
+   même dans un univers de machines.
+4. Montrer les conséquences des choix technologiques : chaque
+   innovation a un coût, un revers, une conséquence imprévue.
+5. Éviter l'exposition massive : monde découvert progressivement par
+   l'action et les indices, mystères que le lecteur résout,
+   révélations échelonnées.
+6. Sense of wonder : alterner les échelles, de l'intime au cosmique,
+   avec des moments de vertige réguliers.
+7. Rythme de thriller : chapitres courts, mini-cliffhangers, chaîne
+   problème -> solution -> nouveau problème, échéances claires.
+8. Parler du présent déguisé en futur : extrapoler une angoisse
+   contemporaine (écologie, surveillance, IA) d'un cran - c'est NOTRE
+   monde, pas un décor exotique.
+
+================================================================
+4. POLICIER / THRILLER (8 livres étudiés)
+================================================================
+Le Crime de l'Orient-Express (Christie) - Da Vinci Code (Brown) - Le
+Silence des agneaux (Harris) - Millénium 1 (Larsson) - Pars vite et
+reviens tard (Vargas) - Ne le dis à personne (Coben) - Le Bonhomme
+de neige (Nesbø) - L'Affaire Alaska Sanders (Dicker)
+
+LOIS DU GENRE :
+1. Fair-play des indices : tous les éléments nécessaires à la
+   résolution sont présents AVANT la révélation, lisibles mais
+   discrets - le lecteur doit pouvoir dire "j'aurais dû voir ça".
+2. Chaque suspect a un mobile, une occasion et des indices contre
+   lui : le coupable ne se distingue que par un détail de cohérence
+   globale, jamais par une surcharge qui le désigne trop tôt.
+3. Le twist final ne contredit jamais un fait établi : il
+   RE-interprète les mêmes faits sous un autre angle (cohérence
+   temporelle, spatiale, logique vérifiables).
+4. Rythme par relais : tension régulière, révélations partielles
+   toutes les 3-5 pages, cliffhanger de fin de chapitre, points de
+   vue alternés (enquête / action / relation).
+5. Une contrainte externe : délai, menace, victime encore en vie -
+   le mystère devient course contre la montre qui pressurise le héros.
+6. L'ambiance est un personnage : huis clos, environnement hostile,
+   société corrompue - le décor contraint l'enquête et donne une
+   identité au récit.
+7. Fausses pistes crédibles : chaque red herring est une mini-histoire
+   complète qui semble vraie, son démontage fait avancer l'enquête,
+   et le héros paie un prix pour l'avoir suivie.
+8. Révélation émotionnellement motivée : une justice (ou sa
+   réinterprétation), un choc personnel, une morale - la solution
+   technique seule ne satisfait jamais.
+
+================================================================
+5. HISTORIQUE (7 livres étudiés)
+================================================================
+Les Piliers de la Terre (Follett) - Le Nom de la Rose (Eco) - La
+Reine Margot (Dumas) - Les Trois Mousquetaires (Dumas) - Le Parfum
+(Süskind) - Wolf Hall (Mantel) - La Chute des géants (Follett)
+
+LOIS DU GENRE :
+1. Immersion d'époque sans manuel : la documentation transparaît
+   dans l'action, les objets, les odeurs, les métiers, les mœurs,
+   jamais dans des exposés - le lecteur vit l'époque, il ne l'apprend
+   pas.
+2. Personnages de leur époque : ils pensent et désirent avec les
+   croyances et contraintes du temps (religion, honneur, famine,
+   condition des femmes) - l'anachronisme de pensée est l'erreur
+   fatale.
+3. Incarnation des enjeux historiques : chaque grand événement est
+   vécu par un personnage précis, de l'intérieur, avec un prix
+   personnel.
+4. Un projet concret traverse le récit : bâtir une cathédrale,
+   survivre, s'élever à la cour - il donne une raison de suivre
+   l'histoire sur la longue durée et sert d'horloge narrative.
+5. Liberté créative assumée avec les faits : une histoire juste et
+   émotionnellement vraie prime ; simplifier ou réinterpréter est
+   légitime si la vérité humaine de l'époque tient.
+6. Rythme et structure de genre : trame policière, compte à rebours,
+   feuilleton - les codes du suspense s'appliquent pleinement ;
+   l'époque n'est pas un prétexte à la lenteur.
+7. Le point de vue est roi : filtrer l'époque par une subjectivité
+   forte (le novice, la servante, l'étranger) - le lecteur découvre
+   le monde en même temps que le personnage.
+8. Cohérence des détails avant tout : dates, hiérarchies, monnaies,
+   distances, métiers exacts et constants - un détail faux brise la
+   confiance.
+
+================================================================
+6. ROMANCE (8 livres étudiés)
+================================================================
+Orgueil et Préjugés (Austen) - It Ends with Us (Hoover) - Beach
+Read (Henry) - After (Todd) - The Notebook (Sparks) - Et si c'était
+vrai (Levy) - La Fille de papier (Musso) - Montana Sky (Roberts)
+
+LOIS DU GENRE :
+1. Émotion = destination : chaque scène fait monter l'émotion ;
+   l'intrigue est au service du ressenti, jamais l'inverse - une
+   romance qui informe au lieu d'émouvoir est ratée.
+2. Contrat de lecture : la fin heureuse (ou optimiste) est garantie
+   dès la première page - c'est une promesse non négociable du genre.
+   L'art est dans le comment, pas dans le quoi.
+3. Résistance structurée : un obstacle extérieur apparent (classe,
+   famille, relation interdite) qui masque un obstacle intérieur réel
+   (peur, trauma, orgueil) ; la séparation se résout par une
+   révélation et une transformation.
+4. Désir centré et montré par le geste : regards, respirations,
+   gestes précis, non-dits - jamais d'adjectifs accumulés (intense,
+   brûlant) ; le slow burn qui fait attendre le baiser paie toujours.
+5. Tropes promis mais réinventés : enemies-to-lovers, forbidden,
+   fake relationship, second chance - les annoncer puis les incarner
+   dans des personnages singuliers ; les lectrices attendent des
+   tropes déconstruits, pas une recette appliquée.
+6. Personnages attachants et cohérents : héroïne imparfaite aux
+   névroses identifiables, héros vulnérable, relation qui évolue
+   sous les yeux du lecteur - tout retournement a une cause visible.
+7. Vulnérabilité, consentement, héroïsme moderne : relations saines,
+   consentement explicite (le respect est sexy), rejet de la
+   romanticisation de la toxicité ; la force du héros se déplace du
+   sauvetage vers la vulnérabilité partagée.
+8. Rythme feuilleton : chapitres courts, pics émotionnels,
+   cliffhangers de fin de section, courbe sinusoïdale
+   rapprochements-éloignements avec point bas aux deux tiers - la
+   mécanique idéale du récit interactif à choix.
+
+================================================================
+NOTE TRANSVERSALE (tous genres)
+================================================================
+- L'humanité prime : émotions contradictoires, gens qui ne disent
+  pas ce qu'ils pensent, petits gestes singuliers, défauts
+  ordinaires, tonalité honnête (registres mêlés).
+- Le lecteur doit se dire "ça pourrait m'arriver" : l'empathie avant
+  la sensation, partout.
+- Cohérence stricte avec tout ce qui précède (bible, résumé, état,
+  chapitres passés) : aucune contradiction, pas de téléportation de
+  personnages, ton stable.
+- Rythme : prendre le temps de raconter, phrase courte rare (18-35
+  mots en moyenne), scènes de 2-4 par chapitre, pics et respirations.

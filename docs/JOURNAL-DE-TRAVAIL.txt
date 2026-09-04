@@ -830,6 +830,29 @@ FAIT :
         dans les prompts par genre. (en cours)
       Typecheck api OK. Commit + push (déploiement auto).
 
+   13. ÉTUDE DES BEST-SELLERS PAR GENRE TERMINÉE + LOIS INTÉGRÉES
+      - 6 sous-agents ont analysé 47 livres (6-8 par genre) : pour
+        chaque livre : pourquoi ça marche (presse/lecteurs),
+        structure/rythme, leçon pour l'IA. 48 "lois du genre"
+        extraites (8 par genre).
+      - NOUVEAU DOC : docs/5-ecriture-narrative/
+        ce-que-veulent-les-lecteurs.txt (référence complète).
+      - CODE : LOIS_PAR_GENRE dans api/lib/prompts.ts (6 genres x 8
+        lois) injecté dans buildStoryBiblePrompt -> la bible et tout
+        le roman respectent les attentes réelles du lectorat du
+        genre choisi.
+      - Exemples de lois : horreur = empathie d'abord, suggestion
+        plutôt que gore, peur personnelle, la fin doit durer ;
+        romance = émotion = destination, contrat de fin heureuse,
+        résistance structurée, slow burn par le geste ;
+        fantasy = monde avec profondeur d'archive, apprentissage du
+        héros, magie avec coût ; SF = novum, humain au centre,
+        conséquences des choix tech ; policier = fair-play des
+        indices, twist qui ré-interprète sans contredire ;
+        historique = immersion sans manuel, personnages de leur
+        époque, point de vue roi.
+      Typecheck OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

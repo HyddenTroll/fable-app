@@ -135,6 +135,75 @@ export const NARRATIVE_VOICES: { id: string; nom: string; consigne: string }[] =
   },
 ];
 
+/**
+ * LOIS DU GENRE - ce que les lecteurs attendent vraiment, tirées de
+ * l'étude de 47 best-sellers (docs/5-ecriture-narrative/
+ * ce-que-veulent-les-lecteurs.txt, 05/09/2026).
+ * Injectées dans le prompt de la bible quand le genre correspond.
+ */
+export const LOIS_PAR_GENRE: Record<string, string> = {
+  horreur: [
+    'L\'empathie d\'abord : on ne tremble que pour ceux qu\'on aime - frappe des personnages attachants et ce qui leur est cher, pas seulement leur vie.',
+    'Suggestion plutôt que gore : la peur se nourrit de ce que le lecteur imagine - montre peu, fais monter l\'angoisse par des détails anodins qui prennent sens.',
+    'Le contraste fait la tension : alterne temps calmes (quotidien, chaleur, humour) et scènes d\'angoisse, la montée doit être progressive.',
+    'Peur personnelle et spécifique : chaque protagoniste a sa phobie, sa blessure ou son deuil que le récit exploite - le monstre générique ne fait peur à personne.',
+    'Anticipation et compte à rebours : énonce le danger et ses règles (délai, cycle, condition) pour que le temps qui passe devienne angoisse.',
+    'La fin doit durer : horreur survivant à la dernière page - image qui hante, menace résiduelle, prix payé ; jamais de retour à la normale parfait.',
+    'Ancre l\'incroyable dans l\'ordinaire : la menace qui pervertit les objets et lieux familiers du lecteur rend l\'effroi contagieux.',
+    'La forme est une arme : cadre clos, récit fragmenté, structure qui se dérègle augmentent l\'impression d\'emprisonnement.',
+  ].join('\n'),
+  fantasy: [
+    'Monde cohérent avec profondeur d\'archive : l\'univers doit sembler préexister au récit, et toute règle annoncée doit être respectée - l\'incohérence tue l\'immersion.',
+    'Promesse de l\'épique : des enjeux qui grandissent, une menace qui monte en puissance, un dénouement où la victoire a un prix.',
+    'Apprentissage du héros : progression visible en compétences et en maturité (épreuves qualifiantes) - le lecteur grandit avec lui.',
+    'La magie a des règles ou un coût : jamais de pouvoir gratuit qui résout tout sans contrepartie, sinon l\'enjeu disparaît.',
+    'Personnages ambivalents : antagonistes aux motivations compréhensibles, héros avec faiblesses, erreurs et pertes.',
+    'Une quête comme colonne vertébrale : objectif clair et irréversible, structure en étapes qui chacune transforme le héros.',
+    'Tension réelle sans armure de héros : la défaite doit être possible, la survie se mérite, la victoire se paye.',
+    'Merveille semée avec parcimonie : moments de découverte espacés pour rester marquants, pas dilués en catalogue.',
+  ].join('\n'),
+  science_fiction: [
+    'L\'idée d\'abord : un concept central unique et fort (le "novum") - fais-le sentir dès les premières pages puis décline-le partout.',
+    'Monde crédible et cohérent : règles physiques, technologiques et sociales explicites, tenues, avec des conséquences logiques - pas de deus ex machina.',
+    'L\'humain au centre de la technologie : ce sont les désirs, peurs, relations et choix moraux des personnages qui portent le récit.',
+    'Montre les conséquences des choix technologiques : chaque innovation a un coût, un revers, une conséquence imprévue.',
+    'Évite l\'exposition massive : monde découvert progressivement par l\'action et les indices, révélations échelonnées.',
+    'Sense of wonder : alterne les échelles, de l\'intime au cosmique, avec des moments de vertige réguliers.',
+    'Rythme de thriller : chapitres courts, mini-cliffhangers, chaîne problème -> solution -> nouveau problème, échéances claires.',
+    'Parle du présent déguisé en futur : extrapole une angoisse contemporaine d\'un cran - c\'est notre monde, pas un décor exotique.',
+  ].join('\n'),
+  policier: [
+    'Fair-play des indices : tous les éléments de la résolution sont présents AVANT la révélation, lisibles mais discrets - le lecteur doit pouvoir dire "j\'aurais dû voir ça".',
+    'Chaque suspect a un mobile, une occasion et des indices contre lui : le coupable ne se distingue que par un détail de cohérence globale.',
+    'Le twist final ne contredit jamais un fait établi : il RE-interprète les mêmes faits sous un autre angle.',
+    'Rythme par relais : tension régulière, révélations partielles, cliffhanger de fin de chapitre, points de vue alternés.',
+    'Une contrainte externe : délai, menace, victime encore en vie - le mystère devient course contre la montre.',
+    'L\'ambiance est un personnage : huis clos, environnement hostile, société corrompue - le décor contraint l\'enquête.',
+    'Fausses pistes crédibles : chaque red herring est une mini-histoire complète qui semble vraie, et son démontage fait avancer l\'enquête.',
+    'Révélation émotionnellement motivée : une justice, un choc personnel, une morale - la solution technique seule ne satisfait jamais.',
+  ].join('\n'),
+  historique: [
+    'Immersion d\'époque sans manuel : la documentation transparaît dans l\'action, les objets, les odeurs, les métiers - jamais dans des exposés.',
+    'Personnages de leur époque : ils pensent et désirent avec les croyances et contraintes du temps - l\'anachronisme de pensée est l\'erreur fatale.',
+    'Incarnation des enjeux historiques : chaque grand événement est vécu de l\'intérieur par un personnage précis, avec un prix personnel.',
+    'Un projet concret traverse le récit (bâtir, survivre, s\'élever) : il sert d\'horloge narrative sur la longue durée.',
+    'Liberté créative assumée avec les faits : une histoire juste et émotionnellement vraie prime sur l\'exactitude académique.',
+    'Rythme et structure de genre : trame policière, compte à rebours, feuilleton - l\'époque n\'est pas un prétexte à la lenteur.',
+    'Le point de vue est roi : filtre l\'époque par une subjectivité forte - le lecteur découvre le monde en même temps que le personnage.',
+    'Cohérence des détails avant tout : dates, hiérarchies, monnaies, métiers exacts et constants - un détail faux brise la confiance.',
+  ].join('\n'),
+  romance: [
+    'Émotion = destination : chaque scène fait monter l\'émotion ; l\'intrigue est au service du ressenti, jamais l\'inverse.',
+    'Contrat de lecture : la fin heureuse (ou optimiste) est garantie dès la première page - une promesse non négociable du genre.',
+    'Résistance structurée : un obstacle extérieur apparent qui masque un obstacle intérieur réel (peur, trauma, orgueil) ; la séparation se résout par une révélation et une transformation.',
+    'Désir centré et montré par le geste : regards, respirations, non-dits - jamais d\'adjectifs accumulés ; le slow burn paie toujours.',
+    'Tropes promis mais réinventés : enemies-to-lovers, forbidden, second chance - annonce-les puis incarne-les dans des personnages singuliers.',
+    'Personnages attachants et cohérents : héroïne imparfaite aux névroses identifiables, héros vulnérable, relation qui évolue - tout retournement a une cause visible.',
+    'Vulnérabilité, consentement, héroïsme moderne : relations saines, consentement explicite, rejet de la romanticisation de la toxicité.',
+    'Rythme feuilleton : chapitres courts, pics émotionnels, cliffhangers, courbe sinusoïdale avec point bas aux deux tiers.',
+  ].join('\n'),
+};
+
 export function ageLabel(age: AgeGroup): string {
   return AGE_GROUPS.find((g) => g.code === age)?.label ?? 'Adultes';
 }
@@ -170,6 +239,12 @@ export function buildStoryBiblePrompt(
 ${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}
 `
     : '';
+  const loisGenre = LOIS_PAR_GENRE[params.genre];
+  const loisBlock = loisGenre
+    ? `LOIS DU GENRE (ce que les lecteurs de ${params.genre} attendent vraiment - le roman DOIT les respecter) :
+${loisGenre}
+`
+    : '';
   return `Tu es un grand romancier. Crée la "bible" d'un roman interactif (livre dont le lecteur est le héros).
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
@@ -179,6 +254,7 @@ ${heroName ? `NOM DU HÉROS (choisi par le lecteur, à respecter) : ${heroName}`
 ${heroTrait ? `TRAIT DE PERSONNALITÉ DU HÉROS : ${heroTrait}` : ''}
 
 ${briquesBlock}
+${loisBlock}
 VOIX NARRATIVE IMPOSÉE (obligatoire - tout le roman sera écrit dans CE registre, du prologue à la dernière ligne) :
 "${voix?.nom ?? 'Réalisme classique'}" : ${voix?.consigne ?? 'Prose ample et organisée, descriptions précises, alternance équilibrée narration/description/dialogue.'} 
 Le champ "tonStyle" de ta réponse doit décrire cette voix en 3-4 phrases concrètes utilisables par l'écrivain de chaque chapitre (rythme de phrase, densité descriptive, place du dialogue et de l'introspection, vocabulaire).
