@@ -2,14 +2,17 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import {
+  buildChapterMessages,
   buildChapterPrompt,
   buildChoicesPrompt,
   buildSummaryPrompt,
+  buildStatePrompt,
   buildSystemPrompt,
   ageLabel,
 } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
+import { emptyState, applyStateDelta, parseStateDelta, serializeState, type HeroState, type StateDelta } from '../../lib/state';
 import type { AgeGroup, StoryBible, StoryChoice } from '@fable/shared';
 
 const TOTAL_CHAPTERS = 50;
@@ -91,8 +94,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const system = buildSystemPrompt();
   const llm = getLLM();
 
-  const chapterPrompt = buildChapterPrompt({
+  // État structuré (source de vérité pour blessures/inventaire/pnj/engagements)
+  const state: HeroState = { ...emptyState(), ...(game.state ?? {}) } as HeroState;
+  const stateText = serializeState(state);
+
+  // Messages SÉPARÉS pour le cache : bible verbatim (stable) + contexte (volatile)
+  const msgs = buildChapterMessages({
     bible,
+    bibleText: game.bible_text ?? undefined,
+    state: stateText,
     resume: `${game.resume ?? ''}\n\nDerniers chapitres :\n${recentContext}`,
     playerChoice: playerChoiceLabel ?? undefined,
     chapterNumber: nextNumber,
@@ -103,6 +113,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     age,
     rule,
   });
+  const chapterMessages = [
+    { role: 'system' as const, content: msgs.system },
+    { role: 'user' as const, content: msgs.stable },
+    { role: 'user' as const, content: msgs.volatile },
+  ];
 
   // Réponse en streaming SSE
   res.writeHead(200, {
@@ -120,10 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let chapterText = '';
     const chapterResult = await (async (): Promise<LLMResult> => {
       const gen = llm.stream({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: chapterPrompt },
-        ],
+        messages: chapterMessages,
         kind: 'chapter',
         maxTokens: 8000,
       });
@@ -141,26 +153,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return result;
     })();
 
-    // Choix (appel séparé, petit)
-    const choicesResult = await llm.generate({
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: buildChoicesPrompt({ bible, chapterText, chapterNumber: nextNumber, maxChoices: params.maxChoices, age }) },
-      ],
-      kind: 'choices',
-      maxTokens: 800,
-    });
+    // Choix (appel séparé, petit, JSON forcé)
     let choices: StoryChoice[] = [];
     let title = `Chapitre ${nextNumber}`;
+    let choicesResult = EMPTY_RESULT;
     try {
-      const parsed = JSON.parse(extractJson(choicesResult.text));
-      title = parsed.titre ?? title;
-      choices = parsed.choix ?? [];
+      const choicesGen = await llm.generateJson<{ titre?: string; choix?: StoryChoice[] }>({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: buildChoicesPrompt({ bible, chapterText, chapterNumber: nextNumber, maxChoices: params.maxChoices, age }) },
+        ],
+        kind: 'choices',
+        maxTokens: 800,
+      });
+      title = choicesGen.json.titre ?? title;
+      choices = choicesGen.json.choix ?? [];
+      choicesResult = choicesGen.result;
     } catch {
       // si l'IA casse le format, on garde les choix vides (fin possible)
     }
 
-    // Résumé glissant (petit appel)
+    // Résumé glissant (petit appel - intrigue/ton)
     const summaryResult = await llm.generate({
       messages: [
         { role: 'system', content: system },
@@ -169,6 +182,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       kind: 'summary',
       maxTokens: 600,
     });
+
+    // État structuré (deltas) - source de vérité pour blessures/inventaire/pnj
+    let stateResult = EMPTY_RESULT;
+    let newState = state;
+    try {
+      const stateGen = await llm.generateJson<StateDelta>({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: buildStatePrompt({ state: stateText, chapterText }) },
+        ],
+        kind: 'state',
+        maxTokens: 800,
+      });
+      stateResult = stateGen.result;
+      newState = applyStateDelta(state, stateGen.json, nextNumber);
+    } catch {
+      // si l'IA casse le format, on garde l'état précédent (rien ne s'efface)
+    }
 
     // Stockage
     const isEnd = choices.length === 0 || nextNumber >= TOTAL_CHAPTERS;
@@ -195,6 +226,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         resume: summaryResult.text,
         status: isEnd ? 'finished' : 'active',
         free_chapters_used: game.free_chapters_used + (quota.isPremium ? 0 : 1),
+        state: newState,
       })
       .eq('id', gameId);
 
@@ -205,8 +237,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await logLLMResult(db, auth.userId, gameId, 'chapter', chapterResult);
     await logLLMResult(db, auth.userId, gameId, 'choices', choicesResult);
     await logLLMResult(db, auth.userId, gameId, 'summary', summaryResult);
+    await logLLMResult(db, auth.userId, gameId, 'state', stateResult);
 
-    const totalCost = chapterResult.costUsd + choicesResult.costUsd + summaryResult.costUsd;
+    const totalCost = chapterResult.costUsd + choicesResult.costUsd + summaryResult.costUsd + stateResult.costUsd;
 
     send('done', {
       chapter: {
@@ -217,6 +250,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       isEnd,
       resume: summaryResult.text,
+      state: newState,
       freeChaptersRemaining: quota.isPremium ? null : Math.max(0, 5 - (game.free_chapters_used + 1)),
       costUsd: totalCost,
     });
@@ -264,29 +298,4 @@ function actPhase(n: number): string {
   if (n === 10) return 'Début de l\'acte 3 : le héros prépare sa dernière chance.';
   if (n === 11) return 'Avant-climax : le héros affronte ses peurs.';
   return 'Climax : la question dramatique trouve sa réponse.';
-}
-
-/** Extrait le premier objet JSON d'une réponse LLM (robuste au texte parasite). */
-function extractJson(text: string): string {
-  const start = text.indexOf('{');
-  if (start === -1) throw new Error('JSON invalide');
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = start; i < text.length; i++) {
-    const c = text[i];
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (c === '\\') escaped = true;
-      else if (c === '"') inString = false;
-      continue;
-    }
-    if (c === '"') inString = true;
-    else if (c === '{') depth++;
-    else if (c === '}') {
-      depth--;
-      if (depth === 0) return text.slice(start, i + 1);
-    }
-  }
-  throw new Error('JSON invalide');
 }

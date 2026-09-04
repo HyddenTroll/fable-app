@@ -122,6 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       sous_genre: params.subGenre,
       title: bible.titre,
       story_bible: bible,
+      bible_text: bibleResult.text, // JSON figé verbatim (préfixe de prompt stable -> cache)
       resume: bible.resumeGeneral ?? '',
       status: 'active',
       chapter_count: 1, // prologue

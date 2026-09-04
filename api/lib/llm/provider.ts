@@ -14,7 +14,8 @@ export type PromptKind =
   | 'chapter'
   | 'ending'
   | 'summary'
-  | 'choices';
+  | 'choices'
+  | 'state';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -26,6 +27,10 @@ export interface LLMRequest {
   kind: PromptKind;
   stream?: boolean;
   maxTokens?: number;
+  /** Force une réponse JSON valide (response_format json_object).
+   *  À activer EXPLICITEMENT pour les prompts qui demandent du JSON.
+   *  Jamais pour du texte brut (sinon l'IA renvoie du JSON cassé/très court). */
+  json?: boolean;
   /** tokens à mettre en cache (préfixe stable : système + bible) */
   cachedPrefixTokens?: number;
 }
@@ -69,6 +74,7 @@ const MODEL_BY_KIND: Record<PromptKind, { openai: string; anthropic: string }> =
   ending: { openai: 'gpt-5.6-luna', anthropic: 'claude-sonnet-5' },
   summary: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
   choices: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  state: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
 };
 
 export class LLM {
@@ -77,7 +83,7 @@ export class LLM {
 
   constructor() {
     if (process.env.OPENAI_API_KEY) {
-      this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 120_000 });
       this.provider = 'openai';
     } else if (process.env.ANTHROPIC_API_KEY) {
       this.provider = 'anthropic';
@@ -113,7 +119,7 @@ export class LLM {
       if (attempt > 0) {
         await new Promise((r) => setTimeout(r, 500 * attempt));
       }
-      const result = await this.generate({ ...req, maxTokens: req.maxTokens ?? 3000 });
+      const result = await this.generate({ ...req, maxTokens: req.maxTokens ?? 3000, json: true });
       try {
         const json = JSON.parse(extractJson(result.text)) as T;
         return { result, json };
@@ -156,15 +162,14 @@ export class LLM {
   private async generateOpenAI(req: LLMRequest): Promise<LLMResult> {
     const client = this.openai!;
     const model = this.modelFor(req.kind);
-    const userContent = req.messages.map((m) => m.content).join(' ');
-    const wantsJson = /JSON/i.test(userContent);
     const res = await client.chat.completions.create({
       model,
       max_completion_tokens: req.maxTokens ?? 2048,
       messages: req.messages,
       stream: false,
-      // Force un JSON valide quand le prompt le demande (Luna produit sinon du JSON cassé)
-      ...(wantsJson ? { response_format: { type: 'json_object' } as const } : {}),
+      // Force un JSON valide UNIQUEMENT quand le prompt demande du JSON
+      // (flag explicite - la détection par texte casse les prompts en texte brut)
+      ...(req.json ? { response_format: { type: 'json_object' } as const } : {}),
     });
 
     const usage: LLMUsage = {

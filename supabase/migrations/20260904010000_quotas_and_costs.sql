@@ -17,7 +17,7 @@ create table if not exists public.cost_logs (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles (id) on delete cascade,
   game_id uuid references public.games (id) on delete set null,
-  kind text not null check (kind in ('story_bible','prologue','chapter','ending','summary','choices')),
+  kind text not null check (kind in ('story_bible','prologue','chapter','ending','summary','choices','state')),
   provider text not null,
   model text not null,
   input_tokens int not null default 0,
