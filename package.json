@@ -11,5 +11,8 @@
   "scripts": {
     "dev:mobile": "npm run start --workspace @fable/mobile",
     "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   }
 }

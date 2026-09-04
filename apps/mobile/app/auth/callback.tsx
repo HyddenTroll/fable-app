@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { handleAuthCallbackUrl } from '@/services/auth';
+import { exchangeCodeForSession, getCurrentSession } from '@/services/auth';
 import { useAppStore } from '@/state/store';
 import { colors, spacing } from '@/theme';
 
@@ -14,14 +14,11 @@ export default function AuthCallbackScreen() {
   useEffect(() => {
     (async () => {
       try {
-        // L'URL complète est reconstruite depuis les params du deep link
-        const { url } = params;
-        if (typeof url === 'string') {
-          await handleAuthCallbackUrl(url);
-        } else {
-          throw new Error('URL manquante');
-        }
-        const session = await import('@/services/auth').then((m) => m.getCurrentSession());
+        // Expo Router extrait déjà les query params du deep link (code, etc.)
+        const code = params.code;
+        if (typeof code !== 'string') throw new Error('Code manquant');
+        await exchangeCodeForSession(code);
+        const session = await getCurrentSession();
         if (session?.user.email) {
           setEmail(session.user.email);
           setUserName(session.user.email.split('@')[0] || 'Héros');

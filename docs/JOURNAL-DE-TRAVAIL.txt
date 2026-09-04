@@ -309,13 +309,92 @@ URLS FINALES :
 - Repo : https://github.com/HyddenTroll/fable-app
 - Local : http://localhost:8081 (npm start dans apps/mobile)
 
-================================================================
+===============================================================
+SESSION 10 - 04/09/2026 : AUTH RÉELLE SUPABASE (fin du mock)
+===============================================================
+CONTEXTE : l'auth était un prototype (aucun backend, email stocké
+en local). On passe à de VRAIS comptes : Supabase (Auth + Postgres
++ RLS), email/password + Google (OAuth), quotas côté serveur.
+
+FAIT :
+1. Création du projet Supabase "fable" (ref agnaafnujcwswstcwfuw,
+   région eu-west-1) + liaison GitHub.
+2. Clés récupérées et stockées dans .env (racine) + apps/mobile/.env
+   (variables EXPO_PUBLIC_ pour le client). JAMAIS commitées.
+3. Schéma SQL appliqué (supabase/migrations/20260904000000_initial_schema.sql) :
+   - profiles (auto-créé à l'inscription via trigger on_auth_user_created,
+     crédits initiaux = 30)
+   - games, chapters, credits_transactions, purchases
+   - RLS activée sur toutes les tables (propriétaire uniquement)
+   - Application via `supabase db push --db-url` (pooler aws-1-eu-west-1 ;
+     NOTA : le hostname du pooler était en aws-1- et non aws-0-, et la
+     connexion directe db.<ref> est IPv6-only).
+4. Côté app (apps/mobile) :
+   - Dépendances ajoutées : @supabase/supabase-js, expo-secure-store,
+     expo-auth-session, expo-web-browser, expo-crypto,
+     @react-native-async-storage/async-storage
+   - src/lib/supabase.ts : client configuré (SecureStore natif,
+     localStorage web, session persistée + refresh auto)
+   - src/services/auth.ts : signInWithEmail, signUpWithEmail,
+     signInWithGoogle (OAuth PKCE via expo-web-browser), signOut,
+     getCurrentSession, onAuthStateChange, exchangeCodeForSession
+   - app/auth.tsx réécrit : vrais appels Supabase, messages d'erreur
+     traduits, confirmation d'email gérée, bouton Google
+   - app/auth/callback.tsx : route de callback OAuth (deep link)
+   - app/index.tsx : vérifie la vraie session au lancement + écoute
+     les changements d'état (onAuthStateChange)
+   - app/(tabs)/profile.tsx : vraie déconnexion (signOut)
+   - app.json : plugins expo-secure-store + expo-web-browser ajoutés
+5. Côté API (api/) :
+   - lib/auth.ts : getDb (service role, jamais exposé), requireUserId
+     (valide le JWT via supabase.auth.getUser)
+   - api/user/profile.ts : GET/PUT profil authentifié (credits, premium,
+     age, préférences) - protéger par Bearer token
+6. Test bout en bout : inscription via l'API auth -> utilisateur créé,
+   profil auto-généré (credits=30) vérifié en base, puis nettoyé.
+7. Build web + typecheck OK (mobile + API).
+8. Commit + push : "Auth réelle Supabase : email/password + Google,
+   session sécurisée, routes protégées, API JWT + user/profile" (58aea73)
+
+===============================================================
+SESSION 10 bis - 04/09/2026 : FIX API VERCEL (Build Output API)
+===============================================================
+PROBLÈME : /api/* renvoyait 404. Cause : vercel.json racine en build
+statique (outputDirectory = apps/mobile/dist) -> Vercel déployait
+uniquement le site, les serverless functions de api/ étaient ignorées.
+
+SOLUTION : Build Output API (vercel.com/docs/build-output-api) :
+1. scripts/build-vercel.mjs : produit .vercel/output/ avec
+   - static/ = export web Expo (apps/mobile/dist)
+   - functions/api/<route>.func/ = chaque api/api/**/*.ts bundlé
+     (esbuild, node22, CJS) + .vc-config.json
+   - config.json : filesystem + routes API + fallback SPA index.html
+2. vercel.json racine : buildCommand = node scripts/build-vercel.mjs,
+   outputDirectory = .vercel/output
+3. esbuild ajouté en devDependency (racine).
+4. Build local validé : 2 functions générées (health, user/profile),
+   site exporté, config.json correct. .vercel/ reste ignoré (git).
+
+URLS FINALES :
+- Site : https://fable-app-three.vercel.app (HTTP 200)
+- API : https://fable-app-three.vercel.app/api/health (à re-vérifier après deploy)
+- Repo : https://github.com/HyddenTroll/fable-app
+- Local : http://localhost:8081 (npm start dans apps/mobile)
+
+===============================================================
 PROCHAINE SESSION (à faire)
-================================================================
-1. Rédiger les prompts complets dans prompts/
-2. API réelle : /game/create (story bible) + /game/chapter
-3. Projet Supabase : schéma + RLS + Auth
-4. Quota chapitres gratuits (côté serveur)
-5. Brancher l'app sur l'API (fin du mock)
-6. Thème visuel final (ambre/or + bleu nuit) sur les écrans
-7. Re-test sur téléphone (Expo Go)
+===============================================================
+1. [DASHBOARD] Activer Google provider dans Supabase
+   (Authentication -> Providers -> Google) avec OAuth Client ID/Secret
+   créés dans Google Cloud Console. URI de redirection :
+   https://agnaafnujcwswstcwfuw.supabase.co/auth/v1/callback
+2. [VERCEL] Définir les variables d'environnement de production
+   (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) +
+   re-vérifier /api/health après déploiement
+3. Ajouter les variables EXPO_PUBLIC_* au build Vercel (web)
+4. Rédiger les prompts complets dans prompts/
+5. API réelle : /game/create (story bible) + /game/chapter
+6. Quota chapitres gratuits (côté serveur)
+7. Brancher l'app sur l'API (fin du mock)
+8. Thème visuel final (ambre/or + bleu nuit) sur les écrans
+9. Re-test sur téléphone (Expo Go)

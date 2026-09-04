@@ -4,7 +4,6 @@
  * La session est gérée par Supabase (persistée via SecureStore / localStorage).
  */
 
-import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
@@ -24,6 +23,17 @@ function parseAuthError(message: string | null): string {
   if (message.includes('Password should be at least')) return 'Le mot de passe doit faire au moins 6 caractères.';
   if (message.includes('User already registered')) return 'Un compte existe déjà avec cet email.';
   return message;
+}
+
+/** Extrait le paramètre `code` d'une URL de redirection OAuth. */
+function extractCodeFromUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get('code');
+  } catch {
+    const match = /[?&]code=([^&]+)/.exec(url);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<AuthResult> {
@@ -68,7 +78,9 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     if (result.type !== 'success' || !result.url) {
       return { ok: false, error: 'Connexion Google annulée.' };
     }
-    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(result.url);
+    const code = extractCodeFromUrl(result.url);
+    if (!code) return { ok: false, error: 'Réponse Google invalide.' };
+    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
     if (sessionError) return { ok: false, error: parseAuthError(sessionError.message) };
     const { data: sessionData } = await supabase.auth.getSession();
     return { ok: true, session: sessionData.session };
@@ -95,7 +107,15 @@ export function onAuthStateChange(callback: (session: Session | null) => void): 
 
 /** Traite le lien de redirection OAuth (natif) après le callback. */
 export async function handleAuthCallbackUrl(url: string): Promise<void> {
-  await supabase.auth.exchangeCodeForSession(url);
+  const code = extractCodeFromUrl(url);
+  if (!code) throw new Error('Code manquant');
+  await exchangeCodeForSession(code);
+}
+
+/** Échange le code OAuth (PKCE) contre une session. */
+export async function exchangeCodeForSession(code: string): Promise<void> {
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) throw new Error(error.message);
 }
 
 export const authRedirectPath = 'auth/callback';
