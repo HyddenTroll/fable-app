@@ -65,6 +65,21 @@ export function emptyState(): HeroState {
   return { blessures: [], inventaire: [], pnj: [], engagements: [], lieu: '' };
 }
 
+/**
+ * Plafonds de l'état pour borner le coût de l'appel d'état (qui croît
+ * avec l'objet). Au-delà, on évince les entrées les plus anciennes.
+ */
+export const STATE_LIMITS = {
+  blessures: 10,
+  inventaire: 20,
+  pnj: 25,
+  engagements: 10,
+} as const;
+
+function trim<T>(arr: T[], max: number): T[] {
+  return arr.length > max ? arr.slice(arr.length - max) : arr;
+}
+
 function uid(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -117,6 +132,12 @@ export function applyStateDelta(prev: HeroState, delta: StateDelta | null | unde
     if (!e.envers) continue;
     next.engagements.push({ id: uid('e'), envers: e.envers, quoi: e.quoi ?? '', depuis: e.depuis ?? chapterNumber });
   }
+
+  // Plafonds : évince les entrées les plus anciennes pour borner le coût
+  next.blessures = trim(next.blessures, STATE_LIMITS.blessures);
+  next.inventaire = trim(next.inventaire, STATE_LIMITS.inventaire);
+  next.pnj = trim(next.pnj, STATE_LIMITS.pnj);
+  next.engagements = trim(next.engagements, STATE_LIMITS.engagements);
 
   return next;
 }
