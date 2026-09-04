@@ -19,18 +19,88 @@ const ANTI_AI_SLOP = [
 
 /**
  * Règles de PROSE DE ROMAN PUBLIÉ (anti-style-amateur).
- * Combattent le style haché typique des LLM : phrases nominales en
- * série, paragraphes d'une phrase, structure répétitive "Elle fit... Elle vit...".
+ * Socle commun à toutes les voix : ce qui ne varie jamais.
+ * (La longueur des phrases/paragraphes, elle, dépend de la VOIX
+ * narrative choisie pour chaque histoire - voir NARRATIVE_VOICES.)
  */
 const PROSE_RULES = [
   'Écris une prose de ROMAN PUBLIÉ, pas un brouillon ni une fiche technique.',
-  'Interdit le style haché : ne commence pas trois paragraphes de suite par le même sujet, ne fais pas de paragraphes d\'une seule phrase, évite les phrases nominales en série ("La nuit. Le froid. Le silence.").',
-  'Développe chaque scène : décor, lumière, bruits, odeurs, sensations physiques, les pensées et émotions du héros. Une scène = plusieurs paragraphes amples (4 à 8 phrases).',
-  'Soigne le rythme : alterne phrases longues et courtes, action et respiration, dialogue et description.',
+  'Interdit le style haché typique de l\'IA : pas de paragraphes d\'une seule phrase en série, pas de phrases nominales alignées ("La nuit. Le froid. Le silence."), pas de structure répétitive ("Elle fit... Elle vit...").',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
-  'Respecte le point de vue : on ne voit que ce que le héros voit, sent et pense.',
+  'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
   'Chaque chapitre = 2 à 4 scènes complètes, chacune avec son début, son développement et sa fin.',
+  'Soigne les transitions entre scènes : pas de coupures brutales sans respiration.',
 ].join('\n');
+
+/**
+ * PALETTE DE VOIX NARRATIVES (diversité maximale entre les romans).
+ * Chaque nouvelle histoire tire UNE voix au sort ; la bible et tous
+ * les chapitres l'écrivent dans CE registre précis. Chaque livre doit
+ * sonner différemment des autres - comme des auteurs différents.
+ * Les références ne sont que des repères de RYTHME, jamais de contenu.
+ */
+export const NARRATIVE_VOICES: { id: string; nom: string; consigne: string }[] = [
+  {
+    id: 'realiste',
+    nom: 'Réalisme classique',
+    consigne: 'Prose ample et organisée à la manière des grands romanciers réalistes du XIXe. Phrases longues, subordonnées maîtrisées, descriptions précises du monde et des personnages, regard social. Alternance équilibrée narration/description/dialogue.',
+  },
+  {
+    id: 'intimiste',
+    nom: 'Intimisme psychologique',
+    consigne: 'Plongée constante dans la conscience du héros. Phrases qui épousent les émotions et les hésitations, paragraphes de pensée intérieure, perceptions fines et ambivalentes. Peu de grands gestes ; beaucoup de sous-texte.',
+  },
+  {
+    id: 'cinematique',
+    nom: 'Cinématique haletant',
+    consigne: 'Scènes découpées comme au cinéma, phrases courtes et nerveuses, dialogues secs et rapides, ellipses de temps marquées, tension permanente, fins de paragraphe qui claquent.',
+  },
+  {
+    id: 'lyrique',
+    nom: 'Lyrique et poétique',
+    consigne: 'Musique des phrases, images et métaphores développées, descriptions sensorielles qui débordent, rythme lent et envoûtant, vocabulaire choisi et évocateur. L\'émotion passe par la beauté de la langue.',
+  },
+  {
+    id: 'noir',
+    nom: 'Noir atmosphérique',
+    consigne: 'Ambiances pesantes, non-dit, silence et menace. Phrases simples mais qui portent du poids, très peu de dialogues et chacun lourd de sens, le monde est hostile et le héros en subit la gravité.',
+  },
+  {
+    id: 'contemporain',
+    nom: 'Contemporain punchy',
+    consigne: 'Présent de narration, langue actuelle et directe, humour froid, ironie légère, réalisme urbain d\'aujourd\'hui. Phrases nerveuses mais jamais hachées, dialogues vivants et naturels.',
+  },
+  {
+    id: 'epique',
+    nom: 'Épique romanesque',
+    consigne: 'Souffle et ampleur : descriptions monumentales, batailles et voyages, phrases longues à rythme large, vocabulaire soutenu. Le monde est grand, l\'histoire est une épopée.',
+  },
+  {
+    id: 'baroque',
+    nom: 'Baroque orné',
+    consigne: 'Phrases longues et sinueuses, abondance de détails et de comparaisons riches, digressions savantes, goût de la précision excessive. Style dense, jamais paresseux.',
+  },
+  {
+    id: 'minimaliste',
+    nom: 'Minimalisme sec',
+    consigne: 'Phrases brèves, ellipses, non-dit, sous-texte permanent. Le style en dit moins que l\'histoire n\'en contient : les silences et les blancs font partie de la narration. Émotion par retenue.',
+  },
+  {
+    id: 'oral',
+    nom: 'Conteur oral',
+    consigne: 'Une voix qui raconte au lecteur, complice et naturelle : petites digressions, adresses discrètes, proverbes et images populaires, phrases qui se cherchent comme à l\'oral. Chaleur et humanité.',
+  },
+  {
+    id: 'sensoriel',
+    nom: 'Sensoriel immersif',
+    consigne: 'Immersion totale par les cinq sens : chaque scène donne à voir, entendre, sentir, toucher. Rythme dense et lent, descriptions en couches, le lecteur est DANS le décor.',
+  },
+  {
+    id: 'suspens',
+    nom: 'Suspense policier',
+    consigne: 'Indices distillés, rythme implacable, révélation différée, phrases qui avancent comme une enquête. Chaque paragraphe déplace le doute. Dialogue-miroir, atmosphère de vérité cachée.',
+  },
+];
 
 export function ageLabel(age: AgeGroup): string {
   return AGE_GROUPS.find((g) => g.code === age)?.label ?? 'Adultes';
@@ -53,9 +123,9 @@ function ageLimit(age: AgeGroup): string {
 export function buildStoryBiblePrompt(
   params: GameParams,
   age: AgeGroup,
-  opts?: { heroName?: string; heroTrait?: string }
+  opts?: { heroName?: string; heroTrait?: string; voix?: { nom: string; consigne: string } }
 ): string {
-  const { heroName, heroTrait } = opts ?? {};
+  const { heroName, heroTrait, voix } = opts ?? {};
   const variationSeed = Math.floor(Math.random() * 999_999);
   return `Tu es un grand romancier. Crée la "bible" d'un roman interactif (livre dont le lecteur est le héros).
 
@@ -64,6 +134,10 @@ PUBLIC : ${ageLabel(age)}
 PARAMÈTRES : difficulté ${params.difficulty}, style narratif ${params.style}, ${params.chapterLength} longueur de chapitre, ${params.maxChoices} choix max par chapitre.
 ${heroName ? `NOM DU HÉROS (choisi par le lecteur, à respecter) : ${heroName}` : ''}
 ${heroTrait ? `TRAIT DE PERSONNALITÉ DU HÉROS : ${heroTrait}` : ''}
+
+VOIX NARRATIVE IMPOSÉE (obligatoire - tout le roman sera écrit dans CE registre, du prologue à la dernière ligne) :
+"${voix?.nom ?? 'Réalisme classique'}" : ${voix?.consigne ?? 'Prose ample et organisée, descriptions précises, alternance équilibrée narration/description/dialogue.'} 
+Le champ "tonStyle" de ta réponse doit décrire cette voix en 3-4 phrases concrètes utilisables par l'écrivain de chaque chapitre (rythme de phrase, densité descriptive, place du dialogue et de l'introspection, vocabulaire).
 
 IMPORTANT - ORIGINALITÉ : ce roman doit être UNIQUE. Ne réutilise jamais l'intrigue, les personnages ou les situations d'histoire que tu as déjà écrites ou connues (changement de ville/nom/époque ne suffit pas : change la VRAIE histoire).
 INDICE DE CRÉATION (numéro de tirage) : ${variationSeed} - utilise ce tirage pour ancrer une variation : fais un choix d'écriture différent (point de départ, secret du héros, nature de l'antagoniste, énigme centrale).
@@ -127,6 +201,9 @@ BIBLE DU ROMAN :
 ${JSON.stringify(bible, null, 2)}
 
 PUBLIC : ${ageLabel(age)} | STYLE : ${params.style} | DIFFICULTÉ : ${params.difficulty}
+
+VOIX NARRATIVE du roman (écris le prologue DANS CE REGISTRE, pas dans un autre) :
+${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}
 
 Le prologue doit :
 - ACCROCHER immédiatement (une scène intrigante, un danger, une question, un mystère).
@@ -249,7 +326,9 @@ Règles d'écriture :
 - Conséquences visibles des choix précédents : les blessures, objets et personnages de l'état du héros doivent rester cohérents.
 - ${ageLimit(age)}
 - 2e personne ("tu") : le lecteur EST le héros.
-- Ton: ${bible.tonStyle ?? params.style}
+
+VOIX NARRATIVE (obligatoire - écris ce chapitre DANS CE REGISTRE, pas dans un autre ; respecte le rythme de phrase, la densité descriptive, la place du dialogue et de l'introspection) :
+${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}
 
 ${PROSE_RULES}
 

@@ -687,6 +687,29 @@ FAIT :
       héros), jamais via temperature. Le champ temperature du
       provider reste pour Anthropic (Sonnet supporte 0-1).
 
+   8. DIVERSITÉ DE VOIX NARRATIVES (retour utilisateur : le style
+      restait le même d'un livre à l'autre, trop "amateur" ; il veut
+      la diversité d'une vraie librairie comme Librinova) :
+      - NARRATIVE_VOICES : palette de 12 voix exportée par
+        api/lib/prompts.ts : réalisme classique, intimisme
+        psychologique, cinématique haletant, lyrique-poétique,
+        noir atmosphérique, contemporain punchy, épique, baroque
+        orné, minimalisme sec, conteur oral, sensoriel immersif,
+        suspense policier. Chaque voix = consigne de rythme de
+        phrase, densité descriptive, place du dialogue et de
+        l'introspection, vocabulaire.
+      - create.ts : tire UNE voix au sort à chaque création ->
+        buildStoryBiblePrompt la reçoit et impose tonStyle qui la
+        décrit.
+      - buildProloguePrompt + buildChapterMessages : injectent
+        "VOIX NARRATIVE (écris dans CE registre)" avec le tonStyle
+        de la bible - tout le roman écrit dans la même voix.
+      - Le SOCLE commun (PROSE_RULES) est allégé : il ne fixe plus
+        la longueur des phrases/paragraphes (désormais décidée par
+        la voix), il garde l'anti-style-haché-IA, les descriptions
+        concrètes, le point de vue, 2-4 scènes par chapitre.
+      Typecheck api OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

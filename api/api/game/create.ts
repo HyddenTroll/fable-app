@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
-import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel } from '../../lib/prompts';
+import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
@@ -71,6 +71,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 1) Story bible
+  // Voix narrative tirée au sort : chaque histoire a SON registre
+  // (diversité maximale entre les romans).
+  const voix = NARRATIVE_VOICES[Math.floor(Math.random() * NARRATIVE_VOICES.length)];
   let bible: StoryBible;
   let bibleResult;
   try {
@@ -78,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait }) },
+        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix }) },
       ],
       kind: 'story_bible',
       maxTokens: 6000,
