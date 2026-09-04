@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { colors, spacing, radii } from '@/theme';
+import { signOut } from '@/services/auth';
 
 export default function ProfileTabScreen() {
   const router = useRouter();
@@ -11,11 +12,15 @@ export default function ProfileTabScreen() {
   const isPremium = useAppStore((s) => s.isPremium);
   const credits = useAppStore((s) => s.credits);
   const currentGame = useAppStore((s) => s.currentGame);
-  const setEmail = useAppStore((s) => s.setEmail);
   const setPremium = useAppStore((s) => s.setPremium);
 
   const chaptersRead = currentGame ? currentGame.chapters.length : 0;
   const gamesFinished = 0; // placeholder - sera branché aux stats réelles
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/auth');
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -66,7 +71,7 @@ export default function ProfileTabScreen() {
         <Button
           label="Se déconnecter"
           variant="secondary"
-          onPress={() => setEmail('')}
+          onPress={handleSignOut}
         />
       )}
     </ScrollView>

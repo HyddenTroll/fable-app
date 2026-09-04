@@ -15,6 +15,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="age" />
         <Stack.Screen name="auth" />
+        <Stack.Screen name="auth/callback" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="new-game" />
         <Stack.Screen name="game/[gameId]" />
