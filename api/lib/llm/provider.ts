@@ -119,7 +119,7 @@ export class LLM {
       if (attempt > 0) {
         await new Promise((r) => setTimeout(r, 500 * attempt));
       }
-      const result = await this.generate({ ...req, maxTokens: req.maxTokens ?? 3000, json: true });
+      const result = await this.generate({ ...req, maxTokens: req.maxTokens ?? 6000, json: true });
       try {
         const json = JSON.parse(extractJson(result.text)) as T;
         return { result, json };
