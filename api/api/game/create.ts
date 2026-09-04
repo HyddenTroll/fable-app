@@ -82,7 +82,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ],
       kind: 'story_bible',
       maxTokens: 6000,
-      temperature: 1.1,
     });
     bible = gen.json;
     bibleResult = gen.result;
@@ -104,7 +103,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ],
       kind: 'prologue',
       maxTokens: 6000,
-      temperature: 1.1,
     });
     prologue = gen.json;
     await logLLMResult(db, auth.userId, null, 'prologue', gen.result);

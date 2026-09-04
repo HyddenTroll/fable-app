@@ -678,6 +678,14 @@ FAIT :
       ajouté au provider (OpenAI + Anthropic).
       Effet attendu : chaque nouvelle histoire est différente dès le
       départ, même avec les mêmes réglages.
+      NB ERREUR PROD (signalée par l'utilisateur) : "400 Unsupported
+      value: 'temperature' does not support 1.1 with this model.
+      Only the default (1) value is supported." -> GPT-5.6 Luna
+      n'accepte QUE temperature=1 (défaut). La température 1.1/1.0
+      a été RETIRÉE des appels (create + chapter). LESSON : sur ce
+      modèle, la variété se joue au niveau du PROMPT (nonce, nom du
+      héros), jamais via temperature. Le champ temperature du
+      provider reste pour Anthropic (Sonnet supporte 0-1).
 
    ================================================================
    PROCHAINE SESSION (à faire)
@@ -703,3 +711,8 @@ FAIT :
       dans le dashboard Supabase (SQL editor) pour activer la mémoire
       du plan (story_plan + kind 'plan'). Sans elle : fonctionne
       sans plan évolutif.
+   9. [FAIT - user] Migration 0005 APPLIQUÉE via le SQL editor
+      (confirmé : "Success. No rows returned") -> story_plan jsonb
+      sur games ; contrainte cost_logs_kind_check supprimée. La
+      mémoire du plan est active. À confirmer : ré-ajout de la
+      contrainte avec 'plan' (3e instruction du bloc).

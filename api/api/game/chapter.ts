@@ -145,7 +145,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         messages: chapterMessages,
         kind: 'chapter',
         maxTokens: 8000,
-        temperature: 1.0,
       });
       let result: LLMResult = EMPTY_RESULT;
       for (;;) {
