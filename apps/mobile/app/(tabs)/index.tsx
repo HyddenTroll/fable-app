@@ -9,7 +9,6 @@ export default function HomeTabScreen() {
   const age = useAppStore((s) => s.age);
   const email = useAppStore((s) => s.email);
   const currentGame = useAppStore((s) => s.currentGame);
-  const credits = useAppStore((s) => s.credits);
 
   const continueGame = () => {
     if (currentGame) router.push(`/game/${currentGame.gameId}`);
@@ -21,21 +20,27 @@ export default function HomeTabScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.topRow}>
+      <View style={styles.header}>
         <Text style={styles.title}>Fable</Text>
-        <View style={styles.badges}>
+        <View style={styles.headerRight}>
           {!isAuthed && (
-            <TouchableOpacity onPress={() => router.push('/auth')}>
-              <Text style={styles.badgeLink}>Connexion</Text>
+            <TouchableOpacity onPress={() => router.push('/auth')} style={styles.headerButton}>
+              <Text style={styles.headerButtonText}>Connexion</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={() => router.push('/shop')}>
-            <Text style={styles.creditsBadge}>✨ {credits}</Text>
-          </TouchableOpacity>
+          {isAuthed && (
+            <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={styles.headerButton}>
+              <Text style={styles.headerButtonText}>Profil</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {age && <Text style={styles.subtitle}>Tranche d'âge : {age}</Text>}
+      {isAuthed ? (
+        <Text style={styles.greeting}>Bonjour {email.split('@')[0]}</Text>
+      ) : (
+        <Text style={styles.greeting}>Bienvenue sur Fable</Text>
+      )}
 
       {currentGame ? (
         <TouchableOpacity style={styles.continueCard} onPress={continueGame}>
@@ -53,36 +58,30 @@ export default function HomeTabScreen() {
 
       <Button label="+ Nouvelle aventure" onPress={startNew} />
 
-      <View style={styles.debugBox}>
-        <Text style={styles.debugTitle}>Prototype - debug</Text>
-        <Text style={styles.debugText}>
-          Données fictives (pas d'IA réelle). Connecté : {email ?? 'non'}.
-        </Text>
-      </View>
+      <Text style={styles.hint}>
+        {age ? `Tranche d'âge : ${age}` : 'Choisis ton âge pour commencer'}
+      </Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.xxl, gap: spacing.lg },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: colors.primary, fontSize: 32, fontWeight: 'bold' },
-  badges: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  badgeLink: { color: colors.primary, fontSize: 14, textDecorationLine: 'underline' },
-  creditsBadge: { color: colors.text, backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radii.xl, overflow: 'hidden' },
-  subtitle: { color: colors.textSecondary, fontSize: 13 },
+  content: { padding: spacing.xxl, gap: spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  title: { color: colors.primary, fontSize: 28, fontWeight: 'bold' },
+  headerRight: { flexDirection: 'row', gap: spacing.md },
+  headerButton: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
+  headerButtonText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  greeting: { color: colors.textSecondary, fontSize: 15 },
   continueCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: spacing.xl,
     borderWidth: 1,
-    borderColor: colors.primary,
-    marginTop: spacing.md,
+    borderColor: colors.border,
   },
   continueTitle: { color: colors.text, fontSize: 18, fontWeight: '600' },
-  continueMeta: { color: colors.textSecondary, marginTop: 6 },
-  debugBox: { backgroundColor: colors.surfaceAlt, borderRadius: radii.lg, padding: spacing.lg, marginTop: spacing.sm },
-  debugTitle: { color: colors.primary, fontWeight: 'bold' },
-  debugText: { color: colors.textSecondary, marginTop: 6, lineHeight: 18 },
+  continueMeta: { color: colors.textSecondary, marginTop: spacing.sm },
+  hint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
 });
