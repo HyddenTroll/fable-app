@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameParams } from '@fable/shared';
 import type { MockGameState } from '../data/mock';
+import type { HeroState } from '../services/api';
 
 interface AppState {
   age: string | null;
@@ -16,6 +17,8 @@ interface AppState {
   credits: number;
   currentGame: MockGameState | null;
   gameParams: GameParams | null;
+  /** État structuré reçu du serveur - AFFICHÉ seulement (jamais source de vérité) */
+  heroState: HeroState | null;
   setAge: (age: string) => void;
   setEmail: (email: string) => void;
   setUserName: (name: string) => void;
@@ -24,6 +27,7 @@ interface AppState {
   spendCredits: (amount: number) => boolean;
   setCurrentGame: (game: MockGameState | null) => void;
   setGameParams: (params: GameParams | null) => void;
+  setHeroState: (state: HeroState | null) => void;
   updateCurrentGame: (updates: Partial<MockGameState>) => void;
   reset: () => void;
 }
@@ -38,6 +42,7 @@ export const useAppStore = create<AppState>()(
       credits: 30,
       currentGame: null,
       gameParams: null,
+      heroState: null,
       setAge: (age) => set({ age }),
       setEmail: (email) => set({ email }),
       setUserName: (userName) => set({ userName }),
@@ -51,6 +56,7 @@ export const useAppStore = create<AppState>()(
       },
       setCurrentGame: (currentGame) => set({ currentGame }),
       setGameParams: (gameParams) => set({ gameParams }),
+      setHeroState: (heroState) => set({ heroState }),
       updateCurrentGame: (updates) =>
         set((state) => ({
           currentGame: state.currentGame
@@ -61,7 +67,7 @@ export const useAppStore = create<AppState>()(
         set({
           age: null, email: null, userName: null,
           isPremium: false, credits: 30,
-          currentGame: null, gameParams: null,
+          currentGame: null, gameParams: null, heroState: null,
         }),
     }),
     { name: 'fable-store' },
