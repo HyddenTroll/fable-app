@@ -50,12 +50,23 @@ function ageLimit(age: AgeGroup): string {
   }
 }
 
-export function buildStoryBiblePrompt(params: GameParams, age: AgeGroup): string {
+export function buildStoryBiblePrompt(
+  params: GameParams,
+  age: AgeGroup,
+  opts?: { heroName?: string; heroTrait?: string }
+): string {
+  const { heroName, heroTrait } = opts ?? {};
+  const variationSeed = Math.floor(Math.random() * 999_999);
   return `Tu es un grand romancier. Crée la "bible" d'un roman interactif (livre dont le lecteur est le héros).
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
 PUBLIC : ${ageLabel(age)}
 PARAMÈTRES : difficulté ${params.difficulty}, style narratif ${params.style}, ${params.chapterLength} longueur de chapitre, ${params.maxChoices} choix max par chapitre.
+${heroName ? `NOM DU HÉROS (choisi par le lecteur, à respecter) : ${heroName}` : ''}
+${heroTrait ? `TRAIT DE PERSONNALITÉ DU HÉROS : ${heroTrait}` : ''}
+
+IMPORTANT - ORIGINALITÉ : ce roman doit être UNIQUE. Ne réutilise jamais l'intrigue, les personnages ou les situations d'histoire que tu as déjà écrites ou connues (changement de ville/nom/époque ne suffit pas : change la VRAIE histoire).
+INDICE DE CRÉATION (numéro de tirage) : ${variationSeed} - utilise ce tirage pour ancrer une variation : fais un choix d'écriture différent (point de départ, secret du héros, nature de l'antagoniste, énigme centrale).
 
 Ta mission : construire une histoire avec UN CAP PRÉCIS. Tu sais dès le départ où tu emmènes le lecteur, même si ses choix changent le chemin. Un bon roman ne dérive jamais : il converge.
 

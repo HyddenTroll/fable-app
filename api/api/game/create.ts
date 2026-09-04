@@ -78,10 +78,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: buildStoryBiblePrompt(params, body.age) },
+        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait }) },
       ],
       kind: 'story_bible',
       maxTokens: 6000,
+      temperature: 1.1,
     });
     bible = gen.json;
     bibleResult = gen.result;
@@ -102,7 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { role: 'user', content: buildProloguePrompt(bible, params, body.age) },
       ],
       kind: 'prologue',
-      maxTokens: 4000,
+      maxTokens: 6000,
+      temperature: 1.1,
     });
     prologue = gen.json;
     await logLLMResult(db, auth.userId, null, 'prologue', gen.result);

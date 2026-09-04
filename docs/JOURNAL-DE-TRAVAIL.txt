@@ -665,6 +665,20 @@ FAIT :
    COÛT IMPACTÉ (estimé) : chapitre ~0,0087 $ -> ~0,0097 $ avec
    l'appel plan (seulement quand choix + colonne + planDirecteur).
 
+   7. BUG SIGNALÉ (même session) : l'IA sortait DEUX FOIS LA MÊME
+      histoire quand on créait 2 parties avec les mêmes paramètres.
+      CAUSE : le prompt de bible était 100 % identique (le nom du
+      héros n'était pas injecté) et GPT-5.6 ré-échantillonne la même
+      histoire sans stimulation de variété. Le caching n'est PAS en
+      cause (il n'affecte que les tokens d'entrée).
+      FIX : buildStoryBiblePrompt reçoit heroName/heroTrait (créé par
+      l'utilisateur) + "INDICE DE CRÉATION" (numéro de tirage
+      aléatoire) + consigne d'originalité ; temperature 1.1 sur
+      bible/prologue, 1.0 sur le chapitre ; LLMRequest.temperature
+      ajouté au provider (OpenAI + Anthropic).
+      Effet attendu : chaque nouvelle histoire est différente dès le
+      départ, même avec les mêmes réglages.
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

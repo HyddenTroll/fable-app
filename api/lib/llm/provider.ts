@@ -28,6 +28,9 @@ export interface LLMRequest {
   kind: PromptKind;
   stream?: boolean;
   maxTokens?: number;
+  /** Température d'échantillonnage (créatif). Explicite pour forcer
+   *  de la variété sur les modèles peu diversifiés à prompt identique. */
+  temperature?: number;
   /** Force une réponse JSON valide (response_format json_object).
    *  À activer EXPLICITEMENT pour les prompts qui demandent du JSON.
    *  Jamais pour du texte brut (sinon l'IA renvoie du JSON cassé/très court). */
@@ -169,6 +172,7 @@ export class LLM {
       max_completion_tokens: req.maxTokens ?? 2048,
       messages: req.messages,
       stream: false,
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
       // Force un JSON valide UNIQUEMENT quand le prompt demande du JSON
       // (flag explicite - la détection par texte casse les prompts en texte brut)
       ...(req.json ? { response_format: { type: 'json_object' } as const } : {}),
@@ -197,6 +201,7 @@ export class LLM {
       max_completion_tokens: req.maxTokens ?? 2048,
       messages: req.messages,
       stream: true,
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
       stream_options: { include_usage: true },
     });
 
@@ -237,6 +242,7 @@ export class LLM {
     const res = await client.messages.create({
       model,
       max_tokens: req.maxTokens ?? 2048,
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
       system: req.messages.find((m) => m.role === 'system')?.content,
       messages: req.messages
         .filter((m) => m.role !== 'system')
