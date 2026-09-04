@@ -127,10 +127,20 @@ function ageLimit(age: AgeGroup): string {
 export function buildStoryBiblePrompt(
   params: GameParams,
   age: AgeGroup,
-  opts?: { heroName?: string; heroTrait?: string; voix?: { nom: string; consigne: string } }
+  opts?: {
+    heroName?: string;
+    heroTrait?: string;
+    voix?: { nom: string; consigne: string };
+    briques?: { label: string; valeur: string }[];
+  }
 ): string {
-  const { heroName, heroTrait, voix } = opts ?? {};
+  const { heroName, heroTrait, voix, briques } = opts ?? {};
   const variationSeed = Math.floor(Math.random() * 999_999);
+  const briquesBlock = briques?.length
+    ? `ÉLÉMENTS IMPOSÉS PAR LA DIRECTION (le roman DOIT les intégrer naturellement, ce sont les fondations du récit) :
+${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}
+`
+    : '';
   return `Tu es un grand romancier. Crée la "bible" d'un roman interactif (livre dont le lecteur est le héros).
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
@@ -139,6 +149,7 @@ PARAMÈTRES : difficulté ${params.difficulty}, style narratif ${params.style}, 
 ${heroName ? `NOM DU HÉROS (choisi par le lecteur, à respecter) : ${heroName}` : ''}
 ${heroTrait ? `TRAIT DE PERSONNALITÉ DU HÉROS : ${heroTrait}` : ''}
 
+${briquesBlock}
 VOIX NARRATIVE IMPOSÉE (obligatoire - tout le roman sera écrit dans CE registre, du prologue à la dernière ligne) :
 "${voix?.nom ?? 'Réalisme classique'}" : ${voix?.consigne ?? 'Prose ample et organisée, descriptions précises, alternance équilibrée narration/description/dialogue.'} 
 Le champ "tonStyle" de ta réponse doit décrire cette voix en 3-4 phrases concrètes utilisables par l'écrivain de chaque chapitre (rythme de phrase, densité descriptive, place du dialogue et de l'introspection, vocabulaire).

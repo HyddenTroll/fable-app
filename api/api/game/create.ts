@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
+import { BRIQUES, piocher } from '../../lib/narrative-elements';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
@@ -74,6 +75,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Voix narrative tirée au sort : chaque histoire a SON registre
   // (diversité maximale entre les romans).
   const voix = NARRATIVE_VOICES[Math.floor(Math.random() * NARRATIVE_VOICES.length)];
+  // Briques narratives imposées (diversité réelle des intrigues) :
+  // 1 élément par catégorie, pioché au hasard, intégré à la bible.
+  const briques = [
+    { label: 'Lieu de départ', valeur: piocher(BRIQUES.lieux, 1)[0] },
+    { label: 'Événement qui déclenche tout', valeur: piocher(BRIQUES.evenements, 1)[0] },
+    { label: 'Énigme centrale', valeur: piocher(BRIQUES.mysteres, 1)[0] },
+    { label: 'Secret ou faille du héros', valeur: piocher(BRIQUES.secrets, 1)[0] },
+    { label: 'Antagoniste ou menace', valeur: piocher(BRIQUES.antagonistes, 1)[0] },
+    { label: 'Objet-signal', valeur: piocher(BRIQUES.objets, 1)[0] },
+    { label: 'Destination du roman', valeur: piocher(BRIQUES.destinations, 1)[0] },
+  ];
   let bible: StoryBible;
   let bibleResult;
   try {
@@ -81,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix }) },
+        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix, briques }) },
       ],
       kind: 'story_bible',
       maxTokens: 6000,

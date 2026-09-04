@@ -737,6 +737,29 @@ FAIT :
         longueur normale).
       Typecheck OK. Commit + push (déploiement auto).
 
+   10. BRIQUES NARRATIVES (retour utilisateur : les histoires se
+      ressemblent toujours - cassette, marée, lieux répétés. Il
+      demande de pré-enregistrer des pools d'éléments et de piocher
+      dedans) :
+      - NOUVEAU api/lib/narrative-elements.ts : 330 briques en 7
+        tables exportées (+ helper piocher) :
+        * LIEUX x50 (lieux de départ singuliers)
+        * EVENEMENTS x50 (bascule qui déclenche l'histoire)
+        * MYSTERES x50 (énigme centrale)
+        * SECRETS x50 (secret/faille du héros)
+        * ANTAGONISTES x50 (menace/opposant)
+        * OBJETS x50 (objet-signal)
+        * DESTINATIONS x30 (où le roman emmène le lecteur)
+      - create.ts : pioche 1 élément par catégorie (7 tirages) ->
+        passages en "ÉLÉMENTS IMPOSÉS PAR LA DIRECTION (le roman
+        DOIT les intégrer)" dans buildStoryBiblePrompt.
+      - L'IA ne choisit donc plus seule ses fondations : elle
+        intègre les briques piochées + voix tirée au sort + nonce.
+      - Test runtime OK (bundling esbuild + pioche, 330 entrées).
+      Anti-clichés vérifiés par construction (les entrées sont
+      écrites pour être singulières - jamais cassette, jamais marée).
+      Typecheck api OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================
