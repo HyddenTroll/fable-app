@@ -603,6 +603,69 @@ FAIT :
      et scripts/book-via-api.mjs (via API déployée, besoin quota email)
 
    ================================================================
+   SESSION 15 - 04/09/2026 : V2 NARRATION (CAP PRÉCIS + MÉMOIRE DU PLAN + PROSE)
+   ================================================================
+   CONTEXTE : retours utilisateur sur la qualité. 3 problèmes :
+   1. L'IA n'a pas d'idée précise d'où elle emmène le lecteur.
+   2. Un choix important ne fait pas reconsidérer l'histoire (elle
+      dérive ou ignore la conséquence). Il faut réécrire les grandes
+      lignes EN MÉMOIRE avant de continuer.
+   3. Le prologue généré fait "amateur" : style haché (phrases
+      nominales, paragraphes d'une phrase, "Elle fit... Elle vit...").
+
+   FAIT (archi v2 : le cap est figé, la route s'adapte) :
+   1. TYPES (packages/shared/src/types.ts) :
+      - StoryBible.planDirecteur (OBLIGATOIRE pour les nouvelles
+        parties ; les vieilles bibles n'en ont pas -> géré en code).
+      - PlanDirecteur : destination (LE cap), noyauImmuable (3-5
+        vérités qui ne changent jamais), actes (objectif + scènes
+        clés ordonnées + tournant de fin d'acte), carrefours (2-5
+        choix majeurs anticipés + conséquence si déviation), fins
+        (condition précise + émotion finale).
+      - StoryPlan (mémoire évolutive) : grandesLignes (150-250 mots),
+        derniereMiseAJourChapitre, versQuelleFin.
+   2. PROMPTS (api/lib/prompts.ts) :
+      - buildStoryBiblePrompt : exige planDirecteur complet (le
+        modèle DOIT planifier avant d'écrire).
+      - PROSE_RULES (nouveau) : prose de roman publié, interdit le
+        style haché, scènes = 2-4 par chapitre, paragraphes amples
+        4-8 phrases, rythme varié, descriptions concrètes, point de
+        vue strict.
+      - buildProloguePrompt : 1500-2200 mots (était 800-1200) +
+        PROSE_RULES + "faire sentir le cap sans le révéler".
+      - buildChapterMessages : paramètre plan (grandes lignes)
+        injecté dans le volatile ; longueurs chapitres 2000/3500/5000
+        (était 1500/3000/5000) ; règles renforcées (faire AVANCER le
+        cap, pas prolonger).
+      - buildPlanReconsiderPrompt (nouveau) : juge si le choix du
+        lecteur est un TOURNANT - si oui, réécrit les grandes lignes
+        (la route s'adapte, plan directeur + noyau immuable restent).
+   3. PROVIDER (api/lib/llm/provider.ts) : kind 'plan' ajouté
+      (gpt-5.6-luna).
+   4. ENDPOINT chapter (api/api/game/chapter.ts) :
+      - Injecte story_plan.grandesLignes dans le prompt du chapitre.
+      - Après le choix du lecteur (playerChoiceLabel) : appelle la
+        réévaluation du plan SEULEMENT si la colonne story_plan
+        existe en base (auto-détection -> l'API reste stable avant
+        migration). Si important : stocke le nouveau plan dans
+        games.story_plan + log cost kind 'plan'.
+      - Coût ajouté : ~0,001 $/chapitre max (appel court, seulement
+        quand il y a un choix + plan directeur).
+   5. MIGRATION 20260904040000_story_plan.sql :
+      - games.story_plan jsonb (NULL au départ).
+      - cost_logs : contrainte kind étendue avec 'plan'.
+      - À APPLIQUER par l'utilisateur (pas de CLI supabase ni db-url
+        sur ce PC) : dashboard supabase.com > SQL editor > coller le
+        SQL du fichier. SANS cette migration : le jeu fonctionne
+        comme avant (pas de mémoire du plan - la bible reste la
+        référence, le planDirecteur est dans les prompts).
+   6. Typecheck : api + shared + mobile OK. Commit + push
+      (déploiement auto Vercel).
+
+   COÛT IMPACTÉ (estimé) : chapitre ~0,0087 $ -> ~0,0097 $ avec
+   l'appel plan (seulement quand choix + colonne + planDirecteur).
+
+   ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================
    1. [FAIT - user] Dashboard Supabase : Redirect URLs ajoutées
@@ -622,3 +685,7 @@ FAIT :
       après redémarrage)
    7. Clé OpenAI sur ce PC : à recopier depuis l'autre PC (le .env n'est
       PAS sur GitHub ni récupérable via vercel env pull).
+   8. [MIGRATION à appliquer] SQL de 20260904040000_story_plan.sql
+      dans le dashboard Supabase (SQL editor) pour activer la mémoire
+      du plan (story_plan + kind 'plan'). Sans elle : fonctionne
+      sans plan évolutif.

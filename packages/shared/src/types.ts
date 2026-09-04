@@ -132,6 +132,54 @@ export interface StoryBible {
     condition: string;
   }[];
   tonStyle: string;
+  /**
+   * PLAN DIRECTEUR (v2) : le cap narratif obligatoire.
+   * L'IA sait dès le départ où elle emmène le lecteur. Les choix du
+   * lecteur changent le CHEMIN, pas la destination. Les vieilles
+   * parties (avant la v2) n'ont pas ce champ -> gérer l'absence.
+   */
+  planDirecteur: PlanDirecteur;
+}
+
+/**
+ * Plan directeur figé à la création du roman.
+ * - destination : où l'histoire emmène le lecteur (la promesse).
+ * - noyauImmuable : ce qui ne change jamais, même si le lecteur dévie.
+ * - actes : objectif + scènes clés + tournant de fin d'acte.
+ * - carrefours : les choix majeurs anticipés (où l'histoire peut dévier).
+ * - fins : fins possibles avec LEUR condition d'accès.
+ */
+export interface PlanDirecteur {
+  destination: string;
+  noyauImmuable: string[];
+  actes: {
+    acte: number;
+    objectif: string;
+    scenesCles: string[];
+    tournant: string;
+  }[];
+  carrefours: {
+    chapitre: number;
+    enjeu: string;
+    options: string;
+    consequenceSiDeviation: string;
+  }[];
+  fins: {
+    nom: string;
+    condition: string;
+    emotionFinale: string;
+  }[];
+}
+
+/**
+ * Grandes lignes évolutives (mémoire du plan) - stockées dans
+ * games.story_plan et réécrites par l'IA à chaque tournant.
+ * La route s'ajuste, le plan directeur (bible) reste la référence fixe.
+ */
+export interface StoryPlan {
+  grandesLignes: string;
+  derniereMiseAJourChapitre: number;
+  versQuelleFin: string;
 }
 
 export interface StoryChoice {

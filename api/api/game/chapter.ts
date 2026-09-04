@@ -8,12 +8,13 @@ import {
   buildSummaryPrompt,
   buildStatePrompt,
   buildSystemPrompt,
+  buildPlanReconsiderPrompt,
   ageLabel,
 } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import { emptyState, applyStateDelta, parseStateDelta, serializeState, type HeroState, type StateDelta } from '../../lib/state';
-import type { AgeGroup, StoryBible, StoryChoice } from '@fable/shared';
+import type { AgeGroup, StoryBible, StoryChoice, StoryPlan } from '@fable/shared';
 
 const TOTAL_CHAPTERS = 50;
 const MAX_CONTEXT_CHAPTERS = 3; // N derniers chapitres réinjectés
@@ -98,11 +99,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const state: HeroState = { ...emptyState(), ...(game.state ?? {}) } as HeroState;
   const stateText = serializeState(state);
 
+  // Plan de l'histoire (grandes lignes évolutives, mémoire du cap)
+  // Ne s'active que si la colonne story_plan existe en base (migration 0005).
+  const hasStoryPlanColumn = 'story_plan' in (game as Record<string, unknown>);
+  const storyPlan = hasStoryPlanColumn ? ((game as { story_plan: StoryPlan | null }).story_plan ?? null) : null;
+
   // Messages SÉPARÉS pour le cache : bible verbatim (stable) + contexte (volatile)
   const msgs = buildChapterMessages({
     bible,
     bibleText: game.bible_text ?? undefined,
     state: stateText,
+    plan: storyPlan?.grandesLignes ?? undefined,
     resume: `${game.resume ?? ''}\n\nDerniers chapitres :\n${recentContext}`,
     playerChoice: playerChoiceLabel ?? undefined,
     chapterNumber: nextNumber,
@@ -201,6 +208,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // si l'IA casse le format, on garde l'état précédent (rien ne s'efface)
     }
 
+    // PLAN (mémoire des grandes lignes) : après le choix du lecteur,
+    // l'IA juge si c'est un tournant et réécrit la route si besoin.
+    let planResult = EMPTY_RESULT;
+    let newPlan = storyPlan;
+    const planDirecteur = (bible as StoryBible & { planDirecteur?: unknown }).planDirecteur;
+    if (hasStoryPlanColumn && playerChoiceLabel && planDirecteur) {
+      try {
+        const planGen = await llm.generateJson<{
+          important?: boolean;
+          grandesLignes?: string;
+          versQuelleFin?: string;
+        }>({
+          messages: [
+            { role: 'system', content: system },
+            {
+              role: 'user',
+              content: buildPlanReconsiderPrompt({
+                planDirecteur: JSON.stringify(planDirecteur, null, 2),
+                currentPlan: newPlan?.grandesLignes ?? null,
+                resume: summaryResult.text,
+                playerChoice: playerChoiceLabel,
+              }),
+            },
+          ],
+          kind: 'plan',
+          maxTokens: 700,
+        });
+        planResult = planGen.result;
+        if (planGen.json.important && planGen.json.grandesLignes?.trim()) {
+          newPlan = {
+            grandesLignes: planGen.json.grandesLignes.trim(),
+            derniereMiseAJourChapitre: nextNumber,
+            versQuelleFin: planGen.json.versQuelleFin ?? newPlan?.versQuelleFin ?? '',
+          };
+        }
+      } catch {
+        // on garde le plan précédent (la route n'a pas besoin de changer)
+      }
+    }
+
     // Stockage
     const isEnd = choices.length === 0 || nextNumber >= TOTAL_CHAPTERS;
     const { data: chapter, error: chapterInsertError } = await db
@@ -227,6 +274,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         status: isEnd ? 'finished' : 'active',
         free_chapters_used: game.free_chapters_used + (quota.isPremium ? 0 : 1),
         state: newState,
+        story_plan: newPlan ?? undefined,
       })
       .eq('id', gameId);
 
@@ -238,8 +286,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await logLLMResult(db, auth.userId, gameId, 'choices', choicesResult);
     await logLLMResult(db, auth.userId, gameId, 'summary', summaryResult);
     await logLLMResult(db, auth.userId, gameId, 'state', stateResult);
+    if (planResult !== EMPTY_RESULT) {
+      await logLLMResult(db, auth.userId, gameId, 'plan', planResult);
+    }
 
-    const totalCost = chapterResult.costUsd + choicesResult.costUsd + summaryResult.costUsd + stateResult.costUsd;
+    const totalCost = chapterResult.costUsd + choicesResult.costUsd + summaryResult.costUsd + stateResult.costUsd + planResult.costUsd;
 
     send('done', {
       chapter: {

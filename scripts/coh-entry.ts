@@ -12,4 +12,5 @@ export {
   buildSummaryPrompt,
   buildSystemPrompt,
   buildStatePrompt,
+  buildPlanReconsiderPrompt,
 } from '../api/lib/prompts';

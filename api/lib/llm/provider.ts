@@ -15,7 +15,8 @@ export type PromptKind =
   | 'ending'
   | 'summary'
   | 'choices'
-  | 'state';
+  | 'state'
+  | 'plan';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -75,6 +76,7 @@ const MODEL_BY_KIND: Record<PromptKind, { openai: string; anthropic: string }> =
   summary: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
   choices: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
   state: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  plan: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
 };
 
 export class LLM {
