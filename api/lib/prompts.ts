@@ -204,6 +204,20 @@ export const LOIS_PAR_GENRE: Record<string, string> = {
   ].join('\n'),
 };
 
+/**
+ * PROGRESSION DU RÉCIT - l'IA a LE plan (caché du lecteur), mais elle
+ * écrit comme un romancier : installation d'abord, montée par couches.
+ * Le lecteur doit d'abord aimer le héros et son monde avant toute bascule.
+ */
+const PROGRESSION_RULES = [
+  'MONDE ORDINAIRE D\'ABORD : le lecteur doit d\'abord entrer dans la vie du héros (routines, travail, relations, manies, désirs) avant que quoi que ce soit ne bascule. L\'installation est un investissement : elle rend la bascule douloureuse.',
+  'MONTÉE PAR COUCHES : l\'histoire se dévoile progressivement. Un détail anodin au chapitre 2, un second au chapitre 3, la brisure franche plus tard. La révélation centrale est un capital que tu dépenses avec parcimonie - jamais tout d\'un coup, jamais trop tôt.',
+  'LE PLAN RESTE CACHÉ DU LECTEUR : tu sais où tu vas (bible), mais le lecteur ne doit PAS voir le cap arriver. Pas d\'exposition du destin : il découvre avec le héros, dans l\'ordre du vécu.',
+  'LA MENACE N\'EST PAS PERÇUE DÈS LE DÉBUT : elle existe dans le plan dès le départ, mais le lecteur la sent d\'abord comme une gêne, une coïncidence, un malaise discret - pas comme une évidence. Pour le genre horreur : le lecteur doit avoir le temps de s\'attacher avant d\'avoir peur.',
+  'L\'ACCROCHE VIENT DU PERSONNAGE, pas du danger : on lit les premières pages parce qu\'on s\'attache au héros et à son monde (écriture, humanité, désir), pas parce qu\'un événement spectaculaire a déjà frappé.',
+  'VARIER LES OUVERTURES : certains romans peuvent ouvrir in medias res, mais PAS systématiquement. L\'installation lente est la base ; l\'ouverture directe dans l\'action est l\'exception, jamais la norme.',
+].join('\n');
+
 export function ageLabel(age: AgeGroup): string {
   return AGE_GROUPS.find((g) => g.code === age)?.label ?? 'Adultes';
 }
@@ -339,16 +353,19 @@ VOIX NARRATIVE du roman (écris le prologue DANS CE REGISTRE, pas dans un autre)
 ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}
 
 Le prologue doit :
-- ACCROCHER immédiatement (une scène intrigante, un danger, une question, un mystère).
-- Poser le héros et son monde ordinaire (avant la bascule), avec des descriptions riches et des scènes complètes.
-- Faire sentir le CAP du roman : la destination du plan directeur doit se dessiner (sans la révéler).
-- Finir sur une note qui donne envie de lire le chapitre 1.
+- INSTALLER la vie ordinaire du héros : sa routine, son travail, les gens qui l'entourent, ses manies, ce qu'il désire et ce qu'il redoute. On doit entrer dans son monde et s'attacher à lui AVANT toute bascule.
+- Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
+- L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
+- Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
+- Finir sur une note calme qui donne envie de lire le chapitre 1 (le lecteur veut suivre ce héros).
 - Ne PAS contenir de choix (les choix commencent au chapitre 1).
 - ${ageLimit(age)}
 
 ${PROSE_RULES}
 
 ${HUMANITY_RULES}
+
+${PROGRESSION_RULES}
 
 ${ANTI_AI_SLOP}
 
@@ -470,6 +487,8 @@ ${PROSE_RULES}
 ${HUMANITY_RULES}
 
 ${COHERENCE_RULES}
+
+${PROGRESSION_RULES}
 
 ${ANTI_AI_SLOP}
 

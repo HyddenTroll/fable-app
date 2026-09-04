@@ -853,6 +853,32 @@ FAIT :
         époque, point de vue roi.
       Typecheck OK. Commit + push (déploiement auto).
 
+   14. PROGRESSION DU RÉCIT (retour utilisateur : l'IA est "dans le
+      vif du sujet" dès la première demande - l'horreur se perçoit
+      dès le début du livre, tout le temps. Or l'IA DOIT avoir son
+      idée générale CACHÉE de l'utilisateur et écrire comme un
+      écrivain : poser les bases d'abord, montée lente par couches,
+      car l'utilisateur génère la suite chapitre par chapitre) :
+      - prompts.ts : PROGRESSION_RULES (6 règles) : monde ordinaire
+        d'abord (routines, relations, manies - l'installation rend
+        la bascule douloureuse), montée par couches (graines
+        anodines puis brisure), le plan reste caché du lecteur (il
+        découvre avec le héros), la menace n'est pas perçue dès le
+        début (malaise discret d'abord ; pour l'horreur : s'attacher
+        avant d'avoir peur), l'accroche vient du personnage pas du
+        danger, varier les ouvertures (in medias res = exception).
+      - buildProloguePrompt réécrit : INSTALLER la vie ordinaire du
+        héros, au plus UNE graine discrète, accroche par l'écriture
+        et le personnage, fin calme qui donne envie de suivre le
+        héros. (Avant : "accrocher immédiatement par une scène
+        intrigante/un danger" -> cause du problème.)
+      - buildChapterMessages : PROGRESSION_RULES injectées.
+      - chapter.ts actPhase réécrit : ch.1 = monde ordinaire +
+        graine discrète ; ch.2 = bascule douce (déclencheur) ;
+        ch.3 = montée + graines qui prennent sens ; ch.4 = fin de
+        l'acte 1 (menace claire) ; point médian inchangé (ch.7).
+      Typecheck OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

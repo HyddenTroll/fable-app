@@ -337,16 +337,16 @@ const EMPTY_RESULT: LLMResult = {
 };
 
 function actPhase(n: number): string {
-  if (n === 1) return 'Début : le héros franchit le point de bascule.';
-  if (n === 2) return 'Le héros découvre les règles du monde et ses alliés.';
-  if (n === 3) return 'Montée de tension, premiers obstacles sérieux.';
-  if (n === 4) return 'Fin de l\'acte 1 : un événement qui change tout.';
-  if (n === 5) return 'Début de l\'acte 2 : conséquences, nouvelle quête.';
-  if (n === 6) return 'Le héros s\'engage plus profondément, révélations.';
-  if (n === 7) return 'Point médian : un revers majeur ou une grande révélation.';
-  if (n === 8) return 'Montée vers le pire, alliés et ennemis se précisent.';
+  if (n === 1) return 'Le monde ordinaire du héros : sa vie s\'installe, une première graine discrète apparaît (étrangeté à peine perceptible, jamais explicite).';
+  if (n === 2) return 'La bascule douce : l\'événement déclencheur se produit, le héros commence à s\'inquiéter, le malaise gagne du terrain.';
+  if (n === 3) return 'Montée : les règles du problème se dessinent, premiers obstacles sérieux, les graines des chapitres 1-2 prennent sens.';
+  if (n === 4) return 'Fin de l\'acte 1 : un événement qui change tout - la menace devient claire pour le héros.';
+  if (n === 5) return 'Début de l\'acte 2 : conséquences, nouvelle quête, le héros s\'engage.';
+  if (n === 6) return 'Le héros creuse plus profond, révélations partielles, alliés et ennemis se précisent.';
+  if (n === 7) return 'Point médian : un revers majeur ou une grande révélation change la donne.';
+  if (n === 8) return 'Montée vers le pire, alliés et ennemis se précisent, les coûts se paient.';
   if (n === 9) return 'Fin de l\'acte 2 : la situation semble perdue.';
   if (n === 10) return 'Début de l\'acte 3 : le héros prépare sa dernière chance.';
-  if (n === 11) return 'Avant-climax : le héros affronte ses peurs.';
+  if (n === 11) return 'Avant-climax : le héros affronte ses peurs, vérités et choix finaux.';
   return 'Climax : la question dramatique trouve sa réponse.';
 }
