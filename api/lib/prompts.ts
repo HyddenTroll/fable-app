@@ -26,6 +26,10 @@ const ANTI_AI_SLOP = [
 const PROSE_RULES = [
   'Écris une prose de ROMAN PUBLIÉ, pas un brouillon ni une fiche technique.',
   'Interdit le style haché typique de l\'IA : pas de paragraphes d\'une seule phrase en série, pas de phrases nominales alignées ("La nuit. Le froid. Le silence."), pas de structure répétitive ("Elle fit... Elle vit...").',
+  'PRENDS LE TEMPS de raconter : chaque moment important mérite plusieurs paragraphes. Pose le décor et les sensations AVANT l\'action, montre le geste dans son détail, puis laisse la conséquence émotionnelle respirer. Une scène ne se brûle jamais en trois lignes.',
+  'Interdit les enchaînements précipités d\'actions ("Il ouvrit la porte. Il entra. Il vit la lettre."). Entre deux actions : une perception, une pensée, un détail, le poids d\'un geste.',
+  'La phrase courte est rare : au maximum une par paragraphe, jamais deux de suite. La phrase moyenne fait 18 à 35 mots. Les phrases longues construisent la dynamique, les courtes frappent.',
+  'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
   'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
   'Chaque chapitre = 2 à 4 scènes complètes, chacune avec son début, son développement et sa fin.',
@@ -53,7 +57,7 @@ export const NARRATIVE_VOICES: { id: string; nom: string; consigne: string }[] =
   {
     id: 'cinematique',
     nom: 'Cinématique haletant',
-    consigne: 'Scènes découpées comme au cinéma, phrases courtes et nerveuses, dialogues secs et rapides, ellipses de temps marquées, tension permanente, fins de paragraphe qui claquent.',
+    consigne: 'Scènes découpées comme au cinéma, montage rapide entre les plans, dialogues secs et rapides, ellipses de temps marquées, tension permanente, fins de paragraphe qui claquent. Les phrases restent de longueur variée (jamais de staccato haché) : le tempo vient du MONTAGE des scènes, pas de la brièveté des phrases.',
   },
   {
     id: 'lyrique',
@@ -83,7 +87,7 @@ export const NARRATIVE_VOICES: { id: string; nom: string; consigne: string }[] =
   {
     id: 'minimaliste',
     nom: 'Minimalisme sec',
-    consigne: 'Phrases brèves, ellipses, non-dit, sous-texte permanent. Le style en dit moins que l\'histoire n\'en contient : les silences et les blancs font partie de la narration. Émotion par retenue.',
+    consigne: 'Réserve et non-dit : le style en dit moins que l\'histoire n\'en contient, les silences et les blancs font partie de la narration. Rythme retenu, émotion par retenue et sous-texte - mais les scènes restent développées et les phrases de longueur normale (la discrétion est dans le choix des mots, pas dans la brièveté).',
   },
   {
     id: 'oral',
@@ -217,7 +221,7 @@ ${PROSE_RULES}
 
 ${ANTI_AI_SLOP}
 
-Rappel : un VRAI prologue de roman = 1500 à 2200 mots, en prose soignée et détaillée, PAS un résumé ni un teaser.
+Rappel : un VRAI prologue de roman = 1500 à 2200 mots, en prose soignée et détaillée, PAS un résumé ni un teaser. Prends le temps : développe chaque moment, ne précipite pas les actions.
 
 Réponds UNIQUEMENT en JSON valide :
 {
@@ -334,7 +338,7 @@ ${PROSE_RULES}
 
 ${ANTI_AI_SLOP}
 
-IMPORTANT : écris le chapitre en texte brut, SANS balises JSON, SANS titre. Juste la prose du chapitre (${params.chapterLength === 'court' ? 2000 : params.chapterLength === 'moyen' ? 3500 : 5000} mots environ). Un chapitre de cette longueur n'est pas un résumé : c'est une vraie scène de roman, développée.`;
+IMPORTANT : écris le chapitre en texte brut, SANS balises JSON, SANS titre. Juste la prose du chapitre (${params.chapterLength === 'court' ? 2000 : params.chapterLength === 'moyen' ? 3500 : 5000} mots environ). Ce nombre de mots n'est PAS un résumé : c'est le temps de DÉVELOPPER chaque scène. Prends le temps de raconter - décris, installe, fais durer les moments importants, ne précipite jamais les actions. Si tu écris trop court, c'est une faute.`;
   return { system, stable, volatile };
 }
 
