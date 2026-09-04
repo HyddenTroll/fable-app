@@ -791,6 +791,45 @@ FAIT :
         (créatures horreur, famille romance, artefacts fantasy...).
       Typecheck api OK. Commit + push (déploiement auto).
 
+   12. HUMANITÉ + ANTI-CLICHÉ + COHÉRENCE + HORREUR HUMAINE
+      (retours utilisateur : (a) ne pas tomber dans le cliché -
+      l'horreur n'est pas que des créatures, tout doit être UNIQUE ;
+      (b) l'humanité du récit est ce qui fait un bon livre ; (c) la
+      génération doit rester cohérente avec tout ce qui précède ;
+      (d) étudier les livres qui ont marché dans chaque genre) :
+      - prompts.ts : HUMANITY_RULES (7 règles) : émotions
+        contradictoires, les gens ne disent pas ce qu'ils pensent,
+        détails humains singuliers, défauts ordinaires, tonalité
+        honnête (registres mêlés), empathie avant sensation
+        (confronter le lecteur à ce qu'il ne veut pas vivre), la
+        peur la plus forte est humaine et quotidienne. Intégré à la
+        bible, au prologue et aux chapitres.
+      - prompts.ts : COHERENCE_RULES (5 règles) : chaque phrase
+        cohérente avec bible/résumé/état/chapitres précédents, pas
+        de contradiction (blessure, objet, personnage), pas de
+        téléportation de personnages, ton stable. Intégré aux
+        chapitres.
+      - prompts.ts : ANTI-CLICHÉ dans la bible : si un élément
+        imposé ressemble à un schéma connu (créature qui traque,
+        cassette, maison hantée, secret générique) -> le DÉTOURNER,
+        en faire une version inattendue. "Le cliché est interdit
+        même quand il vient des tables."
+      - narrative-elements.ts : 2 nouvelles tables d'horreur
+        (60 briques) : HORREUR_HUMAINE (menace psychologique et
+        sociale : le voisin trop serviable, la communauté qui se
+        resserre, la rumeur...) et HORREUR_QUOTIDIEN (le banal qui
+        se fissure : clés qui se dupliquent, calendrier qui saute
+        des jours...). BRIQUES_PAR_GENRE.horreur passe à 4
+        catégories : Créature OU Menace humaine OU Quotidien OU Lieu
+        -> l'horreur ne pioche plus systématiquement une créature.
+      - ÉTUDE DES LIVRES PAR GENRE (demandé) : 6 sous-agents en
+        parallèle étudient 6-8 best-sellers par genre (horreur,
+        fantasy, SF, policier, historique, romance) : pourquoi ça
+        marche, structure/rythme, leçons pour l'IA, lois du genre.
+        Résultats -> docs/5-ecriture-narrative/ puis intégration
+        dans les prompts par genre. (en cours)
+      Typecheck api OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

@@ -37,6 +37,35 @@ const PROSE_RULES = [
 ].join('\n');
 
 /**
+ * L'HUMANITÉ DU RÉCIT - ce qui fait qu'un livre "reconnaît" le lecteur.
+ * Synthèse des analyses de lectorat (retrouvailles presse/lecteurs :
+ * l'horreur mise sur l'empathie, la romance vend des expériences
+ * émotionnelles, les grands romans montrent des gens contradictoires).
+ * Le plot est le véhicule, l'émotion est la destination.
+ */
+const HUMANITY_RULES = [
+  'RENDS LES GENS VRAIS : le héros (et les autres) pensent et ressentent des choses CONTRADICTOIRES, souvent en même temps : vouloir et avoir peur, aimer et se méfier, rire dans le chagrin, espérer malgré tout. Jamais une seule émotion à la fois, jamais les réactions "modèle".',
+  'Les gens ne disent pas ce qu\'ils pensent : ils font des détours, mentent par omission, répondent à côté, se taisent quand il faudrait parler. Le vrai dialogue est approximatif et vivant.',
+  'Détails humains singuliers : une manie, un tic, une habitude héritée (le héros compte ses pas, plie mal ses vêtements, retient son souffle avant les phrases difficiles). Ces petits gestes font plus que les grands discours.',
+  'Le héros a des défauts ordinaires : des lâchetés, des élans avortés, de la mauvaise foi occasionnelle, des moments de grâce inattendus. Il n\'est ni un modèle ni un monstre : il est humain.',
+  'TONALITÉ HONNÊTE : la vie mêle les registres - humour au milieu du drame, tendresse dans le conflit, absurdité dans les moments graves. Un récit monotone sonne faux.',
+  'EMPATHIE AVANT SENSATION : pour effrayer ou émouvoir, confronte le lecteur à une situation qu\'il ne voudrait pas vivre, en la faisant exister par les détails - jamais par l\'effet gratuit. Si le lecteur ne se dit pas "ça pourrait m\'arriver", la scène ne sert à rien.',
+  'La peur la plus forte est humaine et quotidienne : ce qui vient des gens ordinaires, des relations, des rumeurs, de la banalité qui se fissure. Le surnaturel n\'est qu\'un miroir grossissant de ce que les humains se font déjà.',
+].join('\n');
+
+/**
+ * COHÉRENCE STRICTE : chaque nouvelle phrase doit rester cohérente
+ * avec tout ce qui a été écrit précédemment dans le roman.
+ */
+const COHERENCE_RULES = [
+  'COHÉRENCE STRICTE AVEC TOUT CE QUI PRÉCÈDE : chaque phrase doit être en accord avec la bible, le résumé des événements, l\'état du héros et les chapitres précédents.',
+  'Aucune contradiction : ne fais pas disparaître une blessure non soignée, ne rends pas un objet perdu, ne change pas le nom, le caractère ou la loyauté d\'un personnage sans raison et sans le montrer.',
+  'N\'introduis jamais un élément qui contredit une scène déjà écrite (un lieu réapparaît détruit, un allié devient traître sans transition, une information déjà sue est redécouverte avec surprise).',
+  'Les personnages secondaires restent cohérents : s\'ils étaient hostiles, ils le restent progressivement ; s\'ils étaient présents ou absents d\'une scène, ne les téléporte pas.',
+  'Le ton et la voix narrative ne dérivent pas : on reste dans le registre imposé du début à la fin.',
+].join('\n');
+
+/**
  * PALETTE DE VOIX NARRATIVES (diversité maximale entre les romans).
  * Chaque nouvelle histoire tire UNE voix au sort ; la bible et tous
  * les chapitres l'écrivent dans CE registre précis. Chaque livre doit
@@ -155,6 +184,7 @@ VOIX NARRATIVE IMPOSÉE (obligatoire - tout le roman sera écrit dans CE registr
 Le champ "tonStyle" de ta réponse doit décrire cette voix en 3-4 phrases concrètes utilisables par l'écrivain de chaque chapitre (rythme de phrase, densité descriptive, place du dialogue et de l'introspection, vocabulaire).
 
 IMPORTANT - ORIGINALITÉ : ce roman doit être UNIQUE. Ne réutilise jamais l'intrigue, les personnages ou les situations d'histoire que tu as déjà écrites ou connues (changement de ville/nom/époque ne suffit pas : change la VRAIE histoire).
+ANTI-CLICHÉ : si un élément imposé par la direction ressemble à un schéma connu (créature qui traque, cassette mystérieuse, maison hantée standard, secret de famille générique), DÉTOURNE-LE : sonne-le avec les codes du genre AVANT de le prendre au pied de la lettre, ou transforme-le en version inattendue. Le cliché est interdit même quand il vient des tables : la surprise est le minimum.
 INDICE DE CRÉATION (numéro de tirage) : ${variationSeed} - utilise ce tirage pour ancrer une variation : fais un choix d'écriture différent (point de départ, secret du héros, nature de l'antagoniste, énigme centrale).
 
 Ta mission : construire une histoire avec UN CAP PRÉCIS. Tu sais dès le départ où tu emmènes le lecteur, même si ses choix changent le chemin. Un bon roman ne dérive jamais : il converge.
@@ -171,6 +201,9 @@ Règles de fond :
 ARCHITECTURE DU ROMAN (~10-15 chapitres + prologue) :
 - Répartis les chapitres : Acte I = 3-5, Acte II = 5-7, Acte III = 2-3. Indique le point médian (le grand renversement au milieu de l'Acte II qui change la donne).
 - La promesse du genre doit être tenue : ${params.genre}${params.subGenre ? ` (${params.subGenre})` : ''} a ses codes (sinon le lecteur se sent trahi), mais tu les déplaces avec originalité.
+- L'élément imposé par la direction n'est JAMAIS un simple décor : il doit provoquer l'histoire, la nourrir et être dénoué (une brique est une graine, pas une affiche).
+
+${HUMANITY_RULES}
 
 PLAN DIRECTEUR - à remplir avec une précision totale :
 - "destination" : UNE phrase qui dit où l'histoire emmène le lecteur (la promesse du roman, ce que le lecteur doit ressentir/comprendre à la fin). C'est LE cap.
@@ -238,6 +271,8 @@ Le prologue doit :
 - ${ageLimit(age)}
 
 ${PROSE_RULES}
+
+${HUMANITY_RULES}
 
 ${ANTI_AI_SLOP}
 
@@ -355,6 +390,10 @@ VOIX NARRATIVE (obligatoire - écris ce chapitre DANS CE REGISTRE, pas dans un a
 ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}
 
 ${PROSE_RULES}
+
+${HUMANITY_RULES}
+
+${COHERENCE_RULES}
 
 ${ANTI_AI_SLOP}
 

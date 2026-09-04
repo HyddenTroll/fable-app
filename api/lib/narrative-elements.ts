@@ -500,6 +500,80 @@ export const HORREUR_LIEUX: string[] = [
   'un phare en pierre noire dont la lanterne éclaire vers l\'intérieur des terres',
 ];
 
+/**
+ * Horreur HUMAINE et psychologique (anti-cliché : la menace ne vient
+ * pas forcément d'une créature). Ce qui fait vraiment peur : les gens.
+ */
+export const HORREUR_HUMAINE: string[] = [
+  'un voisin d\'une serviabilité parfaite, qui connaît la vie du héros mieux que lui',
+  'une communauté accueillante qui se resserre, et se resserre, autour du héros',
+  'un bienfaiteur local qui s\'invite dans chaque décision, pour « le bien du quartier »',
+  'une rumeur qui grandit : le héros découvre qu\'on parle de lui dans son dos, en bien',
+  'un collègue trop aidant qui commence à régler les problèmes avant qu\'ils n\'existent',
+  'une famille recomposée où chacun essaie si fort que ça tourne au contrôle',
+  'un voisinage qui organise des tours de garde pour « protéger » le héros',
+  'une association caritative qui s\'occupe de tout chez le héros, petit à petit',
+  'un médecin attentionné qui prescrit du bien-être, puis de l\'observance, puis de la gratitude',
+  'une femme du village qui sait exactement quelle confidence « aiderait » le héros',
+  'les amis du héros qui organisent une intervention, convaincus de savoir ce qui est bon',
+  'un professeur bienveillant qui garde les clés de l\'appartement « en cas d\'urgence »',
+  'une logeuse maternelle qui entre pour ranger, pour aérer, pour vérifier',
+  'un club de lecture où chaque réunion révèle un peu plus de la vie privée des membres',
+  'un conseil de quartier qui décide des horaires du héros, « pour son bien »',
+  'un ancien ami qui s\'inquiète si fort qu\'il appelle les autorités préventivement',
+  'une boutique de quartier qui réserve les commandes du héros avant qu\'il ne commande',
+  'un voisin qui tonde la pelouse du héros, puis taille ses haies, puis ses rideaux',
+  'une assistante au dévouement total qui archive chaque interaction « au cas où »',
+  'un groupe de soutien qui ne laisse plus le héros partir des réunions',
+  'des travaux dans l\'immeuble qui s\'étendent à l\'appartement du héros, pièce par pièce',
+  'une voisine qui dépose des plats, des mots doux, puis exige des remerciements horodatés',
+  'un relais de quartier qui connaît les clefs de toutes les serrures du village',
+  'un superviseur bienveillant qui évalue la santé mentale du héros au lieu de son travail',
+  'un groupe de parents qui sait où sont les enfants avant eux',
+  'une marraine de quartier qui a un avis sur chaque choix du héros, et le fait savoir',
+  'un buraliste qui garde les courriers « qui pourraient inquiéter » le héros',
+  'un club de retraités qui adopte le héros et décide de son bonheur sans lui',
+  'un partenariat « gagnant-gagnant » où le héros apporte tout et le partenaire décide tout',
+  'un ancien colocataire qui revient « juste pour aider », avec les clés encore',
+];
+
+/**
+ * Horreur du QUOTIDIEN : le banal qui se fissure (sans surnaturel).
+ * Les petites anomalies d'abord invisibles, puis impossibles à ignorer.
+ */
+export const HORREUR_QUOTIDIEN: string[] = [
+  'les clés du héros se dupliquent dans le tiroir, une de plus chaque semaine',
+  'le calendrier saute des jours : le héros se souvient d\'un mardi qu\'on lui dit jeudi',
+  'le supermarché ne vend plus que les produits que le héros achète, rien d\'autre',
+  'les horodateurs affichent toujours la même heure, celle où le héros manque de repos',
+  'le héros retrouve ses affaires rangées d\'une manière qu\'il n\'a jamais utilisée',
+  'des appels en absence à minuit pile, avec le numéro de la maison',
+  'le robinet goutte en rythme, et le rythme est le nom du héros, sans arrêt',
+  'l\'écran de veille du téléphone montre des photos de pièces inconnues, en continu',
+  'le couloir de l\'immeuble est plus long certains matins',
+  'les plantes du salon penchent toutes vers la même fenêtre, fermée',
+  'la radio se cale sur une station qui parle du héros à la troisième personne',
+  'les escaliers ont une marche de plus le soir que le matin',
+  'le héros reçoit des factures pour des services qu\'il n\'a jamais commandés, réglées',
+  'une gamelle est vidée chaque matin, alors qu\'il n\'a pas d\'animal',
+  'le miroir de la salle de bain est flou exactement à hauteur de son visage',
+  'les messages vocaux s\'effacent tout seuls après écoute, sauf un qui s\'est vidé',
+  'le lit est fait quand le héros se lève, quoiqu\'il se couche',
+  'la boîte aux lettres ne contient plus que des enveloppes blanches, toutes identiques',
+  'les voisins cessent de saluer le héros en même temps, le même jour',
+  'le héros retrouve son manteau sur un cintre qu\'il ne possède pas',
+  'le parking de sa résidence a une place vide marquée à son nom',
+  'les ampoules grillent toutes du même côté de la pièce, la même nuit',
+  'l\'eau du lavabo est froide quand il vient se laver, chaude quand il est dans l\'autre pièce',
+  'les rideaux sont tirés le matin, ouverts le soir, systématiquement',
+  'les clés de la voiture sont sur le siège passager alors qu\'il les a posées à la porte',
+  'le héros trouve des cheveux qui ne sont pas les siens sur l\'oreiller, et ce sont un couple',
+  'les pages du livre qu\'il lisait sont cornées à des chapitres qu\'il n\'a pas lus',
+  'chaque réveil crépite une seconde avant de sonner, comme s\'il était déjà allumé',
+  'le héros a de moins en moins d\'objets chez lui, sans jamais jeter',
+  'la télécommande fonctionne même quand la télé est débranchée',
+];
+
 /** Romance : situations familiales et cercles proches. */
 export const ROMANCE_SITUATIONS_FAMILIALES: string[] = [
   'la famille du héros est la raison commerciale de la rencontre, et l\'interdit de la suite',
@@ -1017,7 +1091,8 @@ export const HISTORIQUE_OBJETS: string[] = [
 export const BRIQUES_PAR_GENRE: Record<string, { categorie: string; elements: string[] }[]> = {
   horreur: [
     { categorie: 'Créature ou présence', elements: HORREUR_CREATURES },
-    { categorie: 'Situation d\'angoisse', elements: HORREUR_SITUATIONS },
+    { categorie: 'Menace humaine ou psychologique', elements: HORREUR_HUMAINE },
+    { categorie: 'Le quotidien qui se fissure', elements: HORREUR_QUOTIDIEN },
     { categorie: 'Lieu oppressant', elements: HORREUR_LIEUX },
   ],
   romance: [
