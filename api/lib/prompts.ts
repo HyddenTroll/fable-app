@@ -160,7 +160,7 @@ Propose ${2 <= maxChoices ? `de 2 à ${maxChoices}` : '2'} choix de suite pour l
 - Les choix ne doivent pas être des fausses options : chacun mène à une suite réellement différente.
 - ${ageLimit(age)}
 
-Réponds UNIQUEMENT en JSON valide :
+Réponds UNIQUEMENT en JSON valide (objet JSON, comme demandé) :
 {
   "titre": "Chapitre ${chapterNumber} : ...",
   "choix": [

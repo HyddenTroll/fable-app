@@ -266,10 +266,27 @@ function actPhase(n: number): string {
   return 'Climax : la question dramatique trouve sa réponse.';
 }
 
-/** Extrait le premier objet JSON d'une réponse LLM. */
+/** Extrait le premier objet JSON d'une réponse LLM (robuste au texte parasite). */
 function extractJson(text: string): string {
   const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) throw new Error('JSON invalide');
-  return text.slice(start, end + 1);
+  if (start === -1) throw new Error('JSON invalide');
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === '\\') escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  throw new Error('JSON invalide');
 }

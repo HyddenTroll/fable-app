@@ -170,9 +170,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 /** Extrait le premier objet JSON d'une réponse LLM (robuste au texte parasite). */
 function extractJson(text: string): string {
   const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error('Réponse IA sans JSON valide');
+  if (start === -1) throw new Error('Réponse IA sans JSON valide');
+  // Parcours caractère par caractère pour trouver le vrai `}` fermant
+  // (gère les `}` dans les chaînes JSON).
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === '\\') escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
   }
-  return text.slice(start, end + 1);
+  throw new Error('Réponse IA sans JSON valide');
 }

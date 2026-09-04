@@ -135,11 +135,15 @@ export class LLM {
   private async generateOpenAI(req: LLMRequest): Promise<LLMResult> {
     const client = this.openai!;
     const model = this.modelFor(req.kind);
+    const userContent = req.messages.map((m) => m.content).join(' ');
+    const wantsJson = /JSON/i.test(userContent);
     const res = await client.chat.completions.create({
       model,
-      max_tokens: req.maxTokens ?? 2048,
+      max_completion_tokens: req.maxTokens ?? 2048,
       messages: req.messages,
       stream: false,
+      // Force un JSON valide quand le prompt le demande (Luna produit sinon du JSON cassé)
+      ...(wantsJson ? { response_format: { type: 'json_object' } as const } : {}),
     });
 
     const usage: LLMUsage = {
@@ -162,7 +166,7 @@ export class LLM {
     const model = this.modelFor(req.kind);
     const stream = await client.chat.completions.create({
       model,
-      max_tokens: req.maxTokens ?? 2048,
+      max_completion_tokens: req.maxTokens ?? 2048,
       messages: req.messages,
       stream: true,
       stream_options: { include_usage: true },
