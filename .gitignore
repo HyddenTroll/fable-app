@@ -4,8 +4,7 @@ node_modules/
 dist/
 
 # Environnement - JAMAIS commité
-.env
-.env.*
+.env*
 !.env.example
 
 # Build

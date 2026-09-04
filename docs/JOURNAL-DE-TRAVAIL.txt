@@ -529,15 +529,92 @@ FAIT :
      0,0089 $, freeRemaining 3.
    - Le format SSE correspond exactement au parseur client.
 
-===============================================================
-PROCHAINE SESSION (à faire)
-===============================================================
-1. [TICKET CACHÉ] Rouvrir quand volume réel : cache explicite GPT-5.6
-   via Responses API (vérifier d'abord la doc officielle)
-2. [RÉGRESSION] Test cohérence complet 20 chapitres + séparation
-   âge/type
-3. Re-test sur téléphone (Expo Go) - le streaming expo/fetch doit être
-   validé en conditions réelles
-4. Continuer une partie au retour (actuellement le store garde le jeu
-   courant en session, mais pas de rechargement via /api/game/read
-   après redémarrage)
+   ================================================================
+   SESSION 14 - 04/09/2026 : RELANCE SUR CE PC + TEST LIVRE + FIX ACCUEIL
+   ================================================================
+   CONTEXTE : reprise du travail depuis ce PC (D:\Fable resté à la
+   session 9 bis). GitHub = source de vérité. L'utilisateur teste le
+   site déployé et signale des problèmes. Objectif : tester un livre
+   de 4 chapitres lisible + nettoyer l'accueil.
+
+   FAIT :
+   1. SYNCHRO : git pull de D:\Fable (était à 5780547, session 9 bis)
+      -> ea16ecd (session 13). npm install (deps manquantes après le
+      pull : typecheck mobile cassé sur expo-secure-store/expo-web-browser).
+   2. RÉCUPÉRATION DES CLÉS : vercel env pull (projet lié fable-app,
+      production). LESSON : les variables "Encrypted" du dashboard
+      (OPENAI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) sont
+      PULLÉES VIDES ("" - hex 2222) par le CLI. Seules les variables
+      publiques EXPO_PUBLIC_* (anon key + URL) sont récupérables.
+      => La clé OpenAI ne s'obtient pas via Vercel CLI sur ce PC.
+   3. SCRIPT LOCAL (scripts/book-test.mjs) : pipeline complet hors-ligne
+      (bible + prologue + 4 chapitres + choix + résumé + état + fin +
+      HTML au thème Fable). Bloqué : pas de OPENAI_API_KEY locale.
+   4. SCRIPT VIA API DÉPLOYÉE (scripts/book-via-api.mjs) : compte
+      Supabase jetable (signup) puis POST /api/game/create +
+      4x /api/game/chapter (SSE) sur https://fable-app-three.vercel.app,
+      HTML du livre à la fin. BLOQUÉ par Supabase :
+      - email jetable example.com REJETÉ (email_address_invalid)
+      - gmail.com jetable -> 429 over_email_send_rate_limit
+        (mailer_autoconfirm=false => chaque signup envoie un email ;
+        quota emails du projet épuisé par les tests des sessions 10-13)
+      => ABANDON : l'utilisateur testera via le site déployé.
+      NB crash Windows : Node 24 + fetch => "Assertion failed
+      uv_handle_closing" à la sortie du process (cosmétique, après le
+      résultat).
+   5. BUG SIGNALÉ PAR L'UTILISATEUR (accueil) : l'écran d'accueil
+      affichait la boîte "Prototype - debug / Données fictives (pas
+      d'IA réelle)" - périmée depuis la session 13 ET moche.
+      => ACCUEIL NETTOYÉ : basiques fonctionnels seulement (Continuer
+      l'aventure si partie en cours / + Nouvelle aventure / badges
+      Connexion-Profil / bonjour). Commit 32e9fa9 + push (site
+      redéployé automatiquement).
+   6. BUG GOOGLE OAUTH (bloquant, signalé par l'utilisateur) : après
+      le flux Google, Supabase redirige vers http://localhost:3000/
+      #access_token=... au lieu du site Vercel.
+      CAUSE : PAS un bug du code (l'app envoie bien window.location.origin
+      via supabase.auth.signInWithOAuth, detectSessionInUrl=true sur
+      web). CAUSE = config dashboard Supabase : Site URL encore à
+      http://localhost:3000 (réglage de dev) et Redirect URLs sans le
+      domaine Vercel. GoTrue retombe sur la Site URL par défaut quand
+      redirect_to n'est pas autorisé.
+      ACTION UTILISATEUR (dashboard supabase.com > projet fable >
+      Authentication > URL Configuration) :
+      - Site URL : https://fable-app-three.vercel.app
+      - Redirect URLs : + https://fable-app-three.vercel.app
+        et https://fable-app-three.vercel.app/auth/callback
+        (garder fable://auth/callback pour le natif).
+   7. LESSON GITIGNORE : .env.* ne matche pas .env2 -> le pull Vercel
+      (.env2) a failli être commité (27 variables, secrets vides).
+      Retiré du suivi + .gitignore élargi à .env* (avec
+      !.env.example). Aucun secret réel exposé (vérifié : longueurs
+      des valeurs dans le commit).
+   8. Le user a collé une URL de callback contenant un refresh_token :
+      recommandé de se déconnecter pour révoquer la session.
+
+   URLS FINALES :
+   - Site : https://fable-app-three.vercel.app
+   - Repo : https://github.com/HyddenTroll/fable-app
+   - Scripts de test livre : scripts/book-test.mjs (local, besoin clé)
+     et scripts/book-via-api.mjs (via API déployée, besoin quota email)
+
+   ================================================================
+   PROCHAINE SESSION (à faire)
+   ================================================================
+   1. [FAIT - user] Dashboard Supabase : Redirect URLs ajoutées
+      (domaine Vercel) - confirmé par l'utilisateur dans la foulée.
+      Site URL à vérifier si le flux Google reste bancal.
+   2. [DÈS QUE POSSIBLE] Test livre 4 chapitres : relancer
+      scripts/book-via-api.mjs une fois le rate limit email écoulé
+      (~1h) ou avec un compte user existant. Lire le HTML produit.
+   3. [TICKET CACHÉ] Rouvrir quand volume réel : cache explicite GPT-5.6
+      via Responses API (vérifier d'abord la doc officielle)
+   4. [RÉGRESSION] Test cohérence complet 20 chapitres + séparation
+      âge/type
+   5. Re-test sur téléphone (Expo Go) - le streaming expo/fetch doit être
+      validé en conditions réelles
+   6. Continuer une partie au retour (actuellement le store garde le jeu
+      courant en session, mais pas de rechargement via /api/game/read
+      après redémarrage)
+   7. Clé OpenAI sur ce PC : à recopier depuis l'autre PC (le .env n'est
+      PAS sur GitHub ni récupérable via vercel env pull).
