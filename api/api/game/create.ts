@@ -3,7 +3,7 @@ import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
-import { getQuota, canGenerateChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
+import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
 
 interface PrologueJson {
@@ -62,10 +62,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const db = getDb();
   const system = buildSystemPrompt();
 
-  // Vérification du quota : la création consomme le prologue (gratuit),
-  // mais on bloque si l'essai gratuit est épuisé.
+  // Vérification du quota : chaque création = bible + prologue (coût fixe),
+  // donc elle consomme un créneau du quota (bloque si essai gratuit épuisé).
   const quota = await getQuota(db, auth.userId);
-  const access = canGenerateChapter(quota, 0);
+  const access = canCreateGame(quota);
   if (!access.allowed) {
     return json(res, 402, { error: { code: access.reason, message: access.message }, paywall: true });
   }
@@ -152,6 +152,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (chapterError) {
     return json(res, 500, { error: { code: 'db_error', message: 'Impossible de stocker le prologue' } });
+  }
+
+  // Une création = bible + prologue = 1 créneau consommé du quota Fable+
+  if (quota.isPremium) {
+    await recordPremiumChapter(db, auth.userId);
   }
 
   return json(res, 201, {

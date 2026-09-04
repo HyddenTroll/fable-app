@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const db = getDb();
     const { data, error } = await db
       .from('profiles')
-      .select('id, email, display_name, age, preferences, credits_balance, is_premium, premium_expires_at')
+      .select('id, email, display_name, age, preferences, is_premium, premium_expires_at')
       .eq('id', auth.userId)
       .single();
 
@@ -25,13 +25,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return json(res, 404, { error: { code: 'profile_not_found', message: 'Profil introuvable' } });
     }
 
+    // Solde = somme des transactions (vue credit_balances), jamais un compteur mutable
+    const { data: balanceRows } = await db
+      .from('credit_balances')
+      .select('balance')
+      .eq('user_id', auth.userId);
+
+    const creditsBalance = balanceRows?.[0]?.balance ?? 0;
+
     return json(res, 200, {
       id: data.id,
       email: data.email,
       displayName: data.display_name,
       age: data.age,
       preferences: data.preferences,
-      creditsBalance: data.credits_balance,
+      creditsBalance,
       isPremium: data.is_premium,
       premiumExpiresAt: data.premium_expires_at,
     });
@@ -67,7 +75,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       displayName: data.display_name,
       age: data.age,
       preferences: data.preferences,
-      creditsBalance: data.credits_balance,
       isPremium: data.is_premium,
     });
   }

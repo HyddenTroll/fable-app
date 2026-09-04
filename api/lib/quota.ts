@@ -58,6 +58,30 @@ export type ChapterAccess =
   | { allowed: false; reason: 'free_limit' | 'premium_limit'; message: string };
 
 /**
+ * Autorise la CRÉATION d'une nouvelle partie.
+ * Chaque création génère une bible + prologue (coût IA fixe), donc elle
+ * consomme un créneau du quota : on bloque si l'essai gratuit est épuisé
+ * (sinon spam de bibles gratuites) ou si le plafond Fable+ est atteint.
+ */
+export function canCreateGame(q: QuotaState): ChapterAccess {
+  if (!q.isPremium && q.freeUsed >= FREE_CHAPTER_LIMIT) {
+    return {
+      allowed: false,
+      reason: 'free_limit',
+      message: 'Essai gratuit terminé : abonne-toi à Fable+ pour continuer.',
+    };
+  }
+  if (q.isPremium && q.premiumUsedThisMonth >= q.premiumLimit) {
+    return {
+      allowed: false,
+      reason: 'premium_limit',
+      message: 'Quota mensuel Fable+ atteint.',
+    };
+  }
+  return { allowed: true };
+}
+
+/**
  * Décide si l'utilisateur peut générer un nouveau chapitre.
  * Les chapitres gratuits (ch.1-5) sont offerts ; au-delà il faut Fable+.
  */

@@ -12,7 +12,7 @@ import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import type { AgeGroup, StoryBible, StoryChoice } from '@fable/shared';
 
-const TOTAL_CHAPTERS = 12;
+const TOTAL_CHAPTERS = 50;
 const MAX_CONTEXT_CHAPTERS = 3; // N derniers chapitres réinjectés
 
 interface ChapterBody {
@@ -84,7 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .map((c) => `--- Chapitre ${c.chapter_number}${c.title ? ` : ${c.title}` : ''} ---\n${c.content}`)
     .join('\n\n');
 
-  const act = nextNumber <= 4 ? 'Acte 1 (exposition)' : nextNumber <= 8 ? 'Acte 2 (confrontation)' : 'Acte 3 (résolution)';
+  const act = nextNumber <= 4 ? 'Acte 1 (exposition)' : nextNumber <= 8 ? 'Acte 2 (confrontation)' : nextNumber <= 12 ? 'Acte 3 (résolution)' : 'Dénouement prolongé';
   const phase = actPhase(nextNumber);
   const rule = nextNumber === FREE_CHAPTER_COUNT + 1 ? 'Finis ce chapitre sur un cliffhanger maximal - c\'est la fin de l\'essai gratuit.' : undefined;
 
