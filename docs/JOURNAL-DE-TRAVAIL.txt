@@ -591,6 +591,10 @@ FAIT :
       des valeurs dans le commit).
    8. Le user a collé une URL de callback contenant un refresh_token :
       recommandé de se déconnecter pour révoquer la session.
+   9. SUITE (même session) : l'utilisateur a modifié les Redirect URLs
+      Supabase DANS LA FOULÉE -> CONNEXION GOOGLE VALIDÉE sur le site
+      déployé. Le flux complet sera testé : Nouvelle aventure ->
+      createGame (bible+prologue) -> écran de lecture (prologue).
 
    URLS FINALES :
    - Site : https://fable-app-three.vercel.app
