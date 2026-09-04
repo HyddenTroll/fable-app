@@ -49,8 +49,8 @@ const HUMANITY_RULES = [
   'Détails humains singuliers : une manie, un tic, une habitude héritée (le héros compte ses pas, plie mal ses vêtements, retient son souffle avant les phrases difficiles). Ces petits gestes font plus que les grands discours.',
   'Le héros a des défauts ordinaires : des lâchetés, des élans avortés, de la mauvaise foi occasionnelle, des moments de grâce inattendus. Il n\'est ni un modèle ni un monstre : il est humain.',
   'TONALITÉ HONNÊTE : la vie mêle les registres - humour au milieu du drame, tendresse dans le conflit, absurdité dans les moments graves. Un récit monotone sonne faux.',
-  'EMPATHIE AVANT SENSATION : pour effrayer ou émouvoir, confronte le lecteur à une situation qu\'il ne voudrait pas vivre, en la faisant exister par les détails - jamais par l\'effet gratuit. Si le lecteur ne se dit pas "ça pourrait m\'arriver", la scène ne sert à rien.',
-  'La peur la plus forte est humaine et quotidienne : ce qui vient des gens ordinaires, des relations, des rumeurs, de la banalité qui se fissure. Le surnaturel n\'est qu\'un miroir grossissant de ce que les humains se font déjà.',
+  'EMPATHIE AVANT SENSATION : pour effrayer, émouvoir ou faire rire, confronte le lecteur à une situation qu\'il ne voudrait pas vivre (ou qu\'il rêve de vivre), en la faisant exister par les détails - jamais par l\'effet gratuit. Si le lecteur ne se dit pas "ça pourrait m\'arriver", la scène ne sert à rien.',
+  'Les émotions fortes naissent des relations et du quotidien : les familles, les amitiés, les rivalités, les rumeurs, la banalité qui se fissure. Le merveilleux, le surnaturel ou le futur ne sont que des miroirs grossissants de ce que les humains se font déjà entre eux.',
 ].join('\n');
 
 /**
