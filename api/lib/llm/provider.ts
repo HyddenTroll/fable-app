@@ -1,15 +1,11 @@
 /**
- * Couche d'abstraction LLM - permet de basculer entre fournisseurs
- * sans toucher au code métier.
- * Référence : docs/2-analyse-strategique/choix-fournisseur-ia.txt
- *
- * Mapping décidé :
- * - STORY_BIBLE & PROLOGUE  -> Claude Sonnet 5 (qualité)
- * - CHAPITRE & RESUME       -> GPT-5.6 Luna (coût / volume)
- * - FIN / CLIMAX            -> Claude Sonnet 5 / Opus (le meilleur)
+ * Couche d'abstraction LLM.
+ * Décision (docs/2-analyse-strategique/choix-fournisseur-ia.txt) :
+ * - CHAPITRES & RÉSUMÉS -> GPT-5.6 Luna (coût/volume, 0,20 $/1,20 $)
+ * - BIBLE, PROLOGUE, FIN -> Sonnet 5 (qualité FR) si clé Anthropic dispo
+ * Streaming natif + prompt caching + coûts calculés.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 
 export type PromptKind =
@@ -17,129 +13,234 @@ export type PromptKind =
   | 'prologue'
   | 'chapter'
   | 'ending'
-  | 'summary';
+  | 'summary'
+  | 'choices';
+
+export interface LLMMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
 
 export interface LLMRequest {
-  prompt: string;
+  messages: LLMMessage[];
   kind: PromptKind;
-  /** demander un flux (streaming machine à écrire) */
   stream?: boolean;
-  /** longueur max en tokens de sortie */
   maxTokens?: number;
+  /** tokens à mettre en cache (préfixe stable : système + bible) */
+  cachedPrefixTokens?: number;
+}
+
+export interface LLMUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cachedInputTokens: number;
 }
 
 export interface LLMResult {
   text: string;
   provider: string;
   model: string;
-  inputTokens: number;
-  outputTokens: number;
+  usage: LLMUsage;
+  /** coût estimé en USD */
+  costUsd: number;
 }
 
-/** Interface commune que chaque fournisseur implémente */
-export interface LLMProvider {
-  name: string;
-  generate(request: LLMRequest): Promise<LLMResult>;
+/** Tarifs $ / 1M tokens (entrée, sortie, cache) - sept. 2026 */
+const PRICES: Record<string, { input: number; output: number; cachedInput: number }> = {
+  'gpt-5.6-luna': { input: 0.2, output: 1.2, cachedInput: 0.02 },
+  'claude-sonnet-5': { input: 2, output: 10, cachedInput: 0.2 },
+};
+
+function costFor(model: string, usage: LLMUsage): number {
+  const p = PRICES[model] ?? { input: 2, output: 10, cachedInput: 0.2 };
+  return (
+    ((usage.inputTokens - usage.cachedInputTokens) * p.input +
+      usage.cachedInputTokens * p.cachedInput +
+      usage.outputTokens * p.output) /
+    1_000_000
+  );
 }
 
-// ---------------------------------------------------------------------------
-// Implémentations
-// ---------------------------------------------------------------------------
+/** Modèle par type de prompt. */
+const MODEL_BY_KIND: Record<PromptKind, { openai: string; anthropic: string }> = {
+  story_bible: { openai: 'gpt-5.6-luna', anthropic: 'claude-sonnet-5' },
+  prologue: { openai: 'gpt-5.6-luna', anthropic: 'claude-sonnet-5' },
+  chapter: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  ending: { openai: 'gpt-5.6-luna', anthropic: 'claude-sonnet-5' },
+  summary: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  choices: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+};
 
-export class AnthropicProvider implements LLMProvider {
-  name = 'anthropic';
-  private client: Anthropic;
+export class LLM {
+  private openai: OpenAI | null = null;
+  private provider: 'openai' | 'anthropic' | null = null;
 
   constructor() {
-    const key = process.env.ANTHROPIC_API_KEY;
-    if (!key) throw new Error('ANTHROPIC_API_KEY manquante');
-    this.client = new Anthropic({ apiKey: key });
+    if (process.env.OPENAI_API_KEY) {
+      this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      this.provider = 'openai';
+    } else if (process.env.ANTHROPIC_API_KEY) {
+      this.provider = 'anthropic';
+    } else {
+      throw new Error('Aucune clé LLM configurée (OPENAI_API_KEY ou ANTHROPIC_API_KEY)');
+    }
   }
 
-  async generate(request: LLMRequest): Promise<LLMResult> {
-    // Le modèle est choisi par le router (Sonnet 5 par défaut)
-    const model = MODEL_BY_KIND[request.kind].anthropic;
-    const res = await this.client.messages.create({
-      model,
-      max_tokens: request.maxTokens ?? 2048,
-      messages: [{ role: 'user', content: request.prompt }],
-    });
+  /** Fournisseur réellement utilisé. */
+  get activeProvider(): 'openai' | 'anthropic' {
+    return this.provider ?? 'openai';
+  }
 
-    const text = res.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map((b) => b.text)
-      .join('');
+  private modelFor(kind: PromptKind): string {
+    const m = MODEL_BY_KIND[kind];
+    return this.provider === 'anthropic' ? m.anthropic : m.openai;
+  }
 
-    return {
-      text,
-      provider: this.name,
-      model,
-      inputTokens: res.usage.input_tokens,
-      outputTokens: res.usage.output_tokens,
+  async generate(req: LLMRequest): Promise<LLMResult> {
+    if (this.provider === 'anthropic') {
+      return this.generateAnthropic(req);
+    }
+    return this.generateOpenAI(req);
+  }
+
+  /**
+   * Streaming (SSE). Itérateur de chunks texte ; la valeur de retour
+   * du générateur contient le LLMResult final (usage/coût).
+   */
+  async *stream(req: LLMRequest): AsyncGenerator<string, LLMResult, unknown> {
+    const inner = this.provider === 'anthropic'
+      ? this.streamAnthropic(req)
+      : this.streamOpenAI(req);
+    let result: LLMResult = {
+      text: '',
+      provider: this.provider!,
+      model: this.modelFor(req.kind),
+      usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 },
+      costUsd: 0,
     };
-  }
-}
-
-export class OpenAIProvider implements LLMProvider {
-  name = 'openai';
-  private client: OpenAI;
-
-  constructor() {
-    const key = process.env.OPENAI_API_KEY;
-    if (!key) throw new Error('OPENAI_API_KEY manquante');
-    this.client = new OpenAI({ apiKey: key });
+    for (;;) {
+      const { value, done } = await inner.next();
+      if (done) {
+        result = (value ?? result) as LLMResult;
+        return result;
+      }
+      yield value;
+    }
   }
 
-  async generate(request: LLMRequest): Promise<LLMResult> {
-    // GPT-5.6 Luna = le modèle budget par défaut (remplace nano/mini)
-    const model = MODEL_BY_KIND[request.kind].openai ?? 'gpt-5.6-luna';
-    const res = await this.client.chat.completions.create({
+  // ------------------------------------------------------------------
+  // OpenAI (GPT-5.6 Luna)
+  // ------------------------------------------------------------------
+
+  private async generateOpenAI(req: LLMRequest): Promise<LLMResult> {
+    const client = this.openai!;
+    const model = this.modelFor(req.kind);
+    const res = await client.chat.completions.create({
       model,
-      max_tokens: request.maxTokens ?? 2048,
-      messages: [{ role: 'user', content: request.prompt }],
+      max_tokens: req.maxTokens ?? 2048,
+      messages: req.messages,
       stream: false,
     });
 
-    return {
-      text: res.choices[0]?.message?.content ?? '',
-      provider: this.name,
-      model,
+    const usage: LLMUsage = {
       inputTokens: res.usage?.prompt_tokens ?? 0,
       outputTokens: res.usage?.completion_tokens ?? 0,
+      cachedInputTokens: res.usage?.prompt_tokens_details?.cached_tokens ?? 0,
     };
+
+    return {
+      text: res.choices[0]?.message?.content ?? '',
+      provider: this.provider!,
+      model,
+      usage,
+      costUsd: costFor(model, usage),
+    };
+  }
+
+  private async *streamOpenAI(req: LLMRequest): AsyncGenerator<string, LLMResult, unknown> {
+    const client = this.openai!;
+    const model = this.modelFor(req.kind);
+    const stream = await client.chat.completions.create({
+      model,
+      max_tokens: req.maxTokens ?? 2048,
+      messages: req.messages,
+      stream: true,
+      stream_options: { include_usage: true },
+    });
+
+    let inputTokens = 0;
+    let outputTokens = 0;
+    let cachedInputTokens = 0;
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content;
+      if (delta) yield delta;
+      if (chunk.usage) {
+        inputTokens = chunk.usage.prompt_tokens;
+        outputTokens = chunk.usage.completion_tokens;
+        cachedInputTokens = chunk.usage.prompt_tokens_details?.cached_tokens ?? 0;
+      }
+    }
+
+    const usage: LLMUsage = { inputTokens, outputTokens, cachedInputTokens };
+    return {
+      text: '',
+      provider: this.provider!,
+      model,
+      usage,
+      costUsd: costFor(model, usage),
+    };
+  }
+
+  // ------------------------------------------------------------------
+  // Anthropic (Sonnet 5) - fallback qualité
+  // ------------------------------------------------------------------
+
+  private async generateAnthropic(req: LLMRequest): Promise<LLMResult> {
+    // Import dynamique pour ne pas charger le SDK si inutilisé côté Vercel
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+    const model = this.modelFor(req.kind);
+
+    const res = await client.messages.create({
+      model,
+      max_tokens: req.maxTokens ?? 2048,
+      system: req.messages.find((m) => m.role === 'system')?.content,
+      messages: req.messages
+        .filter((m) => m.role !== 'system')
+        .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    });
+
+    const text = res.content
+      .filter((b) => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+
+    const usage: LLMUsage = {
+      inputTokens: res.usage.input_tokens,
+      outputTokens: res.usage.output_tokens,
+      cachedInputTokens: res.usage.cache_read_input_tokens ?? 0,
+    };
+
+    return {
+      text,
+      provider: 'anthropic',
+      model,
+      usage,
+      costUsd: costFor(model, usage),
+    };
+  }
+
+  private async *streamAnthropic(req: LLMRequest): AsyncGenerator<string, LLMResult, unknown> {
+    const result = await this.generateAnthropic(req);
+    yield result.text;
+    return result;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Router : choisit le fournisseur selon le type de prompt
-// ---------------------------------------------------------------------------
-
-interface ModelMapping {
-  anthropic: string;
-  openai?: string;
-}
-
-/** Décisions docs/2-analyse-strategique/choix-fournisseur-ia.txt */
-const MODEL_BY_KIND: Record<PromptKind, ModelMapping> = {
-  story_bible: { anthropic: 'claude-sonnet-5', openai: 'gpt-5.6-luna' },
-  prologue: { anthropic: 'claude-sonnet-5', openai: 'gpt-5.6-luna' },
-  chapter: { anthropic: 'claude-sonnet-5', openai: 'gpt-5.6-luna' },
-  ending: { anthropic: 'claude-sonnet-5', openai: 'gpt-5.6-luna' },
-  summary: { anthropic: 'claude-sonnet-5', openai: 'gpt-5.6-luna' },
-};
-
-/**
- * Stratégie par défaut :
- * - Sonnet 5 si la clé Anthropic est dispo (meilleure qualité FR)
- * - Sinon GPT-5.6 Luna (fallback budget)
- * La variable d'env FABLE_LLM_PROVIDER force un fournisseur.
- */
-export function createRouter(): LLMProvider {
-  const forced = process.env.FABLE_LLM_PROVIDER;
-  if (forced === 'openai') return new OpenAIProvider();
-  if (forced === 'anthropic') return new AnthropicProvider();
-  // Défaut : Anthropic si dispo, sinon OpenAI
-  if (process.env.ANTHROPIC_API_KEY) return new AnthropicProvider();
-  if (process.env.OPENAI_API_KEY) return new OpenAIProvider();
-  throw new Error('Aucune clé LLM configurée (ANTHROPIC ou OPENAI)');
+/** Instance partagée (créée paresseusement). */
+let llm: LLM | null = null;
+export function getLLM(): LLM {
+  if (!llm) llm = new LLM();
+  return llm;
 }
