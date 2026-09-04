@@ -90,6 +90,9 @@ export interface GameParams {
   chapterLength: ChapterLength;
   style: NarrativeStyle;
   maxChoices: 2 | 3 | 4;
+  /** Profil de rythme pioché à la création (48 profils informés par
+   *  l'étude des best-sellers). Appliqué à tous les chapitres. */
+  rythme?: { nom: string; consigne: string };
 }
 
 // ---------------------------------------------------------------------------

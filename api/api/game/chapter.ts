@@ -110,6 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     bibleText: game.bible_text ?? undefined,
     state: stateText,
     plan: storyPlan?.grandesLignes ?? undefined,
+    rythme: params?.rythme?.consigne,
     resume: `${game.resume ?? ''}\n\nDerniers chapitres :\n${recentContext}`,
     playerChoice: playerChoiceLabel ?? undefined,
     chapterNumber: nextNumber,

@@ -1121,3 +1121,321 @@ export const BRIQUES_PAR_GENRE: Record<string, { categorie: string; elements: st
     { categorie: 'Objet ou découverte d\'époque', elements: HISTORIQUE_OBJETS },
   ],
 };
+
+// ============================================================================
+// PROFILS DE RYTHME NARRATIF (48 profils, 8 par genre)
+// Informés par l'étude des 47 best-sellers (docs/5-ecriture-narrative/
+// ce-que-veulent-les-lecteurs.txt) : chaque profil est tracé vers les
+// livres dont il est tiré. PIOCHÉ à la création et appliqué à tout le
+// roman (bible + chapitres via params.rythme).
+// ============================================================================
+
+export interface RythmeNarratif {
+  id: string;
+  nom: string;
+  inspirePar: string;
+  consigne: string;
+}
+
+export const RYTHMES_PAR_GENRE: Record<string, RythmeNarratif[]> = {
+  horreur: [
+    {
+      id: 'horreur_infiltration',
+      nom: 'Infiltration du quotidien',
+      inspirePar: 'Simetierre, The Haunting of Hill House',
+      consigne: 'Installation réaliste et longue de la vie ordinaire (famille, maison, voisins) ; la peur s\'infiltre par couches discrètes qui prennent du sens tardivement. Pics d\'angoisse rares mais lourds, longues respirations entre eux, fin qui hante. Le lecteur doit aimer le quotidien avant d\'avoir peur.',
+    },
+    {
+      id: 'horreur_compte_a_rebours',
+      nom: 'Enquête froide à compte à rebours',
+      inspirePar: 'Ring',
+      consigne: 'Narration clinique et distante qui tient l\'angoisse à distance, une règle de danger énoncée tôt (délai, cycle, condition) transformée en compte à rebours permanent. La peur se propage par contagion ; climax tardif, concentré et violent après une progression lente.',
+    },
+    {
+      id: 'horreur_double_fil',
+      nom: 'Double fil resserré',
+      inspirePar: 'Le Silence des agneaux',
+      consigne: 'Chapitres courts alternant une scène de huis clos oppressant (dialogue lent, tension sourde) et une scène d\'action/d\'enquête. Une victime captive ou un enjeu daté sert de compte à rebours ; les deux fils convergent en accélération brutale dans le dernier quart.',
+    },
+    {
+      id: 'horreur_miroir',
+      nom: 'Miroir passé / présent',
+      inspirePar: 'Ça',
+      consigne: 'Double temporalité qui se répond (enfance / âge adulte) : chaque époque éclaire l\'autre et la menace se personnalise selon les peurs propres des personnages. Montée parallèle des deux fils, quotidien et étrangeté mêlés, interludes documentaires en coupe.',
+    },
+    {
+      id: 'horreur_echelons',
+      nom: 'Épidémie en échelons',
+      inspirePar: 'La Conjuration primitive',
+      consigne: 'Incidents qui s\'intensifient en échelons réguliers : chaque chapitre ajoute une pièce au code de la menace, la gravité grimpe par paliers (premier signal, premier mort, série, escalade). Points de vue d\'enquête alternés, mystère dévoilé progressivement.',
+    },
+    {
+      id: 'horreur_epistolaire',
+      nom: 'Fragments qui s\'assemblent',
+      inspirePar: 'Dracula',
+      consigne: 'Récit à plusieurs mains (journal, lettres, rapports, témoignages), chaque narrateur ne tenant qu\'un fragment de vérité : le lecteur assemble le puzzle et anticipe avant les personnages. Montée lente et majestueuse, terreur frontale espacée mais décisive, chasse finale accélérée.',
+    },
+    {
+      id: 'horreur_suggestion',
+      nom: 'Suggestion sans vision frontale',
+      inspirePar: 'The Haunting of Hill House',
+      consigne: 'Jamais de monstre ou de menace montrés en face : froid, bruits, écritures, présences ressenties. Phénomènes d\'abord anodins qui s\'individualisent et ciblent le héros. Fin ambiguë où l\'on ne sait pas ce qui était réel - l\'angoisse survit à la dernière page.',
+    },
+    {
+      id: 'horreur_labyrinthe',
+      nom: 'Structure qui se dérègle',
+      inspirePar: 'House of Leaves',
+      consigne: 'Le récit imite la menace : chapitres qui se contredisent, couches narratives enchâssées, notes et documents qui débordent, le lecteur désorienté comme le héros. Les lieux changent de taille et de forme sans explication, l\'emprisonnement se ressent dans la forme même.',
+    },
+  ],
+  fantasy: [
+    {
+      id: 'fantasy_quete_contemplative',
+      nom: 'Quête contemplative',
+      inspirePar: 'Le Seigneur des Anneaux, Terremer',
+      consigne: 'Voyage structuré par l\'alternance délibérée entre périls et longues respirations (halte, contemplation, conversations qui comptent). La menace monte très progressivement, la victoire est concentrée à la fin et se paie. Peu de batailles : le monde se découvre avec le héros.',
+    },
+    {
+      id: 'fantasy_crises_politiques',
+      nom: 'Crises politiques successives',
+      inspirePar: 'Le Trône de fer',
+      consigne: 'Multiples points de vue en chapitres courts et alternés qui font progresser plusieurs fronts à des vitesses différentes. Retournements violents qui sanctionnent la logique du monde plus que le mérite du héros : la défaite est toujours possible, la survie se mérite.',
+    },
+    {
+      id: 'fantasy_recit_cadre',
+      nom: 'Récit dans le récit',
+      inspirePar: 'Le Nom du vent',
+      consigne: 'Un cadre présent (statique, mélancolique) enveloppe l\'histoire racontée au passé : deux niveaux qui se répondent. Progression par compétences maîtrisées une à une, avec des temps de vie (musique, amitié, amour) qui épaississent l\'apprentissage au lieu de le presser.',
+    },
+    {
+      id: 'fantasy_modulaire',
+      nom: 'Modulaire façon série',
+      inspirePar: 'Harry Potter',
+      consigne: 'Chapitres courts centrés sur l\'action, chacun ouvrant et refermant sa propre dynamique : on tourne les pages par structure, pas par curiosité des fins. Escalade graduelle des enjeux et des pertes : les victoires deviennent de plus en plus coûteuses.',
+    },
+    {
+      id: 'fantasy_cascade',
+      nom: 'Cascade de révélations',
+      inspirePar: 'Mistborn',
+      consigne: 'Rythme rapide, séquences d\'action cinétiques, révélations régulières où chaque réponse ouvre un nouveau mystère. Les règles du monde sont établies dès le début et les climax les respectent rigoureusement : tout se résout selon les règles annoncées.',
+    },
+    {
+      id: 'fantasy_cercles',
+      nom: 'Cercles concentriques',
+      inspirePar: 'La Passe-miroir',
+      consigne: 'Intrigue où le décor et les enjeux s\'élargissent par cercles successifs. Indices semés très tôt qui ne se referment que bien plus tard, tensions accumulées (secrets, complots, disparitions) plutôt que rebondissements perpétuels.',
+    },
+    {
+      id: 'fantasy_initiation',
+      nom: 'Initiation resserrée',
+      inspirePar: 'La Quête d\'Ewilan',
+      consigne: 'Quête initiatique classique et resserrée : entrée dans le monde, équipée, épreuves, affrontement final. Chapitres courts, rebondissements fréquents, humour qui contrebalance le danger, progression en confiance et en maîtrise.',
+    },
+    {
+      id: 'fantasy_entrelacee',
+      nom: 'Trames entrelacées',
+      inspirePar: 'Le Seigneur des Anneaux (tomes 2-3)',
+      consigne: 'Plusieurs fils narratifs entrelacés à la manière des romans médiévaux : on passe de l\'un à l\'autre aux moments critiques, chacun avançant vers la convergence finale. Escalade très longue, contemplation et péril alternés, grands affrontements concentrés dans le dernier tiers.',
+    },
+  ],
+  science_fiction: [
+    {
+      id: 'sf_documentaire_puis_spirale',
+      nom: 'Documentaire puis spirale',
+      inspirePar: 'Dune',
+      consigne: 'Départ lent, presque documentaire : le monde s\'installe par couches (écologie, politique, culture) avec des interludes qui le densifient. Puis l\'accélération devient une spirale de rebondissements jusqu\'au dénouement. Le rythme épouse la trajectoire de tragédie.',
+    },
+    {
+      id: 'sf_chaine_problemes',
+      nom: 'Chaîne problème → solution → contretemps',
+      inspirePar: 'Seul sur Mars',
+      consigne: 'Mécanisme implacable : chaque solution trouvée est suivie d\'un nouveau contretemps et d\'un nouveau défi. Mini-cliffhangers à chaque chapitre, alternance du journal personnel (voix proche, humour) et de la vue d\'ensemble (équipe, monde).',
+    },
+    {
+      id: 'sf_heist',
+      nom: 'Heist effréné',
+      inspirePar: 'Neuromancien',
+      consigne: 'Structure de coup monté : recrutement du héros, constitution d\'une équipe improbable, missions qui s\'enchaînent vers un sommet final. Prose dense et rythme effréné, le monde se révèle par immersion sans exposition didactique, chaque mission coûte quelque chose.',
+    },
+    {
+      id: 'sf_fragmente',
+      nom: 'Fragmenté présent / passé',
+      inspirePar: 'La Servante écarlate',
+      consigne: 'Récit à la première personne qui navigue sans cesse entre un présent oppressant et des flashbacks de liberté : les souvenirs cisaillent la tension de l\'enfermement. Flux de conscience, ellipses mentales, énigmes suspendues, angoisse sourde, fin ouverte.',
+    },
+    {
+      id: 'sf_double_temporalite',
+      nom: 'Double temporalité + révélations en cascade',
+      inspirePar: 'Le Problème à trois corps',
+      consigne: 'Deux époques reliées par une décision ancienne, chacune éclairant l\'autre ; la densité scientifique est coupée par des scènes d\'action et des mystères à résoudre. Chaque chapitre ajoute une pièce du puzzle, les révélations s\'enchaînent en cascade dans la deuxième moitié.',
+    },
+    {
+      id: 'sf_conceptuel',
+      nom: 'Coup de théâtre conceptuel',
+      inspirePar: 'Fondation',
+      consigne: 'Suite d\'épisodes-crises, chacun présentant une menace apparemment insoluble puis un retournement logique qui redéfinit la situation pour la suite. Grands sauts temporels entre les épisodes, narration mesurée où l\'idée prime mais les personnages restent le contrepoint émotionnel.',
+    },
+    {
+      id: 'sf_chronique_ellipses',
+      nom: 'Chronique à grandes ellipses',
+      inspirePar: 'La Guerre éternelle',
+      consigne: 'Succession de missions séparées par des ellipses temporelles de plus en plus vertigineuses : le temps est la vraie matière du récit. Ton factuel et retenu qui contraste avec la détresse humaine qu\'il recouvre, portraitures brèves et poignantes entre deux ellipses.',
+    },
+    {
+      id: 'sf_paliers_jeu',
+      nom: 'Paliers de jeu + deadline',
+      inspirePar: 'Ready Player One',
+      consigne: 'Structure strictement ludique : chaque étape est une quête (indice, énigme, épreuve, récompense) avec des paliers et une deadline qui crée l\'urgence. Chapitres courts et rythme rapide, incursions dans la vie réelle qui redonnent du poids aux enjeux.',
+    },
+  ],
+  policier: [
+    {
+      id: 'policier_procedural',
+      nom: 'Procédural en trois parties',
+      inspirePar: 'Le Crime de l\'Orient-Express',
+      consigne: 'Trois temps nets : le crime, les interrogatoires méthodiques (même schéma pour chaque suspect, mécanique des alibis installée), puis le dénouement double qui effondre tout en cascade. Rythme répétitif assumé qui récompense la patience du lecteur.',
+    },
+    {
+      id: 'policier_relais',
+      nom: 'Relais d\'énigmes, zéro temps mort',
+      inspirePar: 'Da Vinci Code',
+      consigne: 'Chapitres de deux à quatre pages, points de vue alternés en miroir (héros / poursuivants), compte à rebours permanent. Chaque énigme résolue révèle l\'adresse de la suivante : la tension ne retombe jamais, chaque fin de chapitre pousse vers le suivant.',
+    },
+    {
+      id: 'policier_dialogue_action',
+      nom: 'Dialogue lent / action alternée',
+      inspirePar: 'Le Silence des agneaux',
+      consigne: 'Alternance stricte : scènes d\'interrogatoire oppressantes où chaque dialogue livre un indice crypté (tension lente), et scènes d\'enquête terrain (action, découvertes). Compte à rebours final qui accélère brutalement après une première moitié patiente.',
+    },
+    {
+      id: 'policier_documentaire',
+      nom: 'Documentaire lent + fulgurances',
+      inspirePar: 'Millénium 1',
+      consigne: 'Longues séquences méthodiques (archives, listes, chiffres, photos) ponctuées de fulgurances violentes : le contraste de rythme est assumé. Les indices sont des objets matériels que le lecteur assemble en même temps que l\'enquêteur.',
+    },
+    {
+      id: 'policier_atmospherique',
+      nom: 'Démarrage atmosphérique puis accélération',
+      inspirePar: 'Pars vite et reviens tard',
+      consigne: 'Ouverture lente et atmosphérique (le décor, les habitudes) avant l\'accélération de la série de crimes. L\'enquête avance par intuitions et parallélismes de destins plutôt que par piste unique ; la révélation finale re-sémantise les détails anodins du début.',
+    },
+    {
+      id: 'policier_course',
+      nom: 'Course contre la montre',
+      inspirePar: 'Ne le dis à personne',
+      consigne: 'Ordres anonymes à durée limitée sous menace : chaque pan de vérité en révèle un autre, chapitres courts et phrases sèches, révélations en cascade. Les twists sont préparés par rétro-ingénierie : de petits détails posés dès les premières pages.',
+    },
+    {
+      id: 'policier_double_enquete',
+      nom: 'Double enquête, suspects éliminés',
+      inspirePar: 'Le Bonhomme de neige',
+      consigne: 'Deux temporalités (lettres du passé / enquête présente) et deux fronts (le tueur, et la corruption interne qui sabote les avancées). Les suspects se succèdent et sont éliminés au compte-gouttes par des fausses pistes correctement démontées.',
+    },
+    {
+      id: 'policier_poupees_russes',
+      nom: 'Poupées russes 1999 / aujourd\'hui',
+      inspirePar: 'L\'Affaire Alaska Sanders',
+      consigne: 'Construction en poupées russes : alternance entre deux époques, chapitres courts, flashbacks qui re-contextualisent chaque témoignage. Une nouvelle « vérité » complète tombe régulièrement, chacune contredisant la précédente tout en réutilisant les mêmes faits.',
+    },
+  ],
+  historique: [
+    {
+      id: 'historique_fresque',
+      nom: 'Fresque à horloge narrative',
+      inspirePar: 'Les Piliers de la Terre',
+      consigne: 'Longue fresque multipersonnages dont chaque partie correspond à une étape d\'un projet concret (construire, survivre, s\'élever) qui sert d\'horloge narrative sur une génération. Larges ellipses temporelles entrecoupées de scènes-chapitres à fort suspense, cliffhanger par chapitre.',
+    },
+    {
+      id: 'historique_polar',
+      nom: 'Polar à compte à rebours',
+      inspirePar: 'Le Nom de la Rose',
+      consigne: 'Enquête scandée par une contrainte rigoureuse (heures, jours, liturgie) qui transforme le récit en compte à rebours. Dialogue philosophique et action alternés, montée vers un lieu interdit, progression par fausses pistes et redécouvertes.',
+    },
+    {
+      id: 'historique_feuilleton',
+      nom: 'Feuilleton théâtral',
+      inspirePar: 'La Reine Margot, Les Trois Mousquetaires',
+      consigne: 'Succession d\'épisodes aux couleurs variées, chacun clos par un coups de théâtre ou un rebondissement qui appelle la suite. Scènes courtes, quiproquos, incognitos, actions parallèles : rythme galopant de duels, poursuites et missions.',
+    },
+    {
+      id: 'historique_obsession',
+      nom: 'Montée obsessionnelle',
+      inspirePar: 'Le Parfum',
+      consigne: 'Structure en parties qui miment l\'évolution d\'une obsession (apprentissage, isolement, perfection, consécration). Longues séquences de progression obsessionnelle et pointes de tension criminelle, narrateur à l\'ironie savante, dénouement qui renverse le sens de la quête.',
+    },
+    {
+      id: 'historique_memoire',
+      nom: 'Mémoire de la cour',
+      inspirePar: 'Wolf Hall',
+      consigne: 'Le rythme mime le fonctionnement de la mémoire : sauts, boucles, retours en arrière, chaque scène ancrée dans l\'instant présent. Scènes de cour denses, conversations à double sens, basculements brutaux, progression par l\'ascension d\'un personnage.',
+    },
+    {
+      id: 'historique_symphonie',
+      nom: 'Symphonie en plans parallèles',
+      inspirePar: 'La Chute des géants',
+      consigne: 'Plusieurs familles dispersées vivent les mêmes grands événements sous des angles opposés : contraste permanent, rythme de roman-chronique avec larges ellipses et dates-chapitres, chaque séquence dramatisée avec un fort cliffhanger.',
+    },
+    {
+      id: 'historique_immersion_lente',
+      nom: 'Immersion lente puis basculement',
+      inspirePar: 'Les Piliers de la Terre (installation), romans de moeurs',
+      consigne: 'Installation prolongée dans les mœurs de l\'époque (métiers, objets, odeurs, hiérarchies, croyances) par des scènes de vie quotidienne, avant qu\'un grand événement historique ne bascule tout, vécu de l\'intérieur par le héros. La lenteur initiale rend le bouleversement colossal.',
+    },
+    {
+      id: 'historique_itineraire',
+      nom: 'Itinéraire d\'époque',
+      inspirePar: 'Les Trois Mousquetaires (odyssée)',
+      consigne: 'Odyssée : le héros traverse lieux, classes sociales et milieux différents de l\'époque, chaque étape révélant une facette du monde et un nouvel obstacle. Alliances et trahisons le long de la route, escalade vers un affrontement final, épisodes autonomes reliés par la quête.',
+    },
+  ],
+  romance: [
+    {
+      id: 'romance_point_bas',
+      nom: 'Point bas aux deux tiers',
+      inspirePar: 'Orgueil et Préjugés, Beach Read',
+      consigne: 'Joutes verbales et malentendus qui nourrissent la tension, refus ou rupture au point bas des deux tiers, puis une révélation (lettre, aveu, prise de conscience) qui retourne tout. Chapitres courts, ironie distillée, retournements domestiques qui relancent le désir.',
+    },
+    {
+      id: 'romance_double_temporalite',
+      nom: 'Double temporalité + escalade émotionnelle',
+      inspirePar: 'It Ends with Us',
+      consigne: 'Le présent de la relation est éclairé par des flashbacks (journal, premier amour) qui expliquent les choix du héros. Chapitres courts, style minimal, émotion à fleur de page : escalade des tensions nuancée, point bas salutaire, résolution par un choix assumé.',
+    },
+    {
+      id: 'romance_compte_a_rebours',
+      nom: 'Compte à rebours de contrainte',
+      inspirePar: 'Beach Read',
+      consigne: 'Une contrainte temporelle claire (défi, délai, saison) sert d\'horloge au rapprochement : chaque chapitre forme un arc complet et fait avancer la relation d\'un cran. Lenteur assumée vers le baiser attendu, point bas aux deux tiers, résolution en choix décisif.',
+    },
+    {
+      id: 'romance_episodique',
+      nom: 'Épisodique, pic par chapitre',
+      inspirePar: 'After',
+      consigne: 'Chapitres courts, quasi épisodiques, qui se terminent presque tous sur un pic émotionnel ou un cliffhanger : la mécanique du « encore un chapitre ». Cycle attraction-répulsion entre les deux, réconciliations et doutes, point bas majeur, rédemption amorcée ensuite.',
+    },
+    {
+      id: 'romance_recit_cadre',
+      nom: 'Récit-cadre contemplatif',
+      inspirePar: 'The Notebook',
+      consigne: 'Un présent (vieillesse, maison de retraite) encadre le flashback de l\'histoire d\'amour : les deux temporalités se répondent et se rejoignent. Rythme lent, contemplatif, prose nostalgique, deux courses contre la montre qui se redoublent, émotion par scènes simples et vraies.',
+    },
+    {
+      id: 'romance_mystere',
+      nom: 'Mystère + rapprochement',
+      inspirePar: 'Et si c\'était vrai...',
+      consigne: 'Une énigme (mystère médical, situation impossible) motive la rencontre et sert de moteur au rapprochement ; le doute sur la réalité sert de point bas. Chapitres courts, dialogues qui font avancer l\'action, échéance qui accélère la fin.',
+    },
+    {
+      id: 'romance_road_movie',
+      nom: 'Road movie + twists',
+      inspirePar: 'La Fille de papier',
+      consigne: 'Une irruption spectaculaire lance l\'aventure commune (poursuite, voyage, enquête) : l\'action et la montée amoureuse alternent, chapitres très courts, révélations régulières. Point bas sur un doute fondamental, résolution lumineuse où la fiction sauve le réel.',
+    },
+    {
+      id: 'romance_multiple',
+      nom: 'Couples multiples, montée rassurante',
+      inspirePar: 'Montana Sky',
+      consigne: 'Plusieurs points de vue et deux couples ou plus : chaque sous-intrigue reçoit son temps de développement. L\'intimité se construit à travers le quotidien partagé (travaux, repas, confidences) ; montée lente et rassurante, danger au point bas, happy end.',
+    },
+  ],
+};

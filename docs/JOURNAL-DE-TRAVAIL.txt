@@ -879,6 +879,42 @@ FAIT :
         l'acte 1 (menace claire) ; point médian inchangé (ch.7).
       Typecheck OK. Commit + push (déploiement auto).
 
+   15. PROFILS DE RYTHME NARRATIF (retour utilisateur : ne pas faire
+      de la montée lente UNE généralité ; proposer ~50 rythmes
+      différents, l'IA pioche dedans selon le genre, et étudier les
+      rythmes qui plaisent pour chaque thème - PAS au hasard) :
+      - SOURCÉ : les rythmes viennent de l'étude des 47 best-sellers
+        (champ structureRythme de chaque livre analysé) -> 8
+        archétypes de rythme par genre, chacun tracé vers les livres
+        dont il est tiré (champ inspirePar).
+      - narrative-elements.ts : RYTHMES_PAR_GENRE (48 profils,
+        interface RythmeNarratif {id, nom, inspirePar, consigne}).
+        Exemples : horreur = Infiltration du quotidien (Simetierre/
+        Hill House), Enquête froide à compte à rebours (Ring),
+        Double fil resserré (Silence des agneaux), Miroir passé/
+        présent (Ça), Épidémie en échelons (Conjuration)... ;
+        fantasy = Quête contemplative (SdA/Terremer), Crises
+        politiques (GOT), Modulaire façon série (Harry Potter),
+        Cascade de révélations (Mistborn)... ; SF = Documentaire
+        puis spirale (Dune), Chaîne problème→solution (Seul sur
+        Mars), Heist (Neuromancien)... ; policier = Procédural
+        (Orient-Express), Relais zéro temps mort (Da Vinci), Poupées
+        russes (Dicker)... ; historique = Fresque à horloge (Piliers),
+        Polar à compte à rebours (Nom de la rose), Feuilleton
+        théâtral (Dumas)... ; romance = Point bas aux deux tiers
+        (Austen), Épisodique pic par chapitre (After), Récit-cadre
+        (Notebook)...
+      - create.ts : pioche 1 profil du genre choisi -> imposé à la
+        bible (brique "Rythme du roman") ET stocké dans
+        params.rythme (aucune migration). GameParams.rythme ajouté.
+      - chapter.ts / buildChapterMessages : rythme injecté dans le
+        prompt de CHAQUE chapitre ("Rythme du roman - à respecter
+        absolument, c'est la respiration du livre").
+      - La montée lente n'est donc PLUS une généralité : elle est
+        l'un des 8 profils de l'horreur (avec les profils rapides,
+        épidémiques, à compte à rebours, fragmentés...).
+      Typecheck OK (48 profils). Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

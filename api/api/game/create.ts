@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
-import { BRIQUES, BRIQUES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
+import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
@@ -58,7 +58,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     chapterLength: body.chapterLength as GameParams['chapterLength'],
     style: body.style as GameParams['style'],
     maxChoices,
+    rythme: undefined, // rempli après le tirage ci-dessous
   };
+
+  // Profil de rythme pioché dans les 8 du genre choisi (étude best-sellers)
+  const rythmesGenre = RYTHMES_PAR_GENRE[params.genre] ?? [];
+  const rythme = rythmesGenre.length
+    ? rythmesGenre[Math.floor(Math.random() * rythmesGenre.length)]
+    : undefined;
+  if (rythme) params.rythme = { nom: rythme.nom, consigne: rythme.consigne };
 
   const db = getDb();
   const system = buildSystemPrompt();
@@ -90,6 +98,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       label: cat.categorie,
       valeur: piocher(cat.elements, 1)[0],
     })),
+    // Profil de rythme du roman (pioché dans les 8 du genre)
+    ...(rythme ? [{ label: 'Rythme du roman', valeur: `${rythme.nom} (inspiré de ${rythme.inspirePar}) : ${rythme.consigne}` }] : []),
   ];
   let bible: StoryBible;
   let bibleResult;

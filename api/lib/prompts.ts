@@ -451,8 +451,10 @@ export function buildChapterMessages(opts: {
   rule?: string;
   /** Grandes lignes évolutives du plan (games.story_plan) - optionnel. */
   plan?: string;
+  /** Profil de rythme du roman (params.rythme) - optionnel. */
+  rythme?: string;
 }): { system: string; stable: string; volatile: string } {
-  const { bible, bibleText, state, resume, playerChoice, chapterNumber, totalChapters, act, phase, params, age, rule, plan } = opts;
+  const { bible, bibleText, state, resume, playerChoice, chapterNumber, totalChapters, act, phase, params, age, rule, plan, rythme } = opts;
   const bibleBlock = bibleText ?? JSON.stringify(bible, null, 2);
   const system = buildSystemPrompt();
   const stable = `BIBLE DU ROMAN (référence fixe) :
@@ -462,6 +464,9 @@ ${state}
 ` : ''}${plan ? `GRANDES LIGNES DU PLAN (où l'histoire va - à respecter, la route peut s'adapter mais pas le cap) :
 ${plan}
 ` : 'PLAN : la bible contient le plan directeur (cap, actes, scènes clés). Suis-le.'}
+${rythme ? `RYTHME DU ROMAN (structure du récit - à respecter absolument, c'est la respiration du livre) :
+${rythme}
+` : ''}
 RÉSUMÉ DES ÉVÉNEMENTS PRÉCÉDENTS (texte courant) :
 ${resume}
 
