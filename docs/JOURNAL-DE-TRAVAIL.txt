@@ -435,11 +435,71 @@ RESTE À FAIRE :
   choix-fournisseur-ia.txt).
 
 ===============================================================
+SESSION 12 - 04/09/2026 : ÉTAT STRUCTURÉ + TEST COHÉRENCE RÉEL
+===============================================================
+CONTEXTE : analyse externe -> le résumé glissant en prose oublie les
+faits. Correctif = état structuré déterministe (jamais de prompt
+engineering). Test réel 3 runs x 20 chapitres prévu.
+
+FAIT :
+1. État structuré (api/lib/state.ts) : blessures, inventaire, pnj,
+   engagements, lieu. Le modèle renvoie des DELTAS, le code applique
+   le patch (applyStateDelta). Rien ne s'efface sans instruction
+   explicite. Plafonds (STATE_LIMITS : 10 blessures, 20 objets,
+   25 PNJ, 10 engagements) pour borner le coût de l'appel d'état.
+2. Migration 0004 : games.bible_text (JSON figé verbatim) +
+   games.state (jsonb). bible_text = préfixe stable pour le cache.
+3. buildChapterMessages : prompt du chapitre SPLITTÉ en 2 messages
+   (bible stable / contexte volatile) - structure correcte pour le
+   cache futur.
+4. Script test-coherence.mjs v2 : instrumente PAR APPEL (chapter /
+   choices / summary / state séparés : tokens in/cachés, out, coût,
+   latence). Faits replacés pour séparer âge vs type (blessure ch.12,
+   PNJ ch.2...).
+
+RÉSULTATS RÉELS (gpt-5.6-luna, runs sur l'API) :
+- Coût MOYEN par chapitre : 0,0087 $ (chapitre+choix+résumé+état).
+  Détail ch.1 : chapitre 0,0039 + résumé 0,0011 + état 0,0008.
+  200 chapitres extrapolés : ~1,74 $ (sans cache).
+- Coût run 16 ch : ~0,14 $ ; run 8 ch : ~0,07 $. TOTAL dépensé pour
+  valider : ~0,21 $ (excellent rapport pour une hypothèse structurale).
+- L'ÉTAT STRUCTURÉ préserve les faits : Marrek (ch.2), Elena (ch.3),
+  blessures ch.1-3 tous présents dans l'état final. ✔ Par construction
+  (delta + patch), pas seulement par observation.
+- Le coût a passé de 0,0073 (v1, sans état) à 0,0087 $ (+19 %) avec
+  l'appel d'état : attendu, acceptable, à surveiller (plafonné).
+
+CONCLUSIONS / TICKETS (validées par l'utilisateur) :
+1. CACHE GPT-5.6 : NE PAS refactorer maintenant. Le gain serait
+   ~0,0008 $/chapitre (~9 % du coût, l'input ne pèse que 30 %) =
+   0,05 $/abonné/mois contre ~3,50 € de marge -> BRUIT. Le chat
+   completions ne supporte PAS prompt_cache_options (Responses API
+   seulement) -> refactor de couche API non justifié sur un produit
+   dont l'app est encore en mock. TICKET à rouvrir quand il y aura du
+   volume réel. AVANT tout refactor : vérifier les noms exacts des
+   paramètres (prompt_cache_options, prompt_cache_breakpoint,
+   prompt_cache_key) dans la doc officielle OpenAI - ne pas se fier
+   à un résumé.
+2. TEST COHÉRENCE NON CONCLUANT : les runs faisaient 16 et 8 chapitres,
+   la v1 échouait à 20. Séparation âge vs type non reproduite (blessure
+   tardive ch.12 + PNJ précoce ch.2). À refaire UNE FOIS, plus tard,
+   en régression (pas maintenant : l'état structuré est bon par
+   construction).
+3. PLafond Fable+ : 60/mois validé (coût ~0,52 $/mois à 0,0087 $/ch).
+
+URLS FINALES :
+- Site : https://fable-app-three.vercel.app
+- API : /api/health, /api/game/create, /api/game/chapter, /api/game/read
+- Repo : https://github.com/HyddenTroll/fable-app
+
+===============================================================
 PROCHAINE SESSION (à faire)
 ===============================================================
-1. [VERCEL] OPENAI_API_KEY en variable d'environnement de prod
-   (sinon les endpoints IA renverront 500 en ligne)
+1. [VERCEL] OPENAI_API_KEY en variable d'environnement de prod - FAIT
 2. Brancher l'app mobile sur /api/game/create + /api/game/chapter
-3. Quota chapitres gratuits (côté serveur) - FAIT (session 11)
-4. Thème visuel final (ambre/or + bleu nuit) sur les écrans
-5. Re-test sur téléphone (Expo Go)
+3. Thème visuel final (ambre/or + bleu nuit) sur les écrans
+4. Re-test sur téléphone (Expo Go)
+5. [TICKET CACHÉ] Rouvrir quand volume réel : cache explicite GPT-5.6
+   via Responses API (vérifier d'abord la doc officielle)
+6. [RÉGRESSION] Test cohérence complet 20 chapitres + séparation
+   âge/type, quand l'app sera branchée
