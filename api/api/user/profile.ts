@@ -1,10 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 
+function json(res: VercelResponse, status: number, body: unknown) {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(body));
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const auth = await requireUserId(req);
   if ('error' in auth) {
-    return res.status(401).json({ error: { code: 'unauthorized', message: auth.error } });
+    return json(res, 401, { error: { code: 'unauthorized', message: auth.error } });
   }
 
   if (req.method === 'GET') {
@@ -16,10 +22,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error || !data) {
-      return res.status(404).json({ error: { code: 'profile_not_found', message: 'Profil introuvable' } });
+      return json(res, 404, { error: { code: 'profile_not_found', message: 'Profil introuvable' } });
     }
 
-    return res.status(200).json({
+    return json(res, 200, {
       id: data.id,
       email: data.email,
       displayName: data.display_name,
@@ -40,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (typeof displayName === 'string') updates.display_name = displayName;
     if (preferences && typeof preferences === 'object') updates.preferences = preferences;
     if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ error: { code: 'bad_request', message: 'Aucun champ à mettre à jour' } });
+      return json(res, 400, { error: { code: 'bad_request', message: 'Aucun champ à mettre à jour' } });
     }
     updates.updated_at = new Date().toISOString();
 
@@ -52,10 +58,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error) {
-      return res.status(400).json({ error: { code: 'update_failed', message: error.message } });
+      return json(res, 400, { error: { code: 'update_failed', message: error.message } });
     }
 
-    return res.status(200).json({
+    return json(res, 200, {
       id: data.id,
       email: data.email,
       displayName: data.display_name,
@@ -66,5 +72,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  return res.status(405).json({ error: { code: 'method_not_allowed', message: 'Méthode non supportée' } });
+  return json(res, 405, { error: { code: 'method_not_allowed', message: 'Méthode non supportée' } });
 }

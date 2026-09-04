@@ -27,3 +27,5 @@ web-build/
 
 # Supabase CLI
 supabase/.temp/
+
+.vercel

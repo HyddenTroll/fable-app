@@ -53,7 +53,7 @@ if (entries.length === 0) {
 for (const rel of entries) {
   // api/api/user/profile.ts -> route /api/user/profile
   const route = rel.replace(/\.ts$/, '');
-  const funcDir = path.join(functionsDir, 'api', route, '.func');
+  const funcDir = path.join(functionsDir, 'api', `${route}.func`);
   const entryPath = path.join(apiSrcDir, rel);
 
   console.log(`[vercel-build] Bundle ${rel} -> ${path.relative(outputDir, funcDir)}`);
@@ -93,7 +93,6 @@ writeFileSync(
       version: 3,
       routes: [
         { handle: 'filesystem' },
-        { src: '/api/(.*)', dest: '/api/$1' },
         { src: '/(.*)', dest: '/index.html' },
       ],
     },
