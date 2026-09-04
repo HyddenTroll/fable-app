@@ -78,6 +78,7 @@ for (const rel of entries) {
         runtime: 'nodejs22.x',
         handler: 'index.js',
         launcherType: 'Nodejs',
+        shouldAddHelpers: true,
       },
       null,
       2,

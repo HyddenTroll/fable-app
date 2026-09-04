@@ -4,7 +4,14 @@ import { getLLM } from '../../lib/llm/provider';
 import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
-import type { AgeGroup, GameParams } from '@fable/shared';
+import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
+
+interface PrologueJson {
+  titre?: string;
+  texte?: string;
+  descriptionCouverture?: string;
+  choix?: unknown[];
+}
 
 interface CreateBody {
   genre: string;
@@ -64,10 +71,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 1) Story bible
-  let bible;
+  let bible: StoryBible;
+  let bibleResult;
   try {
     const llm = getLLM();
-    const bibleResult = await llm.generate({
+    const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: buildStoryBiblePrompt(params, body.age) },
@@ -75,7 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       kind: 'story_bible',
       maxTokens: 3000,
     });
-    bible = JSON.parse(extractJson(bibleResult.text));
+    bible = gen.json;
+    bibleResult = gen.result;
     await logLLMResult(db, auth.userId, null, 'story_bible', bibleResult);
   } catch (e) {
     return json(res, 502, {
@@ -87,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let prologue;
   try {
     const llm = getLLM();
-    const prologueResult = await llm.generate({
+    const gen = await llm.generateJson<PrologueJson>({
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: buildProloguePrompt(bible, params, body.age) },
@@ -95,8 +104,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       kind: 'prologue',
       maxTokens: 2500,
     });
-    prologue = JSON.parse(extractJson(prologueResult.text));
-    await logLLMResult(db, auth.userId, null, 'prologue', prologueResult);
+    prologue = gen.json;
+    await logLLMResult(db, auth.userId, null, 'prologue', gen.result);
   } catch (e) {
     return json(res, 502, {
       error: { code: 'llm_error', message: e instanceof Error ? e.message : 'Erreur IA (prologue)' },
@@ -165,31 +174,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     freeChaptersRemaining: Math.max(0, FREE_CHAPTER_LIMIT - quota.freeUsed - 1),
     coverPrompt: prologue.descriptionCouverture,
   });
-}
-
-/** Extrait le premier objet JSON d'une réponse LLM (robuste au texte parasite). */
-function extractJson(text: string): string {
-  const start = text.indexOf('{');
-  if (start === -1) throw new Error('Réponse IA sans JSON valide');
-  // Parcours caractère par caractère pour trouver le vrai `}` fermant
-  // (gère les `}` dans les chaînes JSON).
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = start; i < text.length; i++) {
-    const c = text[i];
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (c === '\\') escaped = true;
-      else if (c === '"') inString = false;
-      continue;
-    }
-    if (c === '"') inString = true;
-    else if (c === '{') depth++;
-    else if (c === '}') {
-      depth--;
-      if (depth === 0) return text.slice(start, i + 1);
-    }
-  }
-  throw new Error('Réponse IA sans JSON valide');
 }

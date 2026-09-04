@@ -104,6 +104,27 @@ export class LLM {
   }
 
   /**
+   * Génère puis parse un JSON, avec 2 nouvelles tentatives si l'IA
+   * produit du JSON cassé (fiabilité ~100 %, tolère l'intermittence).
+   */
+  async generateJson<T>(req: LLMRequest): Promise<{ result: LLMResult; json: T }> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, 500 * attempt));
+      }
+      const result = await this.generate({ ...req, maxTokens: req.maxTokens ?? 3000 });
+      try {
+        const json = JSON.parse(extractJson(result.text)) as T;
+        return { result, json };
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error('Réponse IA sans JSON valide');
+  }
+
+  /**
    * Streaming (SSE). Itérateur de chunks texte ; la valeur de retour
    * du générateur contient le LLMResult final (usage/coût).
    */
@@ -247,4 +268,29 @@ let llm: LLM | null = null;
 export function getLLM(): LLM {
   if (!llm) llm = new LLM();
   return llm;
+}
+
+/** Extrait le premier objet JSON d'une réponse LLM (robuste au texte parasite). */
+function extractJson(text: string): string {
+  const start = text.indexOf('{');
+  if (start === -1) throw new Error('Réponse IA sans JSON valide');
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === '\\') escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  throw new Error('Réponse IA sans JSON valide');
 }
