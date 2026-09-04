@@ -382,19 +382,64 @@ URLS FINALES :
 - Local : http://localhost:8081 (npm start dans apps/mobile)
 
 ===============================================================
+SESSION 11 - 04/09/2026 : API JEU RÉELLE (fin du mock côté serveur)
+===============================================================
+CONTEXTE : analyse externe du projet -> l'essentiel manquant était
+la génération IA + quota serveur + coût réel. Ticket n°1 exécuté.
+
+FAIT :
+1. Fournisseur confirmé (docs/2-analyse-strategique/choix-fournisseur-ia.txt)
+   : GPT-5.6 Luna (0,20/1,20 $) pour chapitres/résumés ; Sonnet 5
+   (qualité FR) pour bible/prologue/fins si clé Anthropic dispo.
+2. api/lib/llm/provider.ts réécrit : streaming natif (SSE), coûts
+   calculés (PRICES par modèle), prompt caching (automatique OpenAI),
+   max_completion_tokens (GPT-5.6 - PAS max_tokens), response_format
+   json_object CONDITIONNEL (le prompt doit contenir "JSON").
+3. api/lib/prompts.ts : prompts complets (bible, prologue, chapitre,
+   choix, résumé) basés sur docs/6-avant-le-code/prompts-ia.txt +
+   règles anti-AI-slop + adaptation à l'âge.
+4. api/lib/quota.ts : QUOTA SERVEUR dur - 5 chapitres gratuits (toutes
+   parties), plafond mensuel Fable+ (200/mois), compteurs en base.
+5. api/lib/cost.ts : journal cost_logs (chaque appel : tokens + coût $).
+6. Endpoints :
+   - POST /api/game/create : story bible + prologue (gpt-5.6-luna),
+     stocke la partie, consomme 1 chapitre gratuit. Retourne gameId,
+     chapitre, coverPrompt, freeChaptersRemaining.
+   - POST /api/game/chapter : STREAMING SSE (event: text, event: done),
+     contexte = bible + résumé glissant + N=3 derniers chapitres
+     (jamais l'historique complet, évite O(n^2)), puis 2 petits appels
+     (choix + résumé). Vérifie le quota AVANT génération. Log coûts.
+   - GET /api/game/read?gameId= : état complet d'une partie.
+7. Migration SQL 0002 : profiles (quota mensuel), cost_logs (RLS),
+   vue credit_balances (solde = somme des transactions).
+8. Bugfix notable : handlers API en interface HTTP native (res.statusCode,
+   res.end) - les res.status().json() Express crashaient sur Vercel.
+9. TEST RÉEL end-to-end (compte OpenAI rechargé) :
+   - create : partie "La Cendre et la Couronne" créée, prologue généré.
+   - chapter : chapitre 1 streamé (117KB), 3 choix, résumé glissant.
+   - paywall : à 5 chapitres gratuits consommés -> HTTP 402 paywall:true.
+   - COÛTS RÉELS (gpt-5.6-luna) :
+       story_bible 0,0028 $ | prologue 0,0035 $ | chapitre 0,0047 $
+       choix 0,0017 $ | résumé 0,0014 $
+       => ~0,014 $ pour bible+prologue+ch.1. Rentable vs 3,5 $/mois.
+10. Env : OPENAI_API_KEY ajoutée au .env local (jamais sur GitHub).
+11. Deploy prod + commit/push.
+
+RESTE À FAIRE :
+- Brancher l'app mobile sur ces endpoints (fin du mock côté client).
+- Clé Anthropic (facultatif) pour bible/prologue en Sonnet 5.
+- Vérifier la licence commerciale FLUX.1 via fal.ai (images).
+- Modération contenu (bloquant App Store) - pas une phase 2.
+- Apple Sign-In (obligatoire App Store).
+- Analyser coût/qualité après 20 chapitres réels (plan de test de
+  choix-fournisseur-ia.txt).
+
+===============================================================
 PROCHAINE SESSION (à faire)
 ===============================================================
-1. [DASHBOARD] Activer Google provider dans Supabase
-   (Authentication -> Providers -> Google) avec OAuth Client ID/Secret
-   créés dans Google Cloud Console. URI de redirection :
-   https://agnaafnujcwswstcwfuw.supabase.co/auth/v1/callback
-2. [VERCEL] Définir les variables d'environnement de production
-   (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) +
-   re-vérifier /api/health après déploiement
-3. Ajouter les variables EXPO_PUBLIC_* au build Vercel (web)
-4. Rédiger les prompts complets dans prompts/
-5. API réelle : /game/create (story bible) + /game/chapter
-6. Quota chapitres gratuits (côté serveur)
-7. Brancher l'app sur l'API (fin du mock)
-8. Thème visuel final (ambre/or + bleu nuit) sur les écrans
-9. Re-test sur téléphone (Expo Go)
+1. [VERCEL] OPENAI_API_KEY en variable d'environnement de prod
+   (sinon les endpoints IA renverront 500 en ligne)
+2. Brancher l'app mobile sur /api/game/create + /api/game/chapter
+3. Quota chapitres gratuits (côté serveur) - FAIT (session 11)
+4. Thème visuel final (ambre/or + bleu nuit) sur les écrans
+5. Re-test sur téléphone (Expo Go)
