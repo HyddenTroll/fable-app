@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
-import { BRIQUES, piocher } from '../../lib/narrative-elements';
+import { BRIQUES, BRIQUES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
@@ -85,6 +85,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     { label: 'Antagoniste ou menace', valeur: piocher(BRIQUES.antagonistes, 1)[0] },
     { label: 'Objet-signal', valeur: piocher(BRIQUES.objets, 1)[0] },
     { label: 'Destination du roman', valeur: piocher(BRIQUES.destinations, 1)[0] },
+    // Briques SPÉCIFIQUES au genre choisi (3 catégories x 1 tirage)
+    ...(BRIQUES_PAR_GENRE[params.genre] ?? []).map((cat) => ({
+      label: cat.categorie,
+      valeur: piocher(cat.elements, 1)[0],
+    })),
   ];
   let bible: StoryBible;
   let bibleResult;

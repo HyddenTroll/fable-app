@@ -760,6 +760,37 @@ FAIT :
       écrites pour être singulières - jamais cassette, jamais marée).
       Typecheck api OK. Commit + push (déploiement auto).
 
+   11. BRIQUES PAR GENRE + STRUCTURE DE BON LIVRE (retour
+      utilisateur : il faut des ingrédients spécifiques par genre -
+      créature pour l'horreur, situation familiale pour la romance -
+      et verrouiller la structure d'un bon roman) :
+      - narrative-elements.ts : 540 nouvelles briques en 18 tables
+        (6 genres x 3 catégories x 30) :
+        * horreur : créatures/présences, situations d'angoisse,
+          lieux oppressants
+        * romance : situations familiales, obstacles, moments-clés
+        * fantasy : artefacts magiques, créatures/peuples, épreuves
+        * science_fiction : technologies, découvertes/menaces,
+          sociétés de demain
+        * policier : crimes, indices, suspects/mobiles
+        * historique : complots, personnages d'époque, objets
+      - TOTAL : 870 briques (330 générales + 540 par genre).
+      - create.ts : pioche 3 briques du genre choisi EN PLUS des 7
+        générales -> 10 briques imposées à la bible.
+      - STRUCTURE D'UN BON ROMAN exigée dans buildStoryBiblePrompt :
+        * héros : désir CONSCIENT + besoin INCONSCIENT (arc)
+          (StoryBible.heros.besoinInconscient)
+        * répartition chapitres : Acte I = 3-5, Acte II = 5-7,
+          Acte III = 2-3 (~10-15 chapitres + prologue)
+        * point médian (renversement de l'acte II)
+          (PlanDirecteur.pointMedian)
+        * UNE sous-intrigue parallèle (PlanDirecteur.sousIntrigue)
+        * promesse du genre tenue (codes du genre respectés mais
+          déplacés avec originalité)
+      - Test runtime : 870 briques OK, tirages par genre cohérents
+        (créatures horreur, famille romance, artefacts fantasy...).
+      Typecheck api OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================

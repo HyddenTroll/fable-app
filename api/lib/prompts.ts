@@ -162,10 +162,15 @@ Ta mission : construire une histoire avec UN CAP PRÉCIS. Tu sais dès le dépar
 Règles de fond :
 - Structure en 3 actes (exposition/confrontation/résolution), chacun avec un objectif précis et un tournant de fin d'acte.
 - UNE question dramatique centrale, répondue au climax.
-- Un héros imparfait : désir, peur, faille, secret.
+- Un héros imparfait : désir CONSCIENT (ce qu'il croit vouloir) ET besoin INCONSCIENT (ce dont il a vraiment besoin - l'arc du personnage consiste à passer de l'un à l'autre), peur, faille, secret.
 - Un antagoniste avec une motivation (jamais "méchant pour être méchant").
 - Un monde cohérent (règles stables, magie/science/époque).
+- UNE sous-intrigue en parallèle (relation, rivalité, enquête secondaire) qui se noue et se dénoue sans étouffer l'intrigue principale.
 - ${ageLimit(age)}
+
+ARCHITECTURE DU ROMAN (~10-15 chapitres + prologue) :
+- Répartis les chapitres : Acte I = 3-5, Acte II = 5-7, Acte III = 2-3. Indique le point médian (le grand renversement au milieu de l'Acte II qui change la donne).
+- La promesse du genre doit être tenue : ${params.genre}${params.subGenre ? ` (${params.subGenre})` : ''} a ses codes (sinon le lecteur se sent trahi), mais tu les déplaces avec originalité.
 
 PLAN DIRECTEUR - à remplir avec une précision totale :
 - "destination" : UNE phrase qui dit où l'histoire emmène le lecteur (la promesse du roman, ce que le lecteur doit ressentir/comprendre à la fin). C'est LE cap.
@@ -173,6 +178,8 @@ PLAN DIRECTEUR - à remplir avec une précision totale :
 - "actes" (3) : pour chaque acte, un objectif clair, 3-6 scènes clés qui DEVRONT avoir lieu (liste ordonnée), et le tournant qui clôt l'acte. C'est la colonne vertébrale : l'histoire avance vers ces scènes même si les choix la font zigzaguer.
 - "carrefours" : 2-5 choix majeurs ANTICIPÉS (chapitre approximatif, enjeu, options possibles, et ce qui arrive à l'histoire si le lecteur dévie du chemin prévu). Ce sont les seuls endroits où l'histoire peut vraiment changer de route.
 - "fins" : 2-5 fins possibles avec LA CONDITION précise qui y mène et l'émotion finale visée. Les choix du lecteur mènent vers l'une de ces fins - jamais une fin improvisée hors cadre.
+- "pointMedian" : le grand renversement de l'acte II (la donne change, le héros ne peut plus reculer).
+- "sousIntrigue" : UNE intrigue parallèle, en une phrase.
 
 ${ANTI_AI_SLOP}
 
@@ -185,7 +192,7 @@ Réponds UNIQUEMENT en JSON valide, rien d'autre :
   "theme": "...",
   "resumeGeneral": "...",
   "structure": {"acte1": "résumé", "acte2": "résumé", "acte3": "résumé"},
-  "heros": {"nom": "...", "desir": "...", "peur": "...", "faille": "...", "traitOptionnel": "..."},
+  "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "traitOptionnel": "..."},
   "antagoniste": {"nom": "...", "motivation": "..."},
   "personnages": [{"nom": "...", "role": "...", "detail": "..."}],
   "monde": {"description": "...", "regles": "..."},
@@ -199,6 +206,8 @@ Réponds UNIQUEMENT en JSON valide, rien d'autre :
       {"acte": 2, "objectif": "...", "scenesCles": ["..."], "tournant": "..."},
       {"acte": 3, "objectif": "...", "scenesCles": ["..."], "tournant": "..."}
     ],
+    "pointMedian": "le grand renversement de l'acte II",
+    "sousIntrigue": "l'intrigue parallèle en une phrase",
     "carrefours": [
       {"chapitre": N, "enjeu": "...", "options": "...", "consequenceSiDeviation": "..."}
     ],

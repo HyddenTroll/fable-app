@@ -113,6 +113,8 @@ export interface StoryBible {
     desir: string;
     peur: string;
     faille: string;
+    /** Désir CONSCIENT vs BESOIN INCONSCIENT (arc charactériel). */
+    besoinInconscient?: string;
   };
   antagoniste: {
     nom: string;
@@ -158,6 +160,10 @@ export interface PlanDirecteur {
     scenesCles: string[];
     tournant: string;
   }[];
+  /** Le renversement central de l'acte II (point médian du roman). */
+  pointMedian?: string;
+  /** UNE sous-intrigue qui se noue et se dénoue en parallèle. */
+  sousIntrigue?: string;
   carrefours: {
     chapitre: number;
     enjeu: string;
