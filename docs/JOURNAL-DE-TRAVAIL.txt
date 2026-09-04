@@ -710,6 +710,33 @@ FAIT :
         concrètes, le point de vue, 2-4 scènes par chapitre.
       Typecheck api OK. Commit + push (déploiement auto).
 
+   9. TEMPO NARRATIF (retour utilisateur : encore trop de phrases
+      courtes, les actions s'enchaînent trop vite, il faut une
+      dynamique et prendre le temps de raconter) :
+      - PROSE_RULES renforcé (socle commun, toutes voix confondues) :
+        * PRENDS LE TEMPS : chaque moment important = plusieurs
+          paragraphes (décor/sensations AVANT l'action, geste en
+          détail, conséquence émotionnelle qui respire). Une scène
+          ne se brûle jamais en trois lignes.
+        * Interdit les enchaînements précipités d'actions ; entre
+          deux actions : une perception, une pensée, un détail.
+        * Phrase courte = rare (max 1 par paragraphe, jamais 2 de
+          suite) ; phrase moyenne 18-35 mots ; les longues
+          construisent, les courtes frappent.
+        * Dynamique de scène : monter vers un point de bascule puis
+          respirer ; varier le tempo À L'INTÉRIEUR des scènes.
+      - Le bloc IMPORTANT du chapitre martèle : "Ce nombre de mots
+        n'est PAS un résumé : c'est le temps de DÉVELOPPER chaque
+        scène... Si tu écris trop court, c'est une faute."
+      - Prologue : "Prends le temps : développe chaque moment, ne
+        précipite pas les actions."
+      - Voix "cinématique" réorientée : tempo par le MONTAGE des
+        scènes, pas par la brièveté des phrases (staccato interdit).
+      - Voix "minimaliste" réorientée : réserve dans le choix des
+        mots, pas dans la brièveté (scènes développées, phrases de
+        longueur normale).
+      Typecheck OK. Commit + push (déploiement auto).
+
    ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================
