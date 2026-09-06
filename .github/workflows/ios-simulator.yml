@@ -38,6 +38,14 @@ jobs:
       - name: Install dependencies (workspaces)
         run: npm ci
 
+      - name: Patch expo-modules-jsi (bug Xcode 26/Swift 6.2 - expo/expo#49214)
+        run: |
+          FILE=node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI-Cxx/include/RuntimeScheduler.h
+          sed -i 's/^  SWIFT_RETURNS_RETAINED RuntimeScheduler(/  RuntimeScheduler(/' "$FILE"
+          N=$(grep -c "SWIFT_RETURNS_RETAINED" "$FILE" || true)
+          echo "SWIFT_RETURNS_RETAINED restants: $N"
+          test "$N" = "0" || { echo "PATCH INCOMPLET"; exit 1; }
+
       - name: Select Xcode 26+ (Swift 6.2 requis par le package SPM)
         run: |
           ls -d /Applications/Xcode_26*.app /Applications/Xcode*.app 2>/dev/null || true
