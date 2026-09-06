@@ -913,9 +913,38 @@ FAIT :
       - La montée lente n'est donc PLUS une généralité : elle est
         l'un des 8 profils de l'horreur (avec les profils rapides,
         épidémiques, à compte à rebours, fragmentés...).
-      Typecheck OK (48 profils). Commit + push (déploiement auto).
+      Typecheck OK. Commit + push (déploiement auto).
 
-   ================================================================
+         16. FIX: PROLOGUE SANS CHOIX = IMPASSABLE (signalé par
+               l'utilisateur : "les choix n'apparaissent pas quand il m'a
+               généré la première partie") :
+               - CAUSE : le prologue n'avait JAMAIS de choix (l'ancien prompt
+                 renvoyait "choix": []) mais l'écran de lecture ne proposait
+                 QUE des boutons de choix -> aucun moyen de générer le
+                 chapitre 1.
+               - FIX (itératif, décision finale utilisateur) :
+                 * buildProloguePrompt : le prologue DOIT se terminer par
+                   2-3 CHOIX HUMAINS (OBLIGATOIRE) : des choix de vie
+                   ordinaires et engageants, en cohérence avec le monde et la
+                   trame (répondre à une invitation, suivre une intuition,
+                   partir, se renseigner...) - pas d'aventure spectaculaire.
+                   Le lecteur choisit dès le prologue.
+                 * game/[gameId].tsx : bouton "Continuer naturellement ->"
+                   (l'IA continue SON histoire sans choix du lecteur,
+                   envoyé avec playerChoiceIndex null - le serveur accepte
+                   déjà null). Affiché sous les choix s'il y en a, ou seul si
+                   un chapitre n'en a pas. Libellé voulu par l'utilisateur
+                   ("un lire la suite caché par continuer naturellement").
+                 * buildChoicesPrompt : choix HUMANISÉS et DANS LA TRAME :
+                   registres variés (prudence/audace/empathie/refus/
+                   introspection - écouter et s'abstenir sont des choix),
+                   libellés évocateurs avec détail concret, chaque choix mène
+                   vers les fins possibles du plan directeur (aucun choix qui
+                   sort du cadre ou contredit le personnage/ton), pas de
+                   fausses options.
+               Typecheck api + mobile OK. Commit + push (déploiement auto).
+
+         ================================================================
    PROCHAINE SESSION (à faire)
    ================================================================
    1. [FAIT - user] Dashboard Supabase : Redirect URLs ajoutées

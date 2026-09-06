@@ -45,6 +45,9 @@ export default function GameScreen() {
     handleChoice(idx);
   };
 
+  // L'IA continue l'histoire naturellement, sans choix du lecteur
+  const continueNaturally = () => handleChoice(-1);
+
   const handleChoice = (index: number) => {
     if (isGenerating) return;
     setPressedChoice(index);
@@ -58,8 +61,8 @@ export default function GameScreen() {
 
     streamChapter(
       game.gameId,
-      index,
-      current.choices[index]?.libelle ?? null,
+      index === -1 ? null : index,
+      index === -1 ? null : (current.choices[index]?.libelle ?? null),
       {
         signal: abort.signal,
         onText: (delta) => setStreamText((prev) => prev + delta),
@@ -154,6 +157,27 @@ export default function GameScreen() {
               <Text style={styles.choiceText}>{c.libelle}</Text>
             </TouchableOpacity>
           ))}
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={continueNaturally}
+            accessibilityRole="button"
+            accessibilityLabel="Continuer naturellement"
+          >
+            <Text style={styles.continueText}>Continuer naturellement →</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!isGenerating && !streamError && !current.isEnd && current.choices.length === 0 && (
+        <View style={styles.choices}>
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={continueNaturally}
+            accessibilityRole="button"
+            accessibilityLabel="Continuer naturellement"
+          >
+            <Text style={styles.continueText}>Continuer naturellement →</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -225,6 +249,12 @@ const styles = StyleSheet.create({
   },
   choicePressed: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
   choiceText: { color: colors.text, fontSize: 15, lineHeight: 21 },
+  continueButton: {
+    marginTop: spacing.xs,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  continueText: { color: colors.textMuted, fontSize: 14, textDecorationLine: 'underline' },
   meta: { color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
   errorBox: {
     backgroundColor: colors.surfaceAlt,

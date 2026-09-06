@@ -357,8 +357,7 @@ Le prologue doit :
 - Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
 - L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
 - Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
-- Finir sur une note calme qui donne envie de lire le chapitre 1 (le lecteur veut suivre ce héros).
-- Ne PAS contenir de choix (les choix commencent au chapitre 1).
+- SE TERMINER PAR 2-3 CHOIX HUMAINS (OBLIGATOIRE) : ce que le héros pourrait faire maintenant, en cohérence avec son monde et avec la trame du roman. Des choix de vie ordinaires et engageants (répondre à une invitation, suivre une intuition, accepter un service, partir, se renseigner) - pas des choix d'aventure spectaculaires. Le lecteur doit pouvoir choisir dès le prologue.
 - ${ageLimit(age)}
 
 ${PROSE_RULES}
@@ -376,7 +375,10 @@ Réponds UNIQUEMENT en JSON valide :
   "titre": "Prologue",
   "texte": "..." (le prologue, 1500-2200 mots),
   "descriptionCouverture": "description visuelle détaillée de la couverture (style de l'image, ambiance, couleurs, héros, lieu)",
-  "choix": []
+  "choix": [
+    {"libelle": "Un choix humain et évocateur (montre l'action ET l'enjeu, pas générique)", "consequenceResumee": "ce que ce choix engage pour la suite"},
+    {"libelle": "...", "consequenceResumee": "..."}
+  ]
 }`;
 }
 
@@ -519,9 +521,12 @@ ${chapterText}
 
 Propose ${2 <= maxChoices ? `de 2 à ${maxChoices}` : '2'} choix de suite pour le lecteur.
 
-- Les libellés des choix sont ÉVOCATEURS (montrent l'action et l'enjeu), pas génériques ("Ouvrir la porte").
-- Chaque choix a une conséquence résumée (pour la cohérence).
-- Les choix ne doivent pas être des fausses options : chacun mène à une suite réellement différente.
+Les choix doivent être HUMAINS et dans la TRAME :
+- HUMANISÉS : comme ce que le lecteur penserait ou dirait vraiment dans cette situation. Varie les registres - prudence, audace, empathie, refus, introspection, tentative maladroite. Tous les choix ne sont pas des actions : écouter, attendre, poser une question, s'abstenir sont de vrais choix.
+- ÉVOCATEURS : le libellé montre l'action ET l'enjeu, avec un détail concret ("Tendre la lettre non décachetée au vieux pêcheur" plutôt que "Porter la lettre"). Pas de libellé générique ("Ouvrir la porte", "Partir").
+- DANS LA TRAME : chaque choix mène vers une suite qui reste dans l'histoire prévue (les fins possibles et la direction du plan directeur). Aucun choix ne sort du cadre du roman ni ne contredit le personnage, le ton ou ce qui s'est passé.
+- RÉELLEMENT DIFFÉRENTS : chaque choix engage une suite différente et visible - pas de fausses options qui mènent au même endroit.
+- Chaque choix a une conséquence résumée (pour la cohérence des chapitres suivants).
 - ${ageLimit(age)}
 
 Réponds UNIQUEMENT en JSON valide (objet JSON, comme demandé) :
