@@ -111,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix, briques }) },
       ],
       kind: 'story_bible',
-      maxTokens: 6000,
+      maxTokens: 10000,
     });
     bible = gen.json;
     bibleResult = gen.result;

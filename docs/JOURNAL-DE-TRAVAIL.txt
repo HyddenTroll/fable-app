@@ -1025,3 +1025,42 @@ FAIT :
         ACTES" (acte 1 = graines, acte 2 = engrenage, acte 3 =
         climax ; la tension monte en escalier, pas en falaise).
       Typecheck api + mobile OK.
+
+   19. BIBLE "ARCHITECTE NARRATIF" (tous genres - prompt utilisateur
+      "Construire un livre AVANT de l'écrire") :
+      - buildStoryBiblePrompt réécrit : l'IA est un ARCHITECTE NARRATIF
+        qui construit les fondations, ne rédige AUCUN chapitre.
+        Cadres : Aristote, Freytag, Vogler, Save the Cat, McKee,
+        Truby, lois de Sanderson, Tchekhov, Swain.
+      - 7 sections dans le prompt + JSON étendu :
+        1. Prémisse : logline, questionDramatique, theme+these,
+           contratGenre (promesse, sceneObligatoire, clichés à
+           éviter/assumer), promesseExperience.
+        2. Univers : regles (permet/interdit/coûte), lieuxCles+
+           fonction, societe, cicatrices, textures.
+        3. Personnages : heros (desir, besoinInconscient, peur,
+           faille, blessure, mensonge, verite, arc, attaches),
+           antagoniste (besoin, blessure, logique defendable, plan,
+           attaque, miroir thematique), reseau de 3-6 secondaires
+           avec fonction + miniArc (Truby).
+        4. Conflit : 3 niveaux (externe/interne/philosophique),
+           enjeuxParActe qui montent (irreversible), horloge,
+           coutVictoire.
+        5. Structure 3 actes : squelette complet (ouverture,
+           incidentDeclencheur ~10%, engagement ~20-25%, pointMedian
+           ~50%, toutEstPerdu ~75%, climax, denouement).
+        6. Intrigue : synopsis, sousIntrigues, retournements+indices,
+           rythme.
+        7. Narration/style/ton : tonStyle (voix imposee), motifs
+           (3-5), pov, fiable, registre.
+      - planDirecteur (interactif) conserve destination, noyauImmuable,
+        actes, pointMedian, sousIntrigue, carrefours, fins.
+      - maxTokens bible 6000 -> 10000 (le JSON est plus riche, évite
+        la troncature) ; coût bible ~0.01 $, une seule fois par partie.
+      - PROMPT CHAPITRE : +4 règles actives (l'ARC du héros s'incarne
+        par sa blessure/mensonge, l'HORLOGE avance, la SCÈNE
+        OBLIGATOIRE du genre se prépare, les MOTIFS reviennent).
+      - La bible enrichie est injectée verbatim prologue + chapitres.
+      - Erreur TS1005 : apostrophe non échappée ("l'histoire") dans un
+        ternaire du prompt -> échappée.
+      Typecheck api OK.

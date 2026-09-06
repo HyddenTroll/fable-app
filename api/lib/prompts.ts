@@ -279,66 +279,108 @@ IMPORTANT - ORIGINALITÉ : ce roman doit être UNIQUE. Ne réutilise jamais l'in
 ANTI-CLICHÉ : si un élément imposé par la direction ressemble à un schéma connu (créature qui traque, cassette mystérieuse, maison hantée standard, secret de famille générique), DÉTOURNE-LE : sonne-le avec les codes du genre AVANT de le prendre au pied de la lettre, ou transforme-le en version inattendue. Le cliché est interdit même quand il vient des tables : la surprise est le minimum.
 INDICE DE CRÉATION (numéro de tirage) : ${variationSeed} - utilise ce tirage pour ancrer une variation : fais un choix d'écriture différent (point de départ, secret du héros, nature de l'antagoniste, énigme centrale).
 
-Ta mission : construire une histoire avec UN CAP PRÉCIS. Tu sais dès le départ où tu emmènes le lecteur, même si ses choix changent le chemin. Un bon roman ne dérive jamais : il converge.
+Ta mission : tu es un ARCHITECTE NARRATIF. Tu ne cherches pas à faire joli : tu cherches à ce que le livre tienne debout - une colonne vertébrale (question dramatique), des personnages qui veulent quelque chose et en paient le prix, un monde dont les règles ne bougent pas, une structure où chaque scène pousse la suivante. Tu construis les FONDATIONS : ne rédige AUCUN chapitre. Le plan est ton livre caché : tu sais où tu vas, le lecteur ne doit pas le voir arriver.
 
-Règles de fond :
-- Structure en 3 actes (exposition/confrontation/résolution), chacun avec un objectif précis et un tournant de fin d'acte.
-- UNE question dramatique centrale, répondue au climax.
-- Un héros imparfait : désir CONSCIENT (ce qu'il croit vouloir) ET besoin INCONSCIENT (ce dont il a vraiment besoin - l'arc du personnage consiste à passer de l'un à l'autre), peur, faille, secret.
-- Un antagoniste avec une motivation (jamais "méchant pour être méchant").
-- Un monde cohérent (règles stables, magie/science/époque).
-- UNE sous-intrigue en parallèle (relation, rivalité, enquête secondaire) qui se noue et se dénoue sans étouffer l'intrigue principale.
+Cadres de référence (outils, pas lois) : Poétique d'Aristote (unité d'action, renversement, reconnaissance), pyramide de Freytag, voyage du héros (Vogler), Save the Cat (Snyder), Story de McKee (valeur, tournant, écart attente/résultat), Anatomy of Story de Truby (désir/besoin, adversaire, réseau), lois de la magie de Sanderson, principe de Tchekhov. Choisis ce qui sert LE livre, jette le reste.
+
+1. PRÉMISSE (pourquoi ce livre existe) :
+- "logline" : [protagoniste avec un trait] doit [objectif concret] avant [échéance/menace], sinon [enjeu], mais [obstacle central]. Si tu ne peux pas la formuler, l'idée n'est pas prête.
+- "questionDramatique" : posée au chapitre 1, répondue au climax.
+- "theme" : l'idée abstraite (le prix de la loyauté, la mémoire, la dette) ET "these" : la position du livre, thèse discutable. JAMAIS dite, incarnée par les choix et le prix payé.
+- "contratGenre" : ce que ${params.genre} promet au lecteur (frissons, énigme, émotion, merveille) + la scène obligatoire que le genre exige + les clichés du genre à éviter et ceux à assumer.
+- "promesseExperience" : ce que le lecteur doit ressentir en refermant le livre. Une phrase.
+
+2. L'UNIVERS (règles qui ne bougeront pas) :
+- "regles" : lois physiques/magiques/technologiques. Pour tout pouvoir : ce qu'il PERMET, ce qu'il INTERDIT, ce qu'il COÛTE. Un pouvoir sans limite ni coût tue la tension.
+- "lieuxCles" : 3-5 lieux où l'histoire se passe, avec leur fonction dramatique (lieu du départ, du piège, du climax) + distances/temps de trajet si l'intrigue en dépend.
+- "societe" : qui a le pouvoir, comment on le perd, ce qui est tabou, ce qui se punit. Les conflits sociaux nourrissent le conflit du protagoniste.
+- "cicatrices" : 2-3 événements passés dont les conséquences sont encore actives au début du livre.
+- "textures" : ce que mangent, portent, craignent les gens - le monde crédible en une phrase.
+
+3. LES PERSONNAGES (qui veulent et qui paient) :
+"heros" : {"nom", "desir" (concret, visible, mesurable), "besoinInconscient" (ce qui lui manque vraiment, souvent contraire au désir - le livre est l'écart entre les deux), "peur", "faille" (une faille qui causera un désastre dans l'intrigue), "blessure" (l'événement passé qui a formé une croyance fausse), "mensonge" (la croyance fausse qu'il tient pour vraie), "verite" (ce qu'il devra comprendre), "arc" (positif/plat/négatif + état initial, point de bascule, état final), "attaches" (ce qui le rend attachant dès sa première scène), "traitOptionnel"}
+"antagoniste" : {"nom", "motivation", "besoin", "blessure", "logique" (en quoi IL a raison - sa logique doit être défendable), "plan" (étape par étape, indépendant du protagoniste - l'intrigue est la collision de deux plans), "attaque" (ce qu'il attaque précisément chez le héros), "miroir" (il incarne l'autre réponse à la question du thème)}
+"personnages" : réseau de 3-6 secondaires, chacun avec UNE fonction : {"nom", "role" (allié, mentor, faux allié, rival, tentateur, gardien, miroir, comic relief...), "detail", "revele" (ce qu'il révèle du protagoniste par contraste), "miniArc"}. Fusionne les rôles, supprime tout personnage décoratif.
+
+4. LE CONFLIT ET LES ENJEUX :
+- "conflits" : {"externe" (contre le monde/l'antagoniste), "interne" (contre son mensonge), "philosophique" (deux visions du thème)} - les trois culminent au même endroit.
+- "enjeuxParActe" : ce que le protagoniste perd s'il échoue, à chaque acte - les enjeux MONTENT (du personnel au collectif, ou du matériel au moral), et précise "irreversible".
+- "horloge" : ce qui empêche d'attendre (échéance, menace qui approche, ressource qui s'épuise).
+- "coutVictoire" : ce que la réussite exige de sacrifier. Une fin sans coût est une fin sans poids.
+
+5. LA STRUCTURE (l'ossature, ~10-15 chapitres + prologue, Acte I = 3-5, Acte II = 5-7, Acte III = 2-3) :
+"structure" : {"acte1", "acte2", "acte3"} (résumés) + "squelette" avec ces points obligatoires :
+- "ouverture" : le monde ordinaire et le protagoniste dans sa faille, une scène qui le rend attachant.
+- "incidentDeclencheur" (~10% du livre) : l'événement qui brise l'équilibre - un CHOC, pas une décision.
+- "engagement" (~20-25%) : le protagoniste refuse, puis choisit - ce choix ferme la porte du retour.
+- "pointMedian" (~50%) : fausse victoire ou fausse défaite, révélation qui change la compréhension de l'enjeu ; le héros passe de réactif à actif.
+- "toutEstPerdu" (~75%) : le point le plus bas, souvent une mort réelle ou symbolique ; puis nuit noire -> révélation : il affronte son mensonge.
+- "climax" : la scène obligatoire du genre, les trois conflits résolus par UN choix qui incarne le thème.
+- "denouement" : le nouvel équilibre, image en écho à l'ouverture, ce qui a changé.
+
+6. L'INTRIGUE (le détail) :
+- "synopsis" (300-500 mots) : l'histoire de bout en bout, au présent, en révélant la fin (document de travail).
+- "sousIntrigues" : 1-3, chacune liée au thème, avec le moment où elle croise l'intrigue principale.
+- "retournements" : chaque twist surprenant mais inévitable rétrospectivement + "indices" semés.
+- "rythme" : où le livre respire, où il accélère ; vérifie qu'aucun bloc de 2-3 chapitres n'est sans tension.
+
+7. NARRATION, STYLE, TON :
+- "tonStyle" : décris la VOIX NARRATIVE IMPOSÉE ("${voix?.nom ?? 'Réalisme classique'}" : ${voix?.consigne ?? 'Prose ample et organisée, descriptions précises, alternance équilibrée.'}) en 3-4 phrases concrètes : rythme de phrase, densité descriptive, place du dialogue et de l'introspection, vocabulaire.
+- "motifs" : 3-5 images récurrentes (objets, couleurs, gestes) qui reviennent et changent de sens.
+- "pov": point de vue et temps ; "fiable": le narrateur est-il fiable.
+- "registre" : soutenu/courant/oral + vocabulaire interdit.
+
+RÈGLES DE FOND (à respecter absolument) :
+- UNE question dramatique centrale, répondue au climax. Le thème n'est JAMAIS dit.
 - ${ageLimit(age)}
-
-ARCHITECTURE DU ROMAN (~10-15 chapitres + prologue) :
-- Répartis les chapitres : Acte I = 3-5, Acte II = 5-7, Acte III = 2-3. Indique le point médian (le grand renversement au milieu de l'Acte II qui change la donne).
-- La promesse du genre doit être tenue : ${params.genre}${params.subGenre ? ` (${params.subGenre})` : ''} a ses codes (sinon le lecteur se sent trahi), mais tu les déplaces avec originalité.
-- L'élément imposé par la direction n'est JAMAIS un simple décor : il doit provoquer l'histoire, la nourrir et être dénoué (une brique est une graine, pas une affiche).
+- ${briquesBlock ? 'Les éléments imposés sont des GRAINES : chacun doit provoquer l\'histoire, la nourrir et être dénoué - jamais un simple décor.' : ''}
+- "planDirecteur" (le roman interactif) : voir schéma ci-dessous - c'est la colonne vertébrale ET la carte des embranchements.
 
 ${HUMANITY_RULES}
 
-PLAN DIRECTEUR - à remplir avec une précision totale :
-- "destination" : UNE phrase qui dit où l'histoire emmène le lecteur (la promesse du roman, ce que le lecteur doit ressentir/comprendre à la fin). C'est LE cap.
-- "noyauImmuable" : 3-5 vérités du roman qui ne changent JAMAIS, quel que soit le choix du lecteur (ex : la vérité sur les disparitions, le lien entre le héros et l'antagoniste, la nature du monde). Le scénario peut dévier, pas ces vérités.
-- "actes" (3) : pour chaque acte, un objectif clair, 3-6 scènes clés qui DEVRONT avoir lieu (liste ordonnée), et le tournant qui clôt l'acte. C'est la colonne vertébrale : l'histoire avance vers ces scènes même si les choix la font zigzaguer.
-- "carrefours" : 2-5 choix majeurs ANTICIPÉS (chapitre approximatif, enjeu, options possibles, et ce qui arrive à l'histoire si le lecteur dévie du chemin prévu). Ce sont les seuls endroits où l'histoire peut vraiment changer de route.
-- "fins" : 2-5 fins possibles avec LA CONDITION précise qui y mène et l'émotion finale visée. Les choix du lecteur mènent vers l'une de ces fins - jamais une fin improvisée hors cadre.
-- "pointMedian" : le grand renversement de l'acte II (la donne change, le héros ne peut plus reculer).
-- "sousIntrigue" : UNE intrigue parallèle, en une phrase.
-
 ${ANTI_AI_SLOP}
 
-Réponds UNIQUEMENT en JSON valide, rien d'autre :
+RÉPONDS UNIQUEMENT EN UN SEUL OBJET JSON valide, rien d'autre (tous les champs demandés, précis et concrets - pas de généralités) :
 {
   "titre": "...",
-  "genre": "...",
-  "sousGenre": "...",
+  "genre": "${params.genre}",
+  "sousGenre": "${params.subGenre ?? ''}",
+  "logline": "...",
   "questionDramatique": "...",
   "theme": "...",
+  "these": "...",
+  "contratGenre": {"promesse": "...", "sceneObligatoire": "...", "clichesAEviter": "...", "clichesAAssumer": "..."},
+  "promesseExperience": "...",
   "resumeGeneral": "...",
-  "structure": {"acte1": "résumé", "acte2": "résumé", "acte3": "résumé"},
-  "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "traitOptionnel": "..."},
-  "antagoniste": {"nom": "...", "motivation": "..."},
-  "personnages": [{"nom": "...", "role": "...", "detail": "..."}],
-  "monde": {"description": "...", "regles": "..."},
-  "finsPossibles": [{"nom": "...", "condition": "..."}],
+  "structure": {"acte1": "...", "acte2": "...", "acte3": "...", "squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
+  "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "arc": "...", "attaches": "...", "traitOptionnel": "..."},
+  "antagoniste": {"nom": "...", "motivation": "...", "besoin": "...", "blessure": "...", "logique": "...", "plan": "...", "attaque": "...", "miroir": "..."},
+  "personnages": [{"nom": "...", "role": "...", "detail": "...", "revele": "...", "miniArc": "..."}],
+  "monde": {"description": "...", "regles": "...", "lieuxCles": ["lieu + fonction dramatique"], "societe": "...", "cicatrices": ["..."], "textures": "..."},
+  "conflits": {"externe": "...", "interne": "...", "philosophique": "..."},
+  "enjeuxParActe": [{"acte": 1, "enjeu": "...", "irreversible": false}, {"acte": 2, "enjeu": "..."}, {"acte": 3, "enjeu": "..."}],
+  "horloge": "...",
+  "coutVictoire": "...",
+  "synopsis": "...",
+  "sousIntrigues": [{"nom": "...", "croisement": "..."}],
+  "retournements": [{"twist": "...", "indices": "..."}],
+  "rythme": "...",
+  "motifs": ["image récurrente 1", "image 2", "image 3"],
+  "pov": "...", "fiable": true, "registre": "...",
   "tonStyle": "...",
+  "finsPossibles": [{"nom": "...", "condition": "..."}],
   "planDirecteur": {
-    "destination": "une phrase - le cap du roman",
+    "destination": "UNE phrase - le cap du roman",
     "noyauImmuable": ["vérité 1", "vérité 2", "vérité 3"],
     "actes": [
       {"acte": 1, "objectif": "...", "scenesCles": ["scène 1", "scène 2", "scène 3"], "tournant": "..."},
       {"acte": 2, "objectif": "...", "scenesCles": ["..."], "tournant": "..."},
       {"acte": 3, "objectif": "...", "scenesCles": ["..."], "tournant": "..."}
     ],
-    "pointMedian": "le grand renversement de l'acte II",
-    "sousIntrigue": "l'intrigue parallèle en une phrase",
-    "carrefours": [
-      {"chapitre": N, "enjeu": "...", "options": "...", "consequenceSiDeviation": "..."}
-    ],
-    "fins": [
-      {"nom": "...", "condition": "...", "emotionFinale": "..."}
-    ]
+    "pointMedian": "...",
+    "sousIntrigue": "...",
+    "carrefours": [{"chapitre": N, "enjeu": "...", "options": "...", "consequenceSiDeviation": "..."}],
+    "fins": [{"nom": "...", "condition": "...", "emotionFinale": "..."}]
   }
 }`;
 }
@@ -426,6 +468,10 @@ Règles d'écriture :
 - Progression de l'arc : on avance vers le climax de l'acte.
 - Le héros agit selon son trait mais le joueur garde le contrôle via les choix.
 - Conséquences visibles des choix précédents : les blessures, objets et personnages de l'état du héros doivent rester cohérents.
+- L'ARC du héros s'incarne jour après jour : sa blessure et son mensonge (dans la bible) expliquent ses réticences ; la vérité se rapproche quand le prix devient trop lourd. Jamais de révélation soudaine : chaque chapitre est un pas.
+- L'HORLOGE du roman (dans la bible) avance d'un cran dans ce chapitre.
+- La SCÈNE OBLIGATOIRE du genre (contratGenre, dans la bible) se prépare ici par petites touches - elle éclate au climax, pas avant.
+- Les MOTIFS récurrents (dans la bible) peuvent revenir, changés de sens.
 - ${ageLimit(age)}
 - 2e personne ("tu") : le lecteur EST le héros.
 
