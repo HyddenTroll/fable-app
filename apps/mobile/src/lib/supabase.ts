@@ -6,7 +6,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
@@ -17,38 +17,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const isWeb = Platform.OS === 'web';
 
-/** Stockage de session : SecureStore (natif) sinon localStorage (web).
- * Toutes les opérations sont protégées : si le keychain natif échoue ou
- * pend (cas de certains simulateurs distant comme Appetize), on retombe
- * sur "pas de session" au lieu de bloquer l'app à l'écran de chargement. */
-const secureGet = async (key: string): Promise<string | null> => {
-  try {
-    return await SecureStore.getItemAsync(key);
-  } catch {
-    return null;
-  }
-};
-const secureSet = async (key: string, value: string): Promise<void> => {
-  try {
-    await SecureStore.setItemAsync(key, value);
-  } catch {
-    // Ignoré : la session non persistée repartira d'un login.
-  }
-};
-const secureRemove = async (key: string): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(key);
-  } catch {
-    // Ignoré.
-  }
-};
-
+/**
+ * Stockage de session : AsyncStorage (natif) sinon localStorage (web).
+ * AsyncStorage est un stockage fichier standard : il fonctionne sur
+ * simulateur iOS et simulateurs distants (Appetize), là où le keychain
+ * (SecureStore) est indisponible ou lent - ce qui bloquait le splash et
+ * rendait le code verifier PKCE "introuvable" au retour de Google.
+ */
 const storage = isWeb
   ? localStorage
   : {
-      getItem: secureGet,
-      setItem: secureSet,
-      removeItem: secureRemove,
+      getItem: (key: string) => AsyncStorage.getItem(key),
+      setItem: (key: string, value: string) => AsyncStorage.setItem(key, value),
+      removeItem: (key: string) => AsyncStorage.removeItem(key),
     };
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
