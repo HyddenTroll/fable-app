@@ -107,9 +107,20 @@ export interface StoryBible {
   theme: string;
   resumeGeneral: string;
   structure: {
-    acte1: string;
-    acte2: string;
-    acte3: string;
+    /** Anciennes parties (avant la bible "architecte") : résumés par acte. */
+    acte1?: string;
+    acte2?: string;
+    acte3?: string;
+    /** Nouvelle bible : squelette 3 actes (les actes détaillés sont dans planDirecteur.actes). */
+    squelette?: {
+      ouverture: string;
+      incidentDeclencheur: string;
+      engagement: string;
+      pointMedian: string;
+      toutEstPerdu: string;
+      climax: string;
+      denouement: string;
+    };
   };
   heros: {
     nom: string;
@@ -132,7 +143,7 @@ export interface StoryBible {
     description: string;
     regles: string;
   };
-  finsPossibles: {
+  finsPossibles?: {
     nom: string;
     condition: string;
   }[];

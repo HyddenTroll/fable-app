@@ -309,7 +309,7 @@ Cadres de référence (outils, pas lois) : Poétique d'Aristote (unité d'action
 - "coutVictoire" : ce que la réussite exige de sacrifier. Une fin sans coût est une fin sans poids.
 
 5. LA STRUCTURE (l'ossature, ~10-15 chapitres + prologue, Acte I = 3-5, Acte II = 5-7, Acte III = 2-3) :
-"structure" : {"acte1", "acte2", "acte3"} (résumés) + "squelette" avec ces points obligatoires :
+"structure" ne contient QUE le squelette (les actes détaillés sont dans planDirecteur.actes - ne pas les répéter ici) :
 - "ouverture" : le monde ordinaire et le protagoniste dans sa faille, une scène qui le rend attachant.
 - "incidentDeclencheur" (~10% du livre) : l'événement qui brise l'équilibre - un CHOC, pas une décision.
 - "engagement" (~20-25%) : le protagoniste refuse, puis choisit - ce choix ferme la porte du retour.
@@ -319,7 +319,7 @@ Cadres de référence (outils, pas lois) : Poétique d'Aristote (unité d'action
 - "denouement" : le nouvel équilibre, image en écho à l'ouverture, ce qui a changé.
 
 6. L'INTRIGUE (le détail) :
-- "synopsis" (300-500 mots) : l'histoire de bout en bout, au présent, en révélant la fin (document de travail).
+- "resumeGeneral" (= synopsis, 150-250 mots) : l'histoire de bout en bout, au présent, en révélant la fin. C'est le résumé initial des chapitres - dense, pas littéraire.
 - "sousIntrigues" : 1-3, chacune liée au thème, avec le moment où elle croise l'intrigue principale.
 - "retournements" : chaque twist surprenant mais inévitable rétrospectivement + "indices" semés.
 - "rythme" : où le livre respire, où il accélère ; vérifie qu'aucun bloc de 2-3 chapitres n'est sans tension.
@@ -340,7 +340,8 @@ ${HUMANITY_RULES}
 
 ${ANTI_AI_SLOP}
 
-RÉPONDS UNIQUEMENT EN UN SEUL OBJET JSON valide, rien d'autre (tous les champs demandés, précis et concrets - pas de généralités) :
+RÉPONDS UNIQUEMENT EN UN SEUL OBJET JSON valide, rien d'autre (tous les champs demandés, précis et concrets - pas de généralités).
+CONCISION ABSOLUE : chaque champ = 1 phrase dense, 3 items max par liste, le JSON entier fait MOINS DE 4000 mots. La précision vaut mieux que la longueur : un mot de trop que le lecteur ne verra jamais est un mot perdu.
 {
   "titre": "...",
   "genre": "${params.genre}",
@@ -352,7 +353,7 @@ RÉPONDS UNIQUEMENT EN UN SEUL OBJET JSON valide, rien d'autre (tous les champs 
   "contratGenre": {"promesse": "...", "sceneObligatoire": "...", "clichesAEviter": "...", "clichesAAssumer": "..."},
   "promesseExperience": "...",
   "resumeGeneral": "...",
-  "structure": {"acte1": "...", "acte2": "...", "acte3": "...", "squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
+  "structure": {"squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
   "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "arc": "...", "attaches": "...", "traitOptionnel": "..."},
   "antagoniste": {"nom": "...", "motivation": "...", "besoin": "...", "blessure": "...", "logique": "...", "plan": "...", "attaque": "...", "miroir": "..."},
   "personnages": [{"nom": "...", "role": "...", "detail": "...", "revele": "...", "miniArc": "..."}],
@@ -361,14 +362,12 @@ RÉPONDS UNIQUEMENT EN UN SEUL OBJET JSON valide, rien d'autre (tous les champs 
   "enjeuxParActe": [{"acte": 1, "enjeu": "...", "irreversible": false}, {"acte": 2, "enjeu": "..."}, {"acte": 3, "enjeu": "..."}],
   "horloge": "...",
   "coutVictoire": "...",
-  "synopsis": "...",
   "sousIntrigues": [{"nom": "...", "croisement": "..."}],
   "retournements": [{"twist": "...", "indices": "..."}],
   "rythme": "...",
   "motifs": ["image récurrente 1", "image 2", "image 3"],
   "pov": "...", "fiable": true, "registre": "...",
   "tonStyle": "...",
-  "finsPossibles": [{"nom": "...", "condition": "..."}],
   "planDirecteur": {
     "destination": "UNE phrase - le cap du roman",
     "noyauImmuable": ["vérité 1", "vérité 2", "vérité 3"],
