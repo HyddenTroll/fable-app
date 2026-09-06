@@ -1118,3 +1118,23 @@ FAIT :
         finsPossibles retirés du schéma bible (tout est dans
         planDirecteur) ; types StoryBible mis à jour (champs ?).
       Typecheck API + mobile OK.
+
+   22. DIRECTION ARTISTIQUE « PIERRE ET LAPIS » CONSIGNÉE (charte fournie
+      par l'utilisateur le 06/09/2026) :
+      - docs/6-avant-le-code/direction-artistique.md : analyse complète
+        (tokens, typo, principes, composants, page connexion).
+      - docs/6-avant-le-code/da-fable-globals.css : CSS source verbatim.
+      - Identité : fond PIERRE clair #E4E2DC, encre OBSIDIENNE #101114,
+        accent LAPIS #2447D6 (= l'IA), bronze #8A6A3D, gris #55565C.
+        Formes CARRÉES (radius 0). Titres = Didot (GFS_Didot, grec),
+        texte = Manrope. Le « fil de lapis » (1px + halo) = l'IA.
+        Le « méandre qui se pixelise » (grec - plus - pixels lapis) =
+        la tradition devient IA. Logo : "Fable" Didot avec "b" lapis
+        traversé par le fil. Page connexion : max 420px, tagline
+        "Chaque choix écrit la suite.", note IA "Tu décides, elle
+        raconte."
+      - CONFLIT avec le thème mobile actuel (dark #101024 / doré
+        #E8B84B) : la prochaine refonte UI devra remplacer
+        apps/mobile/src/theme/index.ts par ces tokens (fond clair,
+        encre obsidienne, accent lapis, radius 0) + intégrer Didot/
+        Manrope. À FAIRE, pas fait dans cette session.

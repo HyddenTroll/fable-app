@@ -1,0 +1,129 @@
+/* ───────── DA FABLE (source verbatim fournie le 06/09/2026) ─────────
+   Thème « Pierre & Lapis » : fond pierre clair, encre obsidienne,
+   accent lapis (= l'IA), formes carrées. Typo : Didot (titres) +
+   Manrope (texte). Voir direction-artistique.md pour l'analyse. */
+
+:root {
+  --pierre: #E4E2DC;
+  --pierre-2: #D8D4CB;
+  --obsidienne: #101114;
+  --bronze: #8A6A3D;
+  --lapis: #2447D6;
+  --lapis-halo: #6B8CFF;
+  --gris: #55565C;
+  --gris-2: #3A3B40;
+
+  --f-grec: var(--font-didot), "Didot", "Bodoni MT", Georgia, serif;
+  --f-ia: var(--font-manrope), "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--pierre);
+  color: var(--obsidienne);
+  font-family: var(--f-ia);
+  font-size: 16px;
+  line-height: 1.55;
+}
+::selection { background: var(--lapis); color: #fff; }
+:focus-visible { outline: 2px solid var(--lapis); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+h1, h2, h3 {
+  font-family: var(--f-grec);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+a { color: inherit; }
+
+/* ───────── Boutons ───────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 52px; padding: 0 22px;
+  border: 1px solid var(--obsidienne);
+  background: var(--obsidienne); color: var(--pierre);
+  font: 500 15px var(--f-ia);
+  cursor: pointer; border-radius: 0;
+}
+.btn:hover { background: #000; }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn--second { background: transparent; color: var(--obsidienne); }
+.btn--second:hover { background: var(--pierre-2); }
+.btn--ia { border-color: var(--lapis); background: transparent; color: var(--lapis); }
+.btn--ia:hover { background: var(--lapis); color: #fff; }
+
+/* ───────── Champs ───────── */
+.champ { position: relative; padding-top: 16px; }
+.champ label {
+  position: absolute; top: 0; left: 0;
+  font: 500 12px var(--f-ia); color: var(--gris);
+}
+.champ input {
+  width: 100%; height: 44px; border: 0;
+  border-bottom: 1px solid var(--obsidienne);
+  background: transparent; color: var(--obsidienne);
+  font: 16px var(--f-ia); padding: 0; border-radius: 0;
+}
+.champ input::placeholder { color: #8E8F95; }
+.champ input:focus { outline: 0; border-bottom: 1.5px solid var(--lapis); }
+.champ--erreur input { border-bottom-color: #B4442E; }
+
+/* ───────── Fil de lapis ───────── */
+.fil {
+  width: 1px; background: var(--lapis);
+  box-shadow: 0 0 12px 1px var(--lapis-halo);
+}
+
+/* ───────── Méandre qui se pixelise ───────── */
+.meandre { position: relative; height: 16px; width: 100%; overflow: hidden; }
+.meandre::before, .meandre::after {
+  content: ""; position: absolute; inset: 0;
+  background-repeat: repeat-x; background-size: 24px 16px;
+}
+.meandre::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='16' viewBox='0 0 24 16'><path d='M0 15 H19 V1 H5 V10 H13 V5' fill='none' stroke='%23101114' stroke-width='1.4'/></svg>");
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 45%, transparent 75%);
+          mask-image: linear-gradient(90deg, #000 0%, #000 45%, transparent 75%);
+}
+.meandre::after {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='16' viewBox='0 0 24 16'><g fill='%232447D6'><rect x='0' y='14' width='2' height='2'/><rect x='6' y='14' width='2' height='2'/><rect x='12' y='14' width='2' height='2'/><rect x='18' y='14' width='2' height='2'/><rect x='18' y='8' width='2' height='2'/><rect x='18' y='2' width='2' height='2'/><rect x='12' y='2' width='2' height='2'/><rect x='6' y='2' width='2' height='2'/><rect x='6' y='8' width='2' height='2'/><rect x='12' y='8' width='2' height='2'/></g></svg>");
+  -webkit-mask-image: linear-gradient(90deg, transparent 40%, #000 70%, #000 100%);
+          mask-image: linear-gradient(90deg, transparent 40%, #000 70%, #000 100%);
+}
+
+/* ───────── Logotype ───────── */
+.logo {
+  font-family: var(--f-grec);
+  line-height: 1; letter-spacing: -0.02em;
+  position: relative; display: inline-block;
+}
+.logo .phi { color: var(--lapis); }
+.logo .fil { position: absolute; top: -30px; bottom: -14px; left: calc(50% - 1px); }
+
+/* ───────── Page connexion ───────── */
+.connexion {
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  max-width: 420px; margin: 0 auto;
+  padding: 72px 28px 32px;
+}
+.connexion__tete { text-align: center; }
+.connexion__tag { font-family: var(--f-grec); font-size: 19px; margin: 10px 0 0; }
+.connexion .meandre { margin: 26px 0 30px; }
+.connexion__form { display: grid; gap: 22px; }
+.connexion__actions { display: grid; gap: 12px; margin-top: 6px; }
+.connexion__actions .btn { width: 100%; }
+.connexion__liens { display: flex; justify-content: space-between; font-size: 13px; margin-top: 4px; }
+.connexion__liens a { color: var(--gris-2); text-decoration: none; border-bottom: 1px solid var(--pierre-2); }
+.connexion__liens a:hover { border-bottom-color: var(--obsidienne); }
+.connexion__erreur { font-size: 13px; color: #B4442E; margin: -8px 0 0; }
+.connexion__ia {
+  margin-top: auto; padding-top: 22px;
+  font-size: 12px; color: var(--gris);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.connexion__ia .fil { flex: 0 0 1px; height: 28px; margin-top: 2px; box-shadow: 0 0 8px 1px var(--lapis-halo); }
