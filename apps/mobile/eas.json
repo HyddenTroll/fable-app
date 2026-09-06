@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "version": ">= 23.2.0"
+  },
+  "build": {
+    "preview": {
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://agnaafnujcwswstcwfuw.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnbmFhZm51amN3c3dzdGN3ZnV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0OTY4MzYsImV4cCI6MjEwNDA3MjgzNn0.uNaybs9x4fG_t8Fe01tqyTvGTgwrFmU1A3MH7o5VBnE"
+      }
+    }
+  }
+}
