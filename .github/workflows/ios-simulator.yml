@@ -1,0 +1,72 @@
+name: iOS Simulator build (Appetize)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'apps/mobile/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+concurrency:
+  group: ios-sim
+  cancel-in-progress: true
+
+jobs:
+  build-ios-simulator:
+    name: Build .app simulateur iOS
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: https://agnaafnujcwswstcwfuw.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnbmFhZm51amN3c3dzdGN3ZnV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0OTY4MzYsImV4cCI6MjEwNDA3MjgzNn0.uNaybs9x4fG_t8Fe01tqyTvGTgwrFmU1A3MH7o5VBnE
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies (workspaces)
+        run: npm ci
+
+      - name: Expo prebuild (génère le projet natif iOS)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Pod install
+        working-directory: apps/mobile/ios
+        run: pod install
+
+      - name: Build simulateur iOS (Release, bundle JS embarqué)
+        working-directory: apps/mobile/ios
+        run: |
+          xcodebuild \
+            -workspace Fable.xcworkspace \
+            -scheme Fable \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Zipper le .app
+        working-directory: apps/mobile/ios/build/Build/Products/Release-iphonesimulator
+        run: |
+          ls -la
+          zip -r Fable-simulator.zip Fable.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fable-ios-simulator
+          path: apps/mobile/ios/build/Build/Products/Release-iphonesimulator/Fable-simulator.zip
+          retention-days: 14
