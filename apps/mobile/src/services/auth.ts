@@ -36,6 +36,23 @@ function extractCodeFromUrl(url: string): string | null {
   }
 }
 
+/** Extrait les tokens d'un retour OAuth implicite (#access_token=..., #refresh_token=...). */
+function extractSessionFromHash(url: string): { accessToken: string; refreshToken?: string } | null {
+  try {
+    const hash = url.split('#')[1] ?? '';
+    if (!hash) return null;
+    const params = new URLSearchParams(hash.replace(/^\//, ''));
+    const accessToken = params.get('access_token');
+    if (!accessToken) return null;
+    return {
+      accessToken,
+      refreshToken: params.get('refresh_token') ?? undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function signInWithEmail(email: string, password: string): Promise<AuthResult> {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { ok: false, error: parseAuthError(error.message) };
@@ -63,7 +80,14 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
+      options: {
+        redirectTo,
+        skipBrowserRedirect: Platform.OS !== 'web',
+        // PKCE : Google/Supabase reviennent avec ?code= (échangé ensuite).
+        // Sans lui, le flux implicite renvoie les tokens dans le #hash et
+        // l'app répondait "Réponse Google invalide".
+        flowType: 'pkce',
+      },
     });
 
     if (error) return { ok: false, error: parseAuthError(error.message) };
@@ -78,10 +102,21 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     if (result.type !== 'success' || !result.url) {
       return { ok: false, error: 'Connexion Google annulée.' };
     }
+    // 1) Flux PKCE : ?code= à échanger.
     const code = extractCodeFromUrl(result.url);
-    if (!code) return { ok: false, error: 'Réponse Google invalide.' };
-    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
-    if (sessionError) return { ok: false, error: parseAuthError(sessionError.message) };
+    if (code) {
+      const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+      if (sessionError) return { ok: false, error: parseAuthError(sessionError.message) };
+    } else {
+      // 2) Secours flux implicite : tokens dans le #hash, on les applique.
+      const hashTokens = extractSessionFromHash(result.url);
+      if (!hashTokens) return { ok: false, error: 'Réponse Google invalide.' };
+      const { error: setError } = await supabase.auth.setSession({
+        access_token: hashTokens.accessToken,
+        refresh_token: hashTokens.refreshToken ?? '',
+      });
+      if (setError) return { ok: false, error: parseAuthError(setError.message) };
+    }
     const { data: sessionData } = await supabase.auth.getSession();
     return { ok: true, session: sessionData.session };
   } catch (e) {
