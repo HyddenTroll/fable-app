@@ -57,5 +57,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: isWeb,
+    // PKCE pour tous les flux OAuth : Google/Supabase reviennent avec
+    // ?code= (échangé ensuite) au lieu de tokens dans le #hash.
+    flowType: 'pkce',
   },
 });

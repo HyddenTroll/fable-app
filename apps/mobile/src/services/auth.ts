@@ -83,10 +83,9 @@ export async function signInWithGoogle(): Promise<AuthResult> {
       options: {
         redirectTo,
         skipBrowserRedirect: Platform.OS !== 'web',
-        // PKCE : Google/Supabase reviennent avec ?code= (échangé ensuite).
-        // Sans lui, le flux implicite renvoie les tokens dans le #hash et
-        // l'app répondait "Réponse Google invalide".
-        flowType: 'pkce',
+        // Le flux PKCE est défini au niveau du client (createClient).
+        // Retour ?code= échangé ensuite ; le secours #hash gère les
+        // anciennes sessions implicites.
       },
     });
 
