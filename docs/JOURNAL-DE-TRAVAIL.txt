@@ -1064,3 +1064,29 @@ FAIT :
       - Erreur TS1005 : apostrophe non échappée ("l'histoire") dans un
         ternaire du prompt -> échappée.
       Typecheck api OK.
+
+   20. BUILD iOS POUR APPETIZE.IO (sans Mac ni compte Expo/Apple) :
+      - eas.json créé (profil preview, ios.simulator=true + EXPO_PUBLIC
+        embarquées) puis ABANDONNÉ (login Expo interactif impossible
+        depuis ce PC).
+      - Solution retenue : workflow GitHub Actions
+        .github/workflows/ios-simulator.yml sur runner macos-15
+        gratuit (repo public, 2000 min/mois) : npm ci -> expo prebuild
+        --platform ios -> pod install -> xcodebuild Release
+        iphonesimulator CODE_SIGNING_ALLOWED=NO -> zip -> artifact.
+      - PIÈGES RÉSOLUS :
+        * SPM "apple" exige Swift 6.2 (Xcode 26+) -> étape de
+          sélection du Xcode le plus récent (xcode-select).
+        * expo-modules-jsi@57.0.7 : header RuntimeScheduler.h avec
+          SWIFT_RETURNS_RETAINED qui ne compile plus sous Xcode 26
+          (bug expo/expo#49214, présent jusqu'en 57.0.7) -> patch
+          sed dans le workflow (retrait des 2 annotations). Noter :
+          sed macOS (BSD) exige -i.bak (pas -i simple).
+        * .yml écrit sous Windows = CRLF -> YAML invalide -> réécrit
+          en LF (newline="\n").
+      - Livrable : Fable-simulator.zip (23 Mo, 129 fichiers, .app
+        arm64 simulateur Release, bundle JS embarqué) déposé dans
+        C:\Users\yohan\Downloads\Fable-ios-simulator.zip.
+        À tester sur Appetize (upload manuel iOS).
+      - Relance du build : GitHub Actions -> iOS Simulator build ->
+        "Run workflow" (workflow_dispatch).
