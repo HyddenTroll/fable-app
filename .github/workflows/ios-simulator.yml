@@ -38,6 +38,15 @@ jobs:
       - name: Install dependencies (workspaces)
         run: npm ci
 
+      - name: Select Xcode 26+ (Swift 6.2 requis par le package SPM)
+        run: |
+          ls -d /Applications/Xcode_26*.app /Applications/Xcode*.app 2>/dev/null || true
+          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ] && [ -d /Applications/Xcode.app ]; then XCODE_PATH=/Applications/Xcode.app; fi
+          if [ -n "$XCODE_PATH" ]; then sudo xcode-select -s "$XCODE_PATH"; fi
+          xcodebuild -version
+          swift --version | head -2
+
       - name: Expo prebuild (génère le projet natif iOS)
         working-directory: apps/mobile
         run: npx expo prebuild --platform ios --no-install
