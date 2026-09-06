@@ -16,13 +16,23 @@ export default function IndexScreen() {
     let active = true;
 
     (async () => {
-      const session = await getCurrentSession();
-      if (!active) return;
-      if (session?.user.email) {
-        setEmail(session.user.email);
-        setUserName(session.user.email.split('@')[0] || 'Héros');
+      try {
+        // Garde-fou : si Supabase/SecureStore ne répondent pas (simulateur
+        // distant, keychain indisponible...), on entre dans l'app quand même.
+        const session = await Promise.race([
+          getCurrentSession(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+        ]);
+        if (!active) return;
+        if (session?.user.email) {
+          setEmail(session.user.email);
+          setUserName(session.user.email.split('@')[0] || 'Héros');
+        }
+      } catch {
+        // Session inconnue au démarrage : on entre sans session.
+      } finally {
+        if (active) setChecked(true);
       }
-      setChecked(true);
     })();
 
     const unsubscribe = onAuthStateChange((session) => {
