@@ -1090,3 +1090,31 @@ FAIT :
         À tester sur Appetize (upload manuel iOS).
       - Relance du build : GitHub Actions -> iOS Simulator build ->
         "Run workflow" (workflow_dispatch).
+
+   21. DÉMARRAGE RAPIDE + BARRE DE PROGRESSION (réponse à "trop long,
+      vise 30-40 s" + "barre de chargement sympa" + "taille téléphone") :
+      - FLUX 2 TEMPS : create.ts ne génère plus la bible COMPLÈTE
+        (longue) mais une BIBLE LÉGÈRE (buildQuickBiblePrompt, JSON
+        <=350 mots, maxTokens 1800, ~15-25 s) PUIS le prologue ->
+        l'utilisateur lit en ~40-50 s.
+      - NOUVELLE ROUTE /api/game/enrich : en arrière-plan post-création,
+        étend la bible légère en bible COMPLÈTE d'architecte
+        (buildEnrichBiblePrompt, kind 'story_bible' réutilisé, aucun
+        changement de schéma de contrainte). Écrit story_bible +
+        bible_text enrichis quand prêt -> les chapitres suivants
+        utilisent la bible complète. Erreurs tolérées (bible légère
+        suffit à jouer).
+      - MOBILE (new-game.tsx) : définit issue -> déclenche
+        enrichBible(gameId) SANS bloquer (fetch), petite pause 1.2 s
+        pour montrer la barre, puis redirige vers la lecture.
+      - BARRE DE PROGRESSION : 3 étapes (Charpente / Prologue /
+        Enrichissement du monde), track remplie selon createStep,
+        remplace l'ActivityIndicator.
+      - SAFE AREA téléphone (iPhone) : useSafeAreaInsets de
+        react-native-safe-area-context (déjà installé, expo-router
+        fournit le provider) ; container de new-game paddingTop =
+        insets.top + spacing.lg -> rien sous l'encoche/capteur.
+      - Doublons d'interface retirés : structure.acte1/2/3 et
+        finsPossibles retirés du schéma bible (tout est dans
+        planDirecteur) ; types StoryBible mis à jour (champs ?).
+      Typecheck API + mobile OK.

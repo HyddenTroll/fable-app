@@ -123,6 +123,30 @@ export async function readGame(gameId: string): Promise<{ game: ApiGame; chapter
   return data;
 }
 
+/**
+ * Déclenche l'enrichissement de la bible en arrière-plan (bible légère ->
+ * bible complète d'architecte). Appelé pendant que le lecteur lit le
+ * prologue ; l'erreur est tolérée (la bible légère suffit à jouer).
+ */
+export async function enrichBible(gameId: string): Promise<void> {
+  try {
+    const res = await httpFetch(`${apiBase()}/api/game/enrich`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ gameId }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      throw new ApiError(res.status, data?.error?.message ?? 'Erreur enrichissement', data?.error?.code, data?.paywall);
+    }
+  } catch (e) {
+    // Silencieux : la partie reste jouable avec la bible légère.
+    if (e instanceof ApiError && e.paywall) {
+      // Pas de paywall attendu ici ; on ignore.
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Streaming SSE (expo/fetch -> ReadableStream)
 // ---------------------------------------------------------------------------

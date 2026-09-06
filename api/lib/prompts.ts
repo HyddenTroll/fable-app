@@ -384,6 +384,99 @@ CONCISION ABSOLUE : chaque champ = 1 phrase dense, 3 items max par liste, le JSO
 }`;
 }
 
+/**
+ * BIBLE LÉGÈRE (démarrage rapide) : le minimum nécessaire pour écrire le
+ * prologue et le premier chapitre, généré très vite (~15-25 s). Le reste
+ * de la bible (univers détaillé, personnages secondaires, conflits,
+ * motifs...) est enrichi ensuite par buildEnrichBiblePrompt.
+ */
+export function buildQuickBiblePrompt(
+  params: GameParams,
+  age: AgeGroup,
+  opts?: { heroName?: string; heroTrait?: string; voix?: { nom: string; consigne: string }; briques?: { label: string; valeur: string }[] }
+): string {
+  const { heroName, heroTrait, voix, briques } = opts ?? {};
+  const variationSeed = Math.floor(Math.random() * 999_999);
+  const briquesBlock = briques?.length
+    ? `ÉLÉMENTS IMPOSÉS PAR LA DIRECTION (le roman DOIT les intégrer naturellement) :\n${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}\n`
+    : '';
+  const loisGenre = LOIS_PAR_GENRE[params.genre];
+  const loisBlock = loisGenre ? `LOIS DU GENRE (à respecter) :\n${loisGenre}\n` : '';
+  return `Tu es un romancier. Établis EN QUELQUES SECONDES la charpente d'un roman interactif (livre dont le lecteur est le héros). RÉPONDS TRÈS VITE : sois dense, chaque champ est UNE phrase courte, listes à 3 items max. Pas de remplissage.
+
+GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
+PUBLIC : ${ageLabel(age)}
+${heroName ? `NOM DU HÉROS : ${heroName}` : ''}
+${heroTrait ? `TRAIT DU HÉROS : ${heroTrait}` : ''}
+
+${briquesBlock}${loisBlock}
+VOIX NARRATIVE IMPOSÉE : "${voix?.nom ?? 'Réalisme classique'}" (${voix?.consigne ?? 'prose classique équilibrée'}). "tonStyle" décrira cette voix en 2 phrases.
+
+INDICE DE CRÉATION : ${variationSeed} - variation originale, anti-cliché.
+
+Réponds en UN SEUL JSON (COURT, ≤ 350 mots) :
+{
+  "titre": "...",
+  "genre": "${params.genre}", "sousGenre": "${params.subGenre ?? ''}",
+  "logline": "...", "questionDramatique": "...", "theme": "...", "these": "...",
+  "resumeGeneral": "synopsis 80-120 mots, fin révélée",
+  "structure": {"squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
+  "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "traitOptionnel": "..."},
+  "antagoniste": {"nom": "...", "motivation": "...", "logique": "...", "plan": "..."},
+  "monde": {"description": "...", "regles": "..."},
+  "tonStyle": "2 phrases : rythme de phrase, densité descriptive, place du dialogue",
+  "planDirecteur": {"destination": "le cap, une phrase", "noyauImmuable": [3 vérités], "actes": [{"acte":1,"objectif":"...","scenesCles":[2-3],"tournant":"..."}, {"acte":2,...}, {"acte":3,...}], "pointMedian": "...", "sousIntrigue": "...", "fins": [3 fins avec condition]}
+}`;
+}
+
+/**
+ * ENRICHISSEMENT de la bible (en arrière-plan pendant la lecture du
+ * prologue) : on part de la bible légère déjà écrite et on la complète
+ * en bible complète d'architecte, sans contredire ce qui est posé.
+ */
+export function buildEnrichBiblePrompt(
+  quickBible: StoryBible,
+  params: GameParams,
+  age: AgeGroup,
+  voix: { nom: string; consigne: string }
+): string {
+  const loisGenre = LOIS_PAR_GENRE[params.genre];
+  const loisBlock = loisGenre ? `LOIS DU GENRE (à respecter) :\n${loisGenre}\n` : '';
+  return `Tu es un ARCHITECTE NARRATIF. Une bible LÉGÈRE a déjà été posée. Étends-la en bible COMPLÈTE : conserve FIDÈLEMENT tout ce qui est déjà écrit (aucune contradiction), et complète chaque section avec précision. Ne rédige AUCUN chapitre.
+
+VOIX NARRATIVE IMPOSÉE : "${voix.nom}" (${voix.consigne}).
+
+BIBLE LÉGÈRE EXISTANTE (à étendre, ne pas contredire) :
+${JSON.stringify(quickBible, null, 2)}
+
+${loisBlock}
+Section 4 CONFLITS : {"externe", "interne", "philosophique"} (les trois culminent au climax).
+"enjeuxParActe" : ce que le héros perd s'il échoue, acte par acte (ça monte) + "horloge" (échéance) + "coutVictoire" (ce que la réussite exige de sacrifier).
+"contratGenre" : {"promesse", "sceneObligatoire", "clichesAEviter", "clichesAAssumer"} du genre.
+"promesseExperience" : une phrase.
+"personnages" : réseau de 3-6 secondaires (allié, mentor, faux allié, rival, miroir...) avec {"nom","role","detail","revele","miniArc"}.
+"monde" : enrichis {"regles" (permet/interdit/coûte), "lieuxCles" (3-5 lieux + fonction dramatique), "societe", "cicatrices", "textures"}.
+"sousIntrigues" : 1-3 liées au thème avec "croisement".
+"retournements" : twists + "indices" ; "rythme" : où ça respire / accélère.
+"motifs" : 3 images récurrentes ; "pov" ; "fiable" ; "registre".
+"planDirecteur" : complète avec "carrefours" (2-4 choix majeurs anticipés avec chapitre/enjeu/options) et garde les "fins" existantes.
+
+CONCISION : listes à 4 items max, chaque champ est une phrase dense. JSON total ≤ 3500 mots.
+
+Réponds en UN SEUL JSON complet (tous les champs du schéma d'une bible complète) : {
+  "titre", "genre", "sousGenre", "logline", "questionDramatique", "theme", "these",
+  "contratGenre" (4 champs), "promesseExperience", "resumeGeneral" (150-250 mots),
+  "structure": {"squelette": 7 points},
+  "heros": {"nom","desir","besoinInconscient","peur","faille","blessure","mensonge","verite","arc","attaches","traitOptionnel"},
+  "antagoniste": {"nom","motivation","besoin","blessure","logique","plan","attaque","miroir"},
+  "personnages": [5 items],
+  "monde": {"description","regles","lieuxCles","societe","cicatrices","textures"},
+  "conflits": 3, "enjeuxParActe": [3], "horloge", "coutVictoire",
+  "sousIntrigues": [3], "retournements": [3], "rythme", "motifs": [3], "pov", "fiable", "registre",
+  "tonStyle", "planDirecteur": {"destination","noyauImmuable","actes","pointMedian","sousIntrigue","carrefours","fins"}
+}`;
+}
+
 export function buildProloguePrompt(bible: StoryBible, params: GameParams, age: AgeGroup): string {
   return `Tu es un grand romancier. Écris le PROLOGUE de ce roman.
 

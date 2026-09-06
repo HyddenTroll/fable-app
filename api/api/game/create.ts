@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
-import { buildStoryBiblePrompt, buildProloguePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
+import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
 import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
@@ -79,12 +79,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return json(res, 402, { error: { code: access.reason, message: access.message }, paywall: true });
   }
 
-  // 1) Story bible
-  // Voix narrative tirée au sort : chaque histoire a SON registre
-  // (diversité maximale entre les romans).
+  // 1) Story bible LÉGÈRE (démarrage rapide) : charpente minimale générée
+  // très vite (~15-25 s) pour ne pas faire attendre le lecteur. La bible
+  // COMPLÈTE est enrichie ensuite en arrière-plan par /api/game/enrich.
   const voix = NARRATIVE_VOICES[Math.floor(Math.random() * NARRATIVE_VOICES.length)];
-  // Briques narratives imposées (diversité réelle des intrigues) :
-  // 1 élément par catégorie, pioché au hasard, intégré à la bible.
   const briques = [
     { label: 'Lieu de départ', valeur: piocher(BRIQUES.lieux, 1)[0] },
     { label: 'Événement qui déclenche tout', valeur: piocher(BRIQUES.evenements, 1)[0] },
@@ -93,12 +91,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     { label: 'Antagoniste ou menace', valeur: piocher(BRIQUES.antagonistes, 1)[0] },
     { label: 'Objet-signal', valeur: piocher(BRIQUES.objets, 1)[0] },
     { label: 'Destination du roman', valeur: piocher(BRIQUES.destinations, 1)[0] },
-    // Briques SPÉCIFIQUES au genre choisi (3 catégories x 1 tirage)
     ...(BRIQUES_PAR_GENRE[params.genre] ?? []).map((cat) => ({
       label: cat.categorie,
       valeur: piocher(cat.elements, 1)[0],
     })),
-    // Profil de rythme du roman (pioché dans les 8 du genre)
     ...(rythme ? [{ label: 'Rythme du roman', valeur: `${rythme.nom} (inspiré de ${rythme.inspirePar}) : ${rythme.consigne}` }] : []),
   ];
   let bible: StoryBible;
@@ -108,10 +104,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: buildStoryBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix, briques }) },
+        { role: 'user', content: buildQuickBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix, briques }) },
       ],
       kind: 'story_bible',
-      maxTokens: 6500,
+      maxTokens: 1800,
     });
     bible = gen.json;
     bibleResult = gen.result;

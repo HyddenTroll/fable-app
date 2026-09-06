@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { GameParams } from '@fable/shared';
 import {
   GENRES, HERO_TRAITS, NARRATIVE_STYLES, CHAPTER_LENGTHS, DIFFICULTIES,
 } from '@/data/mock';
-import { createGame, ApiError } from '@/services/api';
+import { createGame, enrichBible, ApiError } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { colors, spacing, radii } from '@/theme';
 
 type Step = 'genre' | 'hero' | 'params';
 
+/** Étapes visibles de la création, pour la barre de progression. */
+const CREATE_STEPS = ['Charpente du récit', 'Prologue', 'Enrichissement du monde'];
+
 export default function NewGameScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
   const setGameParams = useAppStore((s) => s.setGameParams);
   const setHeroState = useAppStore((s) => s.setHeroState);
@@ -31,6 +36,7 @@ export default function NewGameScreen() {
   const [style, setStyle] = useState<GameParams['style']>('classique');
   const [maxChoices, setMaxChoices] = useState<GameParams['maxChoices']>(3);
   const [creating, setCreating] = useState(false);
+  const [createStep, setCreateStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const selectedGenre = GENRES.find((g) => g.code === genreCode)!;
@@ -45,8 +51,10 @@ export default function NewGameScreen() {
       maxChoices,
     };
     setCreating(true);
+    setCreateStep(0);
     setError(null);
     try {
+      // Étape 1 : charpente + prologue (la route /create fait les deux en série)
       const res = await createGame({
         genre: params.genre,
         subGenre: params.subGenre,
@@ -58,6 +66,7 @@ export default function NewGameScreen() {
         heroName: heroName || undefined,
         heroTrait: heroTrait ?? undefined,
       });
+      setCreateStep(1);
       setGameParams(params);
       setHeroState(null);
       setCurrentGame({
@@ -76,6 +85,13 @@ export default function NewGameScreen() {
         resume: res.game.resume,
         finished: false,
       });
+      // Étape 2 : enrichissement de la bible EN ARRIÈRE-PLAN - ne bloque
+      // pas la lecture, on part tout de suite lire le prologue.
+      setCreateStep(2);
+      enrichBible(res.gameId);
+      // Petite respiration pour afficher la barre "Enrichissement" avant
+      // de basculer sur l'écran de lecture.
+      await new Promise((r) => setTimeout(r, 1200));
       router.push(`/game/${res.gameId}`);
     } catch (e) {
       if (e instanceof ApiError && e.paywall) {
@@ -91,7 +107,18 @@ export default function NewGameScreen() {
   const canContinue = step === 'hero' ? heroName.trim().length > 0 : true;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
+
+      {creating && (
+        <View style={styles.creationBox}>
+          <Text style={styles.creationTitle}>Création de ton histoire...</Text>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${((createStep + 1) / CREATE_STEPS.length) * 100}%` }]} />
+          </View>
+          <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
+        </View>
+      )}
+
       <Text style={styles.stepTitle}>
         {step === 'genre' ? '1. Choisis ton univers' :
          step === 'hero' ? '2. Ton héros' : '3. Personnalisation'}
@@ -227,7 +254,7 @@ export default function NewGameScreen() {
         )}
         {step === 'params' ? (
           <Button
-            label={creating ? 'Création de l\'histoire...' : 'Commencer l\'aventure'}
+            label={creating ? 'Création en cours...' : 'Commencer l\'aventure'}
             onPress={startGame}
             disabled={creating}
             style={styles.flexButton}
@@ -241,14 +268,35 @@ export default function NewGameScreen() {
           />
         )}
       </View>
-      {creating && <ActivityIndicator color={colors.primary} style={styles.creating} />}
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.xxl },
+  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.xxl, paddingBottom: spacing.xxl },
+  creationBox: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  creationTitle: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  progressTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.surfaceAlt,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+  },
+  creationStep: { color: colors.textSecondary, fontSize: 13 },
   listContent: { gap: spacing.md },
   formContent: { gap: spacing.xs },
   stepTitle: { color: colors.primary, fontSize: 20, fontWeight: 'bold', marginBottom: spacing.lg },
@@ -296,6 +344,5 @@ const styles = StyleSheet.create({
   },
   navRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xxl },
   flexButton: { flex: 1 },
-  creating: { marginTop: spacing.lg },
   error: { color: '#ff6b6b', marginTop: spacing.md, textAlign: 'center' },
 });
