@@ -145,7 +145,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const gen = llm.stream({
         messages: chapterMessages,
         kind: 'chapter',
-        maxTokens: 8000,
+        maxTokens: 4000,
       });
       let result: LLMResult = EMPTY_RESULT;
       for (;;) {

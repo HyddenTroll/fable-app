@@ -1,12 +1,36 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { streamChapter, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
+import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii } from '@/theme';
+
+/** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
+const PAGE_CHARS = 1500;
+
+/** Découpe un chapitre en PAGES (jamais de scroll : on tourne la page). */
+function splitIntoPages(text: string, maxChars = PAGE_CHARS): string[] {
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  if (paragraphs.length === 0) {
+    return text ? [text] : [];
+  }
+  const pages: string[] = [];
+  let current = '';
+  for (const para of paragraphs) {
+    if (current && current.length + para.length + 2 > maxChars) {
+      pages.push(current);
+      current = para;
+    } else {
+      current = current ? `${current}\n\n${para}` : para;
+    }
+  }
+  if (current) pages.push(current);
+  return pages.length ? pages : ['...'];
+}
 
 export default function GameScreen() {
   const router = useRouter();
@@ -16,17 +40,23 @@ export default function GameScreen() {
   const setHeroState = useAppStore((s) => s.setHeroState);
   const updateCurrentGame = useAppStore((s) => s.updateCurrentGame);
 
+  // Restauration serveur (réessaie si la partie a changé)
+  useRestoreGame();
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamText, setStreamText] = useState('');
   const [pressedChoice, setPressedChoice] = useState<number | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const listRef = useRef<FlatList<string>>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastChoiceRef = useRef<number | null>(null);
 
-  // Nettoie l'abort controller au démontage
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
+
+  const finished = !!game?.finished;
 
   if (!game || params.gameId !== game.gameId) {
     return (
@@ -37,6 +67,16 @@ export default function GameScreen() {
   }
 
   const current: MockChapter = game.chapters[game.currentIndex];
+
+  // Pages du chapitre courant (mémoïsées) + remise à zéro quand le chapitre change
+  const pages = useMemo(
+    () => splitIntoPages(isGenerating ? streamText : current.text),
+    [isGenerating, streamText, current.text, current.number],
+  );
+  useEffect(() => {
+    setPageIndex(0);
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [current.number]);
 
   const retryChoice = () => {
     const idx = lastChoiceRef.current;
@@ -103,83 +143,108 @@ export default function GameScreen() {
   };
 
   const statePreview = heroState ? renderState(heroState) : null;
+  const showChoices =
+    !isGenerating && !streamError && !current.isEnd && !finished;
+
+  const renderPage = ({ item, index }: { item: string; index: number }) => {
+    const isLast = index === pages.length - 1;
+    return (
+      <View style={styles.page}>
+        <Text style={styles.chapterTitle}>
+          {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+          {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
+        </Text>
+        <Text style={styles.pageText}>{item}</Text>
+        {isLast && (
+          <>
+            <Text style={styles.pageFooter}>— {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`} —</Text>
+            {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
+            {showChoices && current.choices.length > 0 && (
+              <View style={styles.choices}>
+                <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
+                {current.choices.map((c, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
+                    onPress={() => handleChoice(i)}
+                    accessibilityRole="button"
+                    accessibilityLabel={c.libelle}
+                  >
+                    <Text style={styles.choiceText}>{c.libelle}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={continueNaturally}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continuer naturellement"
+                >
+                  <Text style={styles.continueText}>Continuer naturellement →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {showChoices && current.choices.length === 0 && (
+              <View style={styles.choices}>
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={continueNaturally}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continuer naturellement"
+                >
+                  <Text style={styles.continueText}>Continuer naturellement →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.gameTitle}>{game.title}</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerBack} onPress={() => router.back()}>‹</Text>
+          <Text style={styles.gameTitle}>{game.title}</Text>
+        </View>
         <Text style={styles.chapterPos}>
-          {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+          {!isGenerating && pages.length > 1
+            ? `p. ${pageIndex + 1} / ${pages.length}`
+            : isGenerating ? 'L\'IA écrit…' : `${current.number === 0 ? 'Prologue' : `Ch. ${current.number}`}`}
         </Text>
       </View>
 
-      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-        <Text style={styles.chapterTitle}>{current.title}</Text>
-        <Text style={styles.chapterText}>
-          {isGenerating ? streamText : current.text}
-          {isGenerating && <Text style={styles.cursor}>▌</Text>}
-        </Text>
+      {isGenerating && (
+        <View style={styles.generatingRow}>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={styles.generatingText}>L'IA écrit la suite...</Text>
+        </View>
+      )}
 
-        {isGenerating && (
-          <View style={styles.generatingRow}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={styles.generatingText}>L'IA écrit la suite...</Text>
-          </View>
-        )}
-
-        {streamError && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{streamError}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={retryChoice}
-              accessibilityRole="button"
-            >
-              <Text style={styles.retryText}>Réessayer</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
-      </ScrollView>
-
-      {!isGenerating && !streamError && !current.isEnd && current.choices.length > 0 && (
-        <View style={styles.choices}>
-          <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
-          {current.choices.map((c, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
-              onPress={() => handleChoice(i)}
-              accessibilityRole="button"
-              accessibilityLabel={c.libelle}
-            >
-              <Text style={styles.choiceText}>{c.libelle}</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={continueNaturally}
-            accessibilityRole="button"
-            accessibilityLabel="Continuer naturellement"
-          >
-            <Text style={styles.continueText}>Continuer naturellement →</Text>
+      {streamError && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{streamError}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={retryChoice} accessibilityRole="button">
+            <Text style={styles.retryText}>Réessayer</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {!isGenerating && !streamError && !current.isEnd && current.choices.length === 0 && (
-        <View style={styles.choices}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={continueNaturally}
-            accessibilityRole="button"
-            accessibilityLabel="Continuer naturellement"
-          >
-            <Text style={styles.continueText}>Continuer naturellement →</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <FlatList
+        ref={listRef}
+        data={pages}
+        keyExtractor={(_, i) => `${current.number}-${i}`}
+        renderItem={renderPage}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const w = e.nativeEvent.layoutMeasurement.width || 1;
+          setPageIndex(Math.round(e.nativeEvent.contentOffset.x / w));
+        }}
+        style={styles.body}
+      />
     </View>
   );
 }
@@ -222,21 +287,37 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 56,
+    paddingTop: 48,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  gameTitle: { color: colors.primary, fontSize: 14, fontWeight: '600' },
-  chapterPos: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 },
+  headerBack: { color: colors.primary, fontSize: 30, lineHeight: 32, paddingRight: spacing.xs },
+  gameTitle: { color: colors.primary, fontSize: 14, fontWeight: '600', flexShrink: 1 },
+  chapterPos: { color: colors.textSecondary, fontSize: 12 },
   body: { flex: 1 },
-  bodyContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
-  chapterTitle: { color: colors.text, fontSize: 22, fontWeight: 'bold', marginBottom: spacing.md },
-  chapterText: { color: colors.textBody, fontSize: 17, lineHeight: 27 },
-  cursor: { color: colors.primary },
-  generatingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: spacing.xl },
+  page: {
+    flex: 1,
+    width: undefined,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  chapterTitle: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: spacing.md },
+  pageText: { color: colors.textBody, fontSize: 17, lineHeight: 28 },
+  pageFooter: {
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: spacing.xl,
+    letterSpacing: 1,
+  },
+  generatingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
   generatingText: { color: colors.textSecondary },
-  choices: { padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border, gap: 10 },
+  choices: { padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border, gap: 10, marginTop: spacing.lg },
   choicesLabel: { color: colors.textSecondary, fontSize: 13, textTransform: 'uppercase' },
   choiceButton: {
     backgroundColor: colors.surface,
@@ -249,11 +330,7 @@ const styles = StyleSheet.create({
   },
   choicePressed: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
   choiceText: { color: colors.text, fontSize: 15, lineHeight: 21 },
-  continueButton: {
-    marginTop: spacing.xs,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
+  continueButton: { marginTop: spacing.xs, paddingVertical: spacing.md, alignItems: 'center' },
   continueText: { color: colors.textMuted, fontSize: 14, textDecorationLine: 'underline' },
   meta: { color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
   errorBox: {
@@ -262,6 +339,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: '#5a2a2a',
+    marginHorizontal: spacing.xl,
     marginTop: spacing.lg,
     gap: spacing.md,
   },

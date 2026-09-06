@@ -132,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { role: 'user', content: buildProloguePrompt(bible, params, body.age) },
       ],
       kind: 'prologue',
-      maxTokens: 6000,
+      maxTokens: 3500,
     });
     prologue = gen.json;
     await logLLMResult(db, auth.userId, null, 'prologue', gen.result);

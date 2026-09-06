@@ -63,6 +63,7 @@ const COHERENCE_RULES = [
   'N\'introduis jamais un élément qui contredit une scène déjà écrite (un lieu réapparaît détruit, un allié devient traître sans transition, une information déjà sue est redécouverte avec surprise).',
   'Les personnages secondaires restent cohérents : s\'ils étaient hostiles, ils le restent progressivement ; s\'ils étaient présents ou absents d\'une scène, ne les téléporte pas.',
   'Le ton et la voix narrative ne dérivent pas : on reste dans le registre imposé du début à la fin.',
+  'PERSONNE NARRATIVE CONSTANTE : le roman est écrit à la 2e personne ("tu") du début à la fin, y compris au prologue et dans les fins. Le héros est toujours désigné par "tu" (éventuellement son prénom dans les dialogues), jamais basculé en "il/elle" ou "je". Une bascule de personne = faute.',
 ].join('\n');
 
 /**
@@ -212,6 +213,7 @@ export const LOIS_PAR_GENRE: Record<string, string> = {
 const PROGRESSION_RULES = [
   'MONDE ORDINAIRE D\'ABORD : le lecteur doit d\'abord entrer dans la vie du héros (routines, travail, relations, manies, désirs) avant que quoi que ce soit ne bascule. L\'installation est un investissement : elle rend la bascule douloureuse.',
   'MONTÉE PAR COUCHES : l\'histoire se dévoile progressivement. Un détail anodin au chapitre 2, un second au chapitre 3, la brisure franche plus tard. La révélation centrale est un capital que tu dépenses avec parcimonie - jamais tout d\'un coup, jamais trop tôt.',
+  'ESCALADE EN TROIS ACTES : acte 1 = installation et graines (malaise discret, jamais la menace frontale) ; acte 2 = l\'engrenage se referme, conséquences visibles, les graines prennent sens ; acte 3 = confrontation, climax et résolution. Chaque chapitre est UN PALIER de plus - jamais un saut du calme à l\'apocalypse. La tension monte en escalier, pas en falaise.',
   'LE PLAN RESTE CACHÉ DU LECTEUR : tu sais où tu vas (bible), mais le lecteur ne doit PAS voir le cap arriver. Pas d\'exposition du destin : il découvre avec le héros, dans l\'ordre du vécu.',
   'LA MENACE N\'EST PAS PERÇUE DÈS LE DÉBUT : elle existe dans le plan dès le départ, mais le lecteur la sent d\'abord comme une gêne, une coïncidence, un malaise discret - pas comme une évidence. Pour le genre horreur : le lecteur doit avoir le temps de s\'attacher avant d\'avoir peur.',
   'L\'ACCROCHE VIENT DU PERSONNAGE, pas du danger : on lit les premières pages parce qu\'on s\'attache au héros et à son monde (écriture, humanité, désir), pas parce qu\'un événement spectaculaire a déjà frappé.',
@@ -354,6 +356,7 @@ ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narrati
 
 Le prologue doit :
 - INSTALLER la vie ordinaire du héros : sa routine, son travail, les gens qui l'entourent, ses manies, ce qu'il désire et ce qu'il redoute. On doit entrer dans son monde et s'attacher à lui AVANT toute bascule.
+- NARRATION À LA 2e PERSONNE ("tu") : le lecteur EST le héros, dès la première phrase, comme dans tout le reste du roman. Jamais de "il/elle" pour désigner le héros, jamais de passage à la 3e personne.
 - Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
 - L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
 - Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
@@ -368,12 +371,12 @@ ${PROGRESSION_RULES}
 
 ${ANTI_AI_SLOP}
 
-Rappel : un VRAI prologue de roman = 1500 à 2200 mots, en prose soignée et détaillée, PAS un résumé ni un teaser. Prends le temps : développe chaque moment, ne précipite pas les actions.
+Rappel : un prologue de lecture mobile = 600 à 900 mots, en prose soignée. Chaque mot compte : installe, attache, sème une graine. Pas de remplissage.
 
 Réponds UNIQUEMENT en JSON valide :
 {
   "titre": "Prologue",
-  "texte": "..." (le prologue, 1500-2200 mots),
+  "texte": "..." (le prologue, 600-900 mots, à la 2e personne "tu"),
   "descriptionCouverture": "description visuelle détaillée de la couverture (style de l'image, ambiance, couleurs, héros, lieu)",
   "choix": [
     {"libelle": "Un choix humain et évocateur (montre l'action ET l'enjeu, pas générique)", "consequenceResumee": "ce que ce choix engage pour la suite"},
@@ -499,7 +502,7 @@ ${PROGRESSION_RULES}
 
 ${ANTI_AI_SLOP}
 
-IMPORTANT : écris le chapitre en texte brut, SANS balises JSON, SANS titre. Juste la prose du chapitre (${params.chapterLength === 'court' ? 2000 : params.chapterLength === 'moyen' ? 3500 : 5000} mots environ). Ce nombre de mots n'est PAS un résumé : c'est le temps de DÉVELOPPER chaque scène. Prends le temps de raconter - décris, installe, fais durer les moments importants, ne précipite jamais les actions. Si tu écris trop court, c'est une faute.`;
+IMPORTANT : écris le chapitre en texte brut, SANS balises JSON, SANS titre. Juste la prose du chapitre (${params.chapterLength === 'court' ? 900 : params.chapterLength === 'moyen' ? 1400 : 2000} mots environ). C'est une lecture MOBILE : chaque scène est développée mais sans remplissage - installe, fais avancer, termine sur une note qui donne envie de tourner la page. Un chapitre trop long fatigue : vise la densité, pas l'inflation.`;
   return { system, stable, volatile };
 }
 
@@ -540,7 +543,7 @@ Réponds UNIQUEMENT en JSON valide (objet JSON, comme demandé) :
 }
 
 export function buildSummaryPrompt(previousResume: string, chapterText: string, playerChoice?: string): string {
-  return `Résume en un texte bref et précis les événements d'un roman pour permettre à un autre rédacteur de continuer l'histoire sans relire les chapitres. Inclus : les choix majeurs du héros, les personnages rencontrés, les révélations, l'état émotionnel, les conséquences. Garde les faits importants, omets les descriptions.
+  return `Résume en un texte bref et précis les événements d'un roman pour permettre à un autre rédacteur de continuer l'histoire sans relire les chapitres. Inclus : les choix majeurs du héros, les personnages rencontrés AVEC LEUR ÉVOLUTION (relations, loyautés, changements, alliances, trahisons, morts), les révélations, l'état émotionnel, les conséquences. Garde les faits importants, omets les descriptions.
 
 RÉSUMÉ PRÉCÉDENT :
 ${previousResume || '(aucun - début du roman)'}

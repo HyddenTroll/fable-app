@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
+import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii } from '@/theme';
 
 export default function HomeTabScreen() {
@@ -9,6 +10,9 @@ export default function HomeTabScreen() {
   const age = useAppStore((s) => s.age);
   const email = useAppStore((s) => s.email);
   const currentGame = useAppStore((s) => s.currentGame);
+
+  // Restaure la partie en cours depuis le serveur (rien n'est perdu)
+  useRestoreGame();
 
   const continueGame = () => {
     if (currentGame) router.push(`/game/${currentGame.gameId}`);

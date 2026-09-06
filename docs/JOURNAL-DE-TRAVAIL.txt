@@ -993,3 +993,35 @@ FAIT :
       sur games ; contrainte cost_logs_kind_check supprimée. La
       mémoire du plan est active. À confirmer : ré-ajout de la
       contrainte avec 'plan' (3e instruction du bloc).
+   18. RETOURS UX UTILISATEUR (génération trop longue, format livre,
+      conservation, cohérence narrative) :
+      - LONGUEURS RÉDUITES (mobile) : prologue 1500-2200 -> 600-900
+        mots ; chapitres 2000/3500/5000 -> 900/1400/2000 mots ;
+        maxTokens chapitre 8000->4000, prologue 6000->3500. Lecture
+        dense, pas de remplissage.
+      - AFFICHAGE FORMAT LIVRE (game/[gameId].tsx réécrit) : découpage
+        du chapitre en PAGES (~1500 chars), FlatList horizontale
+        pagingEnabled, swipe = TOURNER LA PAGE, AUCUN scrollbar.
+        Indicateur "p. X/N". Titre du chapitre + fin de page.
+        Pendant la génération : indicateur "L'IA écrit..." + texte en
+        cours. Après onDone -> pages.
+      - CONSERVATION + RESTAURATION : nouveau
+        src/hooks/useRestoreGame.ts : au lancement de l'accueil, si un
+        currentGame existe, rappelle GET /api/game/read et REBATIT la
+        partie avec TOUS les chapitres du serveur (rien n'est perdu
+        après rechargement/réouverture). Branché sur l'accueil.
+      - PERSONNAGES & ÉVOLUTION : oui, l'IA tient compte des
+        personnages (état structuré state.pnj vivant/mort, résumé
+        glissant, plan, cohérence). Renforcé : buildSummaryPrompt
+        exige maintenant l'ÉVOLUTION des personnages (relations,
+        loyautés, alliances, trahisons, morts) dans le résumé.
+      - NARRATION COHÉRENTE : le héros est à la 2e personne "tu".
+        buildProloguePrompt impose maintenant "tu" DÈS LA PREMIÈRE
+        PHRASE (avant : le prologue pouvait être à la 3e personne
+        alors que les chapitres disaient "tu" -> incohérence).
+        COHERENCE_RULES : PERSONNE NARRATIVE CONSTANTE (jamais basculer
+        il/elle/je). Les chapitres avaient déjà la règle "tu".
+      - CLIMAX PROGRESSIF : PROGRESSION_RULES + "ESCALADE EN TROIS
+        ACTES" (acte 1 = graines, acte 2 = engrenage, acte 3 =
+        climax ; la tension monte en escalier, pas en falaise).
+      Typecheck api + mobile OK.
