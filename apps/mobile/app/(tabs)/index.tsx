@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
-import { colors, spacing, radii } from '@/theme';
+import { colors, spacing, radii, fonts } from '@/theme';
 
 export default function HomeTabScreen() {
   const router = useRouter();
@@ -39,6 +39,8 @@ export default function HomeTabScreen() {
           )}
         </View>
       </View>
+      {/* Fil de lapis : le trait lumineux qui traverse la marque (= l'IA) */}
+      <View style={styles.filLapis} />
 
       {isAuthed ? (
         <Text style={styles.greeting}>Bonjour {email.split('@')[0]}</Text>
@@ -73,7 +75,18 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.xxl, gap: spacing.xl },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: colors.primary, fontSize: 28, fontWeight: 'bold' },
+  title: { color: colors.primary, fontFamily: fonts.grec, fontSize: 28 },
+  filLapis: {
+    alignSelf: 'center',
+    width: 1,
+    height: 30,
+    backgroundColor: colors.primary,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
+  },
   headerRight: { flexDirection: 'row', gap: spacing.md },
   headerButton: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   headerButtonText: { color: colors.primary, fontSize: 15, fontWeight: '600' },

@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { AGE_GROUPS_MOCK } from '@/data/mock';
+import { colors, fonts, radii } from '@/theme';
 
 export default function AgeScreen() {
   const router = useRouter();
@@ -37,17 +38,17 @@ export default function AgeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#101024', padding: 24, justifyContent: 'center' },
-  title: { color: '#E8B84B', fontSize: 40, fontWeight: 'bold', textAlign: 'center' },
-  subtitle: { color: '#fff', fontSize: 22, textAlign: 'center', marginTop: 8 },
-  hint: { color: '#9a9ab0', textAlign: 'center', marginTop: 8, marginBottom: 24, lineHeight: 20 },
+  container: { flex: 1, backgroundColor: colors.background, padding: 24, justifyContent: 'center' },
+  title: { color: colors.primary, fontFamily: fonts.grec, fontSize: 40, textAlign: 'center' },
+  subtitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, textAlign: 'center', marginTop: 8 },
+  hint: { color: colors.textSecondary, fontFamily: fonts.ia, textAlign: 'center', marginTop: 8, marginBottom: 24, lineHeight: 20 },
   list: { gap: 12 },
   card: {
-    backgroundColor: '#1c1c3a',
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#2c2c5a',
+    borderColor: colors.border,
   },
-  cardText: { color: '#fff', fontSize: 18, textAlign: 'center' },
+  cardText: { color: colors.text, fontFamily: fonts.iaMedium, fontSize: 18, textAlign: 'center' },
 });

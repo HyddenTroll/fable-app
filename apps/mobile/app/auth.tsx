@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Acti
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
-import { colors, spacing, radii } from '@/theme';
+import { colors, spacing, radii, fonts } from '@/theme';
 import { signInWithEmail, signUpWithEmail, signInWithGoogle, type AuthResult } from '@/services/auth';
 
 export default function AuthScreen() {
@@ -146,7 +146,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.xxl, justifyContent: 'center', flexGrow: 1 },
-  title: { color: colors.primary, fontSize: 26, fontWeight: 'bold', textAlign: 'center', marginBottom: spacing.md },
+  title: { color: colors.primary, fontFamily: fonts.grec, fontSize: 26, textAlign: 'center', marginBottom: spacing.md },
   label: { color: colors.text, fontSize: 15, marginTop: spacing.sm },
   input: {
     backgroundColor: colors.surface,
@@ -163,6 +163,6 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
   dividerText: { color: colors.textMuted, marginHorizontal: spacing.md },
   loader: { marginVertical: spacing.md },
-  error: { color: '#ff6b6b', textAlign: 'center', marginBottom: spacing.md, lineHeight: 19 },
+  error: { color: colors.danger, textAlign: 'center', marginBottom: spacing.md, lineHeight: 19 },
   info: { color: colors.primary, textAlign: 'center', marginBottom: spacing.md, lineHeight: 19 },
 });

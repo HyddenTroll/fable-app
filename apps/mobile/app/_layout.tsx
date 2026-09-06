@@ -1,11 +1,32 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import {
+  useFonts as useDidotFonts,
+  GFSDidot_400Regular,
+} from '@expo-google-fonts/gfs-didot';
+import {
+  useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+} from '@expo-google-fonts/manrope';
 import { colors } from '@/theme';
 
 export default function RootLayout() {
+  // Polices DA « Pierre & Lapis » : Didot (titres) + Manrope (texte).
+  // Chargées en arrière-plan : si elles ne sont pas prêtes au premier
+  // rendu, le système affiche des polices de secours (jamais de blocage).
+  useDidotFonts({ GFSDidot_400Regular });
+  useManropeFonts({
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+  });
+
   return (
     <>
-      <StatusBar style="light" />
+      {/* Fond clair pierre -> icônes de statut sombres */}
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,

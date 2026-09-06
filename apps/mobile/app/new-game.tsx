@@ -11,7 +11,7 @@ import {
 import { createGame, enrichBible, ApiError } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
-import { colors, spacing, radii } from '@/theme';
+import { colors, spacing, radii, fonts } from '@/theme';
 
 type Step = 'genre' | 'hero' | 'params';
 
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   creationStep: { color: colors.textSecondary, fontSize: 13 },
   listContent: { gap: spacing.md },
   formContent: { gap: spacing.xs },
-  stepTitle: { color: colors.primary, fontSize: 20, fontWeight: 'bold', marginBottom: spacing.lg },
+  stepTitle: { color: colors.primary, fontFamily: fonts.grec, fontSize: 20, marginBottom: spacing.lg },
   genreBlock: { marginBottom: spacing.xs },
   genreCard: {
     backgroundColor: colors.surface,
@@ -344,5 +344,5 @@ const styles = StyleSheet.create({
   },
   navRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xxl },
   flexButton: { flex: 1 },
-  error: { color: '#ff6b6b', marginTop: spacing.md, textAlign: 'center' },
+  error: { color: colors.danger, marginTop: spacing.md, textAlign: 'center' },
 });

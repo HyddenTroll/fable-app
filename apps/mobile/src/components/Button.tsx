@@ -1,11 +1,12 @@
 /**
- * Bouton principal réutilisable avec retour tactile (pressed).
- * Taille tactile >= 44px (accessibilité). Styles extraits
- * (perf). Couvre les cas : primaire, secondaire, disabled.
+ * Bouton principal — DA « Pierre & Lapis ».
+ * Formes carrées, encre obsidienne, accent lapis (IA).
+ * Variantes : primary (fond lapis, texte blanc) / secondary
+ * (transparent, bordure obsidienne, texte obsidienne).
  */
 
 import { Pressable, Text, StyleSheet, type ViewStyle } from 'react-native';
-import { colors, radii, spacing } from '../theme';
+import { colors, fonts, radii, spacing } from '../theme';
 
 interface Props {
   label: string;
@@ -39,8 +40,10 @@ export function Button({ label, onPress, variant = 'primary', disabled, style }:
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
-    borderRadius: radii.lg,
+    minHeight: 52,
+    borderRadius: radii.lg, // 0 — formes carrées
+    borderWidth: 1,
+    borderColor: 'transparent',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
@@ -49,11 +52,10 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: colors.primary },
   secondary: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.text,
   },
-  pressed: { opacity: 0.7, transform: [{ scale: 0.99 }] },
+  pressed: { opacity: 0.75 },
   disabled: { opacity: 0.4 },
-  label: { color: colors.primaryDark, fontSize: 16, fontWeight: '700' },
-  labelSecondary: { color: colors.textBody },
+  label: { color: '#fff', fontFamily: fonts.iaSemiBold, fontSize: 15 },
+  labelSecondary: { color: colors.text },
 });

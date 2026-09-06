@@ -7,7 +7,7 @@ import { useAppStore } from '@/state/store';
 import { streamChapter, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
-import { colors, spacing, radii } from '@/theme';
+import { colors, spacing, radii, fonts } from '@/theme';
 
 /** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
 const PAGE_CHARS = 1500;
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingBottom: spacing.xxl,
   },
-  chapterTitle: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: spacing.md },
+  chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, marginBottom: spacing.md },
   pageText: { color: colors.textBody, fontSize: 17, lineHeight: 28 },
   pageFooter: {
     color: colors.textMuted,
@@ -338,12 +338,12 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#5a2a2a',
+    borderColor: colors.danger,
     marginHorizontal: spacing.xl,
     marginTop: spacing.lg,
     gap: spacing.md,
   },
-  errorText: { color: '#ff9b9b', lineHeight: 20 },
+  errorText: { color: colors.danger, lineHeight: 20 },
   retryButton: {
     borderWidth: 1,
     borderColor: colors.primary,

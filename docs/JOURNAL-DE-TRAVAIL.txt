@@ -1138,3 +1138,26 @@ FAIT :
         apps/mobile/src/theme/index.ts par ces tokens (fond clair,
         encre obsidienne, accent lapis, radius 0) + intégrer Didot/
         Manrope. À FAIRE, pas fait dans cette session.
+
+   23. REFONTE UI « PIERRE ET LAPIS » APPLIQUÉE (DA item 22) :
+      - src/theme/index.ts réécrit : fond PIERRE #E4E2DC, surface
+        #EFEDE7/#D8D4CB, encre OBSIDIENNE #101114, accent LAPIS
+        #2447D6 (= IA, primary), gris #55565C/#8E8F95, danger brique
+        #B4442E, shadow halo lapis #6B8CFF. radii = 0 partout (formes
+        carrées). Ajout exports fonts (Didot GFSDidot_400Regular,
+        Manrope 400/500/600) + typography.
+      - Polices installées : @expo-google-fonts/gfs-didot + manrope
+        (OFL). Chargées via useFonts dans app/_layout.tsx (non
+        bloquant, fallback système si non prêtes). StatusBar -> dark
+        (fond clair).
+      - Button.tsx DA : fond lapis texte blanc (primary), bordure
+        obsidienne transparent (secondary), hauteur 52, carré, Manrope
+        SemiBold.
+      - Écrans adaptés (plus AUCUNE couleur en dur hors thème) :
+        age.tsx, auth.tsx (erreur danger), new-game.tsx (erreur
+        danger, stepTitle Didot), game/[gameId].tsx (zones erreur
+        claires, chapterTitle Didot), acceuil (tabs)/index.tsx
+        (titre Didot + FIL DE LAPIS lumineux sous l'identité).
+      - primaryDark re-sémantisé : texte sur fond lapis (blanc),
+        utilisé uniquement par Button.
+      Typecheck mobile OK. Vérifier rendu sur Appetize/Expo Go.
