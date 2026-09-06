@@ -916,37 +916,57 @@ FAIT :
       Typecheck OK. Commit + push (déploiement auto).
 
          16. FIX: PROLOGUE SANS CHOIX = IMPASSABLE (signalé par
-               l'utilisateur : "les choix n'apparaissent pas quand il m'a
-               généré la première partie") :
-               - CAUSE : le prologue n'avait JAMAIS de choix (l'ancien prompt
-                 renvoyait "choix": []) mais l'écran de lecture ne proposait
-                 QUE des boutons de choix -> aucun moyen de générer le
-                 chapitre 1.
-               - FIX (itératif, décision finale utilisateur) :
-                 * buildProloguePrompt : le prologue DOIT se terminer par
-                   2-3 CHOIX HUMAINS (OBLIGATOIRE) : des choix de vie
-                   ordinaires et engageants, en cohérence avec le monde et la
-                   trame (répondre à une invitation, suivre une intuition,
-                   partir, se renseigner...) - pas d'aventure spectaculaire.
-                   Le lecteur choisit dès le prologue.
-                 * game/[gameId].tsx : bouton "Continuer naturellement ->"
-                   (l'IA continue SON histoire sans choix du lecteur,
-                   envoyé avec playerChoiceIndex null - le serveur accepte
-                   déjà null). Affiché sous les choix s'il y en a, ou seul si
-                   un chapitre n'en a pas. Libellé voulu par l'utilisateur
-                   ("un lire la suite caché par continuer naturellement").
-                 * buildChoicesPrompt : choix HUMANISÉS et DANS LA TRAME :
-                   registres variés (prudence/audace/empathie/refus/
-                   introspection - écouter et s'abstenir sont des choix),
-                   libellés évocateurs avec détail concret, chaque choix mène
-                   vers les fins possibles du plan directeur (aucun choix qui
-                   sort du cadre ou contredit le personnage/ton), pas de
-                   fausses options.
-               Typecheck api + mobile OK. Commit + push (déploiement auto).
+            l'utilisateur : "les choix n'apparaissent pas quand il m'a
+            généré la première partie") :
+            - CAUSE : le prologue n'avait JAMAIS de choix (l'ancien prompt
+              renvoyait "choix": []) mais l'écran de lecture ne proposait
+              QUE des boutons de choix -> aucun moyen de générer le
+              chapitre 1.
+            - FIX (itératif, décision finale utilisateur) :
+              * buildProloguePrompt : le prologue DOIT se terminer par
+                2-3 CHOIX HUMAINS (OBLIGATOIRE) : des choix de vie
+                ordinaires et engageants, en cohérence avec le monde et la
+                trame (répondre à une invitation, suivre une intuition,
+                partir, se renseigner...) - pas d'aventure spectaculaire.
+                Le lecteur choisit dès le prologue.
+              * game/[gameId].tsx : bouton "Continuer naturellement ->"
+                (l'IA continue SON histoire sans choix du lecteur,
+                envoyé avec playerChoiceIndex null - le serveur accepte
+                déjà null). Affiché sous les choix s'il y en a, ou seul si
+                un chapitre n'en a pas. Libellé voulu par l'utilisateur
+                ("un lire la suite caché par continuer naturellement").
+              * buildChoicesPrompt : choix HUMANISÉS et DANS LA TRAME :
+                registres variés (prudence/audace/empathie/refus/
+                introspection - écouter et s'abstenir sont des choix),
+                libellés évocateurs avec détail concret, chaque choix mène
+                vers les fins possibles du plan directeur (aucun choix qui
+                sort du cadre ou contredit le personnage/ton), pas de
+                fausses options.
+            Typecheck api + mobile OK. Commit + push (déploiement auto).
+
+         17. COMPTE PREMIUM DE L'UTILISATEUR (bloqué sur le paywall après
+            ses essais gratuits ; l'app affiche "Fable+ actif" via le store
+            LOCAL mock, mais le SERVEUR lit is_premium en base -> 402 ->
+            /paywall) :
+            - Diagnostic via SQL Editor : profiles ne contenait QU'UNE
+              ligne (yohan.canillas@gmail.com, is_premium=false). Les
+              updates précédents n'avaient pas été exécutés (l'utilisateur
+              découvrait le SQL Editor).
+            - FIX : update public.profiles set is_premium=true,
+              premium_expires_at = now() + interval '6 months'
+              where id = '4c538ec9-374b-4384-9606-b99e368a63e0'
+              -> CONFIRMÉ : is_premium=true, expiration 2027-03-06.
+            - LESSON : l'utilisateur n'est pas familier du dashboard
+              Supabase -> toujours donner le chemin clic par clic pour
+              atteindre le SQL Editor.
+            - À NOTER : l'affichage "Fable+ actif" du profil (store local)
+              n'est PAS branché sur le serveur (GET /api/user/profile non
+              consommé par l'app) -> chantier futur : brancher le profile
+              réel. Pour l'instant le serveur est la seule source de vérité.
 
          ================================================================
-   PROCHAINE SESSION (à faire)
-   ================================================================
+         PROCHAINE SESSION (à faire)
+         ================================================================
    1. [FAIT - user] Dashboard Supabase : Redirect URLs ajoutées
       (domaine Vercel) - confirmé par l'utilisateur dans la foulée.
       Site URL à vérifier si le flux Google reste bancal.
