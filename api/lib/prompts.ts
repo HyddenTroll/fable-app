@@ -513,7 +513,7 @@ Réponds UNIQUEMENT en JSON valide :
   "texte": "..." (le prologue, 600-900 mots, à la 2e personne "tu"),
   "descriptionCouverture": "description visuelle détaillée de la couverture (style de l'image, ambiance, couleurs, héros, lieu)",
   "choix": [
-    {"libelle": "Un choix humain et évocateur (montre l'action ET l'enjeu, pas générique)", "consequenceResumee": "ce que ce choix engage pour la suite"},
+    {"libelle": "Un choix humain et COURT (4 à 9 mots max - action + enjeu, pas de phrase développée)", "consequenceResumee": "ce que ce choix engage pour la suite"},
     {"libelle": "...", "consequenceResumee": "..."}
   ]
 }`;
@@ -664,17 +664,17 @@ Propose ${2 <= maxChoices ? `de 2 à ${maxChoices}` : '2'} choix de suite pour l
 
 Les choix doivent être HUMAINS et dans la TRAME :
 - HUMANISÉS : comme ce que le lecteur penserait ou dirait vraiment dans cette situation. Varie les registres - prudence, audace, empathie, refus, introspection, tentative maladroite. Tous les choix ne sont pas des actions : écouter, attendre, poser une question, s'abstenir sont de vrais choix.
-- ÉVOCATEURS : le libellé montre l'action ET l'enjeu, avec un détail concret ("Tendre la lettre non décachetée au vieux pêcheur" plutôt que "Porter la lettre"). Pas de libellé générique ("Ouvrir la porte", "Partir").
+- ÉVOCATEURS mais COURTS : chaque libellé fait de 4 à 9 mots maximum - une action + un enjeu en quelques mots ("Décacheter la lettre" plutôt que "Ouvrir l'enveloppe en papier kraft qui vient d'arriver par la poste"). Jamais de phrase développée, jamais de détail long, jamais de sous-texte entre parenthèses. Un libellé trop long est une faute d'interface.
 - DANS LA TRAME : chaque choix mène vers une suite qui reste dans l'histoire prévue (les fins possibles et la direction du plan directeur). Aucun choix ne sort du cadre du roman ni ne contredit le personnage, le ton ou ce qui s'est passé.
 - RÉELLEMENT DIFFÉRENTS : chaque choix engage une suite différente et visible - pas de fausses options qui mènent au même endroit.
-- Chaque choix a une conséquence résumée (pour la cohérence des chapitres suivants).
+- Chaque choix a une conséquence résumée COURTE (une phrase, pour la cohérence des chapitres suivants).
 - ${ageLimit(age)}
 
 Réponds UNIQUEMENT en JSON valide (objet JSON, comme demandé) :
 {
   "titre": "Chapitre ${chapterNumber} : ...",
   "choix": [
-    {"libelle": "Frapper à la porte de l'étranger", "consequenceResumee": "..."},
+    {"libelle": "Frapper à la porte", "consequenceResumee": "..."},
     {"libelle": "...", "consequenceResumee": "..."}
   ]
 }`;

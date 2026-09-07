@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, ScrollView, useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
@@ -35,6 +35,7 @@ function splitIntoPages(text: string, maxChars = PAGE_CHARS): string[] {
 export default function GameScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ gameId: string }>();
+  const { width: winWidth } = useWindowDimensions();
   const game = useAppStore((s) => s.currentGame);
   const heroState = useAppStore((s) => s.heroState);
   const setHeroState = useAppStore((s) => s.setHeroState);
@@ -49,6 +50,7 @@ export default function GameScreen() {
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const listRef = useRef<FlatList<string>>(null);
+  const streamScrollRef = useRef<ScrollView>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastChoiceRef = useRef<number | null>(null);
 
@@ -70,8 +72,8 @@ export default function GameScreen() {
 
   // Pages du chapitre courant (mémoïsées) + remise à zéro quand le chapitre change
   const pages = useMemo(
-    () => splitIntoPages(isGenerating ? streamText : current.text),
-    [isGenerating, streamText, current.text, current.number],
+    () => splitIntoPages(current.text),
+    [current.text, current.number],
   );
   useEffect(() => {
     setPageIndex(0);
@@ -149,7 +151,7 @@ export default function GameScreen() {
   const renderPage = ({ item, index }: { item: string; index: number }) => {
     const isLast = index === pages.length - 1;
     return (
-      <View style={styles.page}>
+      <View style={[styles.page, { width: winWidth }]}>
         <Text style={styles.chapterTitle}>
           {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
           {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
@@ -231,20 +233,39 @@ export default function GameScreen() {
         </View>
       )}
 
-      <FlatList
-        ref={listRef}
-        data={pages}
-        keyExtractor={(_, i) => `${current.number}-${i}`}
-        renderItem={renderPage}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const w = e.nativeEvent.layoutMeasurement.width || 1;
-          setPageIndex(Math.round(e.nativeEvent.contentOffset.x / w));
-        }}
-        style={styles.body}
-      />
+      {isGenerating ? (
+        // Pendant la génération : le texte écrit en direct, défilement
+        // AUTO (invisible), sans pagination - on pagine uniquement le
+        // texte final, une fois l'écriture terminée.
+        <ScrollView
+          ref={streamScrollRef}
+          style={styles.body}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => streamScrollRef.current?.scrollToEnd({ animated: true })}
+          contentContainerStyle={styles.streamContent}
+        >
+          <Text style={styles.chapterTitle}>
+            {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+          </Text>
+          <Text style={styles.pageText}>{streamText || '…'}</Text>
+        </ScrollView>
+      ) : (
+        <FlatList
+          ref={listRef}
+          data={pages}
+          keyExtractor={(_, i) => `${current.number}-${i}`}
+          renderItem={renderPage}
+          horizontal
+          pagingEnabled
+          decelerationRate="fast"
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(e) => {
+            const w = e.nativeEvent.layoutMeasurement.width || 1;
+            setPageIndex(Math.round(e.nativeEvent.contentOffset.x / w));
+          }}
+          style={styles.body}
+        />
+      )}
     </View>
   );
 }
@@ -302,10 +323,10 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   page: {
     flex: 1,
-    width: undefined,
     padding: spacing.xl,
     paddingBottom: spacing.xxl,
   },
+  streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
   chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, marginBottom: spacing.md },
   pageText: { color: colors.textBody, fontSize: 17, lineHeight: 28 },
   pageFooter: {

@@ -1161,3 +1161,23 @@ FAIT :
       - primaryDark re-sémantisé : texte sur fond lapis (blanc),
         utilisé uniquement par Button.
       Typecheck mobile OK. Vérifier rendu sur Appetize/Expo Go.
+
+   24. FIX FORMAT TÉLÉPHONE + CHOIX COURTS (retours Appetize) :
+      - game/[gameId].tsx : la pagination type livre était cassée car
+        les "pages" n'avaient pas de largeur fixe (width: undefined)
+        -> dans une FlatList horizontale pagingEnabled, chaque item
+        doit faire EXACTEMENT la largeur de l'écran. Fix :
+        useWindowDimensions().width appliqué à chaque page
+        ([styles.page, { width: winWidth }]).
+      - PENDANT LA GÉNÉRATION (texte qui arrive) : plus de repagination
+        en continu (instable) -> vue séparée : ScrollView à défilement
+        AUTO invisible (scrollToEnd sur onContentSizeChange), texte
+        brut qui se remplit comme une machine à écrire. La pagination
+        n'intervient qu'à la FIN de l'écriture (texte final).
+      - decelerationRate="fast" sur la FlatList (navigation fluide).
+      - CHOIX COURTS (buildChoicesPrompt + prologue) : chaque libellé
+        doit faire 4 à 9 mots max (action + enjeu en quelques mots,
+        plus de phrases développées, plus de parenthèses) ; conséquence
+        résumée en une phrase courte. Exemple inversé dans le prompt
+        ("Décacheter la lettre" vs long).
+      Typecheck API + mobile OK.
