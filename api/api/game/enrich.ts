@@ -67,7 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { role: 'user', content: buildEnrichBiblePrompt(quickBible, params, age, voix) },
       ],
       kind: 'story_bible',
-      maxTokens: 3500,
+      // 3 500 mots français ≈ 5 500-6 500 tokens : on reste large, une
+      // troncature ici = bible légère pour TOUTE la partie (bug criant).
+      maxTokens: 8000,
     });
 
     const enriched = gen.json;

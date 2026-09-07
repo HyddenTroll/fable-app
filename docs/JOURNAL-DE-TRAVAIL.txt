@@ -1228,3 +1228,43 @@ FAIT :
         interdiction de répondre zéro choix si NON.
       - buildChapterMessages : nouveau param pilotage.
       Typecheck API OK. (Pas de build iOS : déclenchement manuel.)
+
+   27. CORRECTIFS POST-AUDIT (ordre d'exécution validé par l'utilisateur) :
+      1. enrich.ts maxTokens 3500 -> 8000 (bug troncature : 3500 mots FR
+         ≈ 5500-6500 tokens ; la bible restait LÉGÈRE sur toute la partie
+         + 3 retries LLM gaspillés par livre).
+      2. FUSION TEXTE + TITRE + CHOIX en UN SEUL appel chapitre : le
+         modèle écrit le chapitre PUIS ajoute [[TITRE]]|titre et
+         [[CHOIX]] (lignes n|libellé|conséquence). Le serveur streame
+         le corps au client (machine à écrire), STRIPPE les marqueurs,
+         les parse (parseChapterMarkers). Suppression de l'appel choices
+         séparé (aveugle : sans état ni résumé) -> cohérence par
+         construction (le modèle qui vient d'écrire « il se casse la
+         jambe » ne propose pas « courir »). Filet rare : si zéro choix
+         et fin non autorisée -> rattrapage + 2 choice forcés.
+      3. PARALLÉLISATION résumé/état/plan (Promise.allSettled) : plan
+         basé sur le résumé PRÉCÉDENT (compromis assumé). 1 appel
+         (texte+choix) puis 3 en parallèle au lieu de 5-6 séquentiels.
+         Retry état : parse invalide -> 1 nouvelle tentative, sinon état
+         conservé + warning console (plus de divergence silencieuse).
+         Résumé : échec -> games.resume N'EST PLUS écrasé (|| game.resume).
+      4. REGISTRE DE FAITS IMMUABLES (buildFactRegistry, dérivé de la
+         bible sans appel LLM, injecté dans chaque chapitre) +
+         state renvoyé par read.ts + restauré (useRestoreGame +
+         library).
+      5. FIN : prompt chapitre — si autorisation de fin OUI, le
+         modèle écrit la CONCLUSION (question dramatique, écho, image
+         finale) sans marqueur [[CHOIX]] ; isEnd = (0 choix ET
+         finAutorisee) OU plafond atteint. Fini le cas « boutons puis
+         éjecté ».
+      6. SÉCURITÉ : action/choix encapsulée dans <action>...</action>
+         (donnée fictionnelle, jamais instruction) ; MODÉRATION de
+         sortie pour under10/10to15 : verdict oui/non en parallèle
+         (kind 'moderation', non loggé pour respecter la contrainte
+         cost_logs) -> événement SSE moderation + flag moderation_flags
+         (si colonne) + console ; bouton « Signaler » (⚠) dans l'écran
+         de lecture -> POST /api/game/report -> table reports.
+      - MIGRATION À APPLIQUER par l'utilisateur (SQL Editor) :
+        supabase/migrations/20260907000000_reports_and_moderation.sql
+        (table reports + colonne games.moderation_flags).
+      - Typecheck API + mobile OK. PAS de build iOS (déclenchement manuel).

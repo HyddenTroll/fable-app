@@ -16,7 +16,8 @@ export type PromptKind =
   | 'summary'
   | 'choices'
   | 'state'
-  | 'plan';
+  | 'plan'
+  | 'moderation';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -80,6 +81,11 @@ const MODEL_BY_KIND: Record<PromptKind, { openai: string; anthropic: string }> =
   choices: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
   state: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
   plan: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  // Vérification de contenu (publics jeunes) : un modèle rapide serait
+  // idéal (haiku/mini) — le provider n'en expose pas, on réutilise le
+  // modèle principal (coût ~0,0002 $/chapitre, n'apparaît PAS dans les
+  // cost_logs pour rester dans la contrainte kind de la table).
+  moderation: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
 };
 
 export class LLM {

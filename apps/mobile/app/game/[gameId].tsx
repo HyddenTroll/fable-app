@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, ScrollView, useWindowDimensions,
+  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, ScrollView, useWindowDimensions, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
-import { streamChapter, ApiError, type HeroState } from '@/services/api';
+import { streamChapter, reportGame, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii, fonts } from '@/theme';
@@ -90,6 +90,28 @@ export default function GameScreen() {
   // L'IA continue l'histoire naturellement, sans choix du lecteur
   const continueNaturally = () => handleChoice(-1);
 
+  const handleReport = () => {
+    Alert.alert(
+      'Signaler ce contenu ?',
+      'Ce chapitre te semble inapproprié ? Notre équipe le vérifiera.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Signaler',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await reportGame(game.gameId);
+              Alert.alert('Merci', 'Ton signalement a bien été envoyé.');
+            } catch {
+              Alert.alert('Erreur', 'Impossible d\'envoyer le signalement.');
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handleChoice = (index: number) => {
     if (isGenerating) return;
     setPressedChoice(index);
@@ -139,6 +161,9 @@ export default function GameScreen() {
             // Partiel JETÉ : on reste sur le choix précédent, on propose réessayer
             setStreamError(err.message || 'Connexion perdue pendant l\'écriture du chapitre.');
           }
+        },
+        onModeration: (info) => {
+          Alert.alert('Contenu signalé', info.message);
         },
       },
     );
@@ -210,11 +235,16 @@ export default function GameScreen() {
           <Text style={styles.headerBack} onPress={() => router.back()}>‹</Text>
           <Text style={styles.gameTitle}>{game.title}</Text>
         </View>
-        <Text style={styles.chapterPos}>
-          {!isGenerating && pages.length > 1
-            ? `p. ${pageIndex + 1} / ${pages.length}`
-            : isGenerating ? 'L\'IA écrit…' : `${current.number === 0 ? 'Prologue' : `Ch. ${current.number}`}`}
-        </Text>
+        <View style={styles.headerRight}>
+          <Text style={styles.chapterPos}>
+            {!isGenerating && pages.length > 1
+              ? `p. ${pageIndex + 1} / ${pages.length}`
+              : isGenerating ? 'L\'IA écrit…' : `${current.number === 0 ? 'Prologue' : `Ch. ${current.number}`}`}
+          </Text>
+          <TouchableOpacity onPress={handleReport} accessibilityRole="button" accessibilityLabel="Signaler ce contenu">
+            <Text style={styles.reportBtn}>⚠</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {isGenerating && (
@@ -317,9 +347,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   headerBack: { color: colors.primary, fontSize: 30, lineHeight: 32, paddingRight: spacing.xs },
   gameTitle: { color: colors.primary, fontSize: 14, fontWeight: '600', flexShrink: 1 },
   chapterPos: { color: colors.textSecondary, fontSize: 12 },
+  reportBtn: { color: colors.textMuted, fontSize: 16, padding: 4 },
   body: { flex: 1 },
   page: {
     flex: 1,

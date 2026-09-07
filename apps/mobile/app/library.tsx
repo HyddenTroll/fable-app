@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { listGames, deleteGame, readGame } from '@/services/api';
+import { listGames, deleteGame, readGame, type HeroState } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { colors, spacing, radii, fonts } from '@/theme';
 
@@ -31,6 +31,7 @@ export default function LibraryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
+  const setHeroState = useAppStore((s) => s.setHeroState);
   const [games, setGames] = useState<GameItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -67,6 +68,8 @@ export default function LibraryScreen() {
         resume: '',
         finished: game.status === 'finished',
       });
+      const restoredState = (game as unknown as { state?: HeroState | null }).state ?? null;
+      setHeroState(restoredState);
       router.push(`/game/${g.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Impossible d\'ouvrir l\'histoire.');

@@ -12,13 +12,14 @@
  */
 import { useEffect, useRef } from 'react';
 import { useAppStore } from '../state/store';
-import { readGame } from '../services/api';
+import { readGame, type HeroState } from '../services/api';
 import type { MockChapter } from '../data/mock';
 
 export function useRestoreGame() {
   const lastGameIdRef = useRef<string | null>(null);
   const gameId = useAppStore((s) => s.currentGame?.gameId ?? null);
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
+  const setHeroState = useAppStore((s) => s.setHeroState);
 
   useEffect(() => {
     // Pas de partie, ou déjà restaurée pour cet id : on ne fait rien.
@@ -55,8 +56,10 @@ export function useRestoreGame() {
             finished,
             endingType: undefined,
           });
-          // La restauration ne touche PAS à heroState : le serveur le
-          // renverra avec le prochain chapitre généré.
+          // Restaure aussi l'état structuré (blessures/inventaire/PNJ) :
+          // le serveur le renvoie désormais via /api/game/read.
+          const restoredState = (data.game as unknown as { state?: HeroState | null }).state ?? null;
+          setHeroState(restoredState);
           lastGameIdRef.current = gameId;
         }
       } catch {

@@ -158,6 +158,17 @@ export async function deleteGame(gameId: string): Promise<void> {
   if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur suppression', data.error?.code, data.paywall);
 }
 
+/** Signale un contenu problématique (obligatoire pour la validation App Store). */
+export async function reportGame(gameId: string, message?: string): Promise<void> {
+  const res = await httpFetch(`${apiBase()}/api/game/report`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ gameId, message }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur signalement', data.error?.code, data.paywall);
+}
+
 /**
  * Déclenche l'enrichissement de la bible en arrière-plan (bible légère ->
  * bible complète d'architecte). Appelé pendant que le lecteur lit le
@@ -190,6 +201,8 @@ export interface ChapterStreamHandlers {
   onText: (delta: string) => void;
   onDone: (done: ChapterDone) => void;
   onError: (err: Error) => void;
+  /** Contenu signalé par la modération (publics jeunes). */
+  onModeration?: (info: { message: string }) => void;
   signal?: AbortSignal;
 }
 
@@ -260,6 +273,9 @@ export async function streamChapter(
           const parsed = JSON.parse(payload) as { message?: string };
           finished = true;
           handlers.onError(new Error(parsed.message ?? 'Erreur de génération'));
+        } else if (event === 'moderation' && payload && handlers.onModeration) {
+          const parsed = JSON.parse(payload) as { message?: string };
+          handlers.onModeration({ message: parsed.message ?? 'Contenu signalé.' });
         }
       }
     }

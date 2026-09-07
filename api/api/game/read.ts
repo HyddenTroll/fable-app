@@ -53,6 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       chapterCount: game.chapter_count,
       resume: game.resume,
       params: game.params,
+      // État structuré du héros (blessures/inventaire/PNJ) : indispensable
+      // pour reprendre une partie sans perdre les conséquences visibles.
+      state: game.state ?? null,
     },
     chapters,
   });
