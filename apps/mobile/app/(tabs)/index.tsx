@@ -64,6 +64,10 @@ export default function HomeTabScreen() {
 
       <Button label="+ Nouvelle aventure" onPress={startNew} />
 
+      <TouchableOpacity style={styles.libraryBtn} onPress={() => router.push('/library')}>
+        <Text style={styles.libraryText}>📚 Mes histoires</Text>
+      </TouchableOpacity>
+
       <Text style={styles.hint}>
         {age ? `Tranche d'âge : ${age}` : 'Choisis ton âge pour commencer'}
       </Text>
@@ -99,6 +103,15 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   continueTitle: { color: colors.text, fontSize: 18, fontWeight: '600' },
+  libraryBtn: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  libraryText: { color: colors.text, fontFamily: fonts.iaMedium, fontSize: 15 },
   continueMeta: { color: colors.textSecondary, marginTop: spacing.sm },
   hint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
 });

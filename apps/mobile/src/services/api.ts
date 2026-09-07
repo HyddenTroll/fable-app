@@ -124,6 +124,41 @@ export async function readGame(gameId: string): Promise<{ game: ApiGame; chapter
 }
 
 /**
+ * Liste les histoires de l'utilisateur (sauvegardées automatiquement).
+ * Chaque génération écrit la partie + le chapitre en base.
+ */
+export async function listGames(): Promise<
+  { id: string; title: string; genre: string; heroName: string; chapterCount: number; createdAt: string; status: string }[]
+> {
+  const res = await httpFetch(`${apiBase()}/api/game/list`, {
+    method: 'GET',
+    headers: await authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur liste', data.error?.code, data.paywall);
+  return (data.games ?? []).map((g: Record<string, unknown>) => ({
+    id: String(g.id),
+    title: String(g.title ?? 'Sans titre'),
+    genre: String(g.genre ?? ''),
+    heroName: String(g.hero_name ?? 'Héros'),
+    chapterCount: Number(g.chapter_count ?? 1),
+    createdAt: String(g.created_at ?? ''),
+    status: String(g.status ?? 'active'),
+  }));
+}
+
+/** Supprime une histoire (soft delete serveur). */
+export async function deleteGame(gameId: string): Promise<void> {
+  const res = await httpFetch(`${apiBase()}/api/game/delete`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ gameId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur suppression', data.error?.code, data.paywall);
+}
+
+/**
  * Déclenche l'enrichissement de la bible en arrière-plan (bible légère ->
  * bible complète d'architecte). Appelé pendant que le lecteur lit le
  * prologue ; l'erreur est tolérée (la bible légère suffit à jouer).

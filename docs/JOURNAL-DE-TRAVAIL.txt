@@ -1181,3 +1181,27 @@ FAIT :
         résumée en une phrase courte. Exemple inversé dans le prompt
         ("Décacheter la lettre" vs long).
       Typecheck API + mobile OK.
+
+   25. MES HISTOIRES : SAUVEGARDE AUTO + CONTINUER + SUPPRIMER
+      (demande utilisateur : "une histoire générée et sa suite doivent
+      s'enregistrer automatiquement ; pouvoir continuer ou supprimer") :
+      - SAUVEGARDE AUTO déjà en place côté serveur (chaque chapitre
+        inséré dans chapters + chapter_count incrémenté à chaque
+        génération ; readGame restitue toute la partie) - l'app ne
+        l'exposait pas.
+      - NOUVELLES ROUTES API :
+        * GET /api/game/list : parties de l'utilisateur (id, titre,
+          genre, hero_name, chapter_count, created_at, status),
+          exclut status='deleted', triées récentes d'abord.
+        * POST /api/game/delete : soft delete (status='deleted'),
+          vérifie l'appartenance.
+      - MOBILE :
+        * src/services/api.ts : listGames() + deleteGame(gameId).
+        * NOUVEL ÉCRAN app/library.tsx « Mes histoires » (DA Pierre &
+          Lapis) : liste des histoires (titre Didot, genre, héros,
+          n° chapitre, date FR) ; Continuer (readGame -> setCurrentGame
+          -> ouvre la lecture où on en était) ; Supprimer (Alert de
+          confirmation -> soft delete -> refresh) ; état vide expliqué.
+        * Accueil (tabs)/index.tsx : bouton « 📚 Mes histoires » ->
+          /library.
+      Typecheck API + mobile OK.
