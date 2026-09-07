@@ -663,6 +663,7 @@ IMPORTANT — FORMAT DE SORTIE (à respecter EXACTEMENT) :
 2|Autre choix court|Sa conséquence en une phrase
 RÈGLES STRICTES :
 - Les marqueurs [[TITRE]] et [[CHOIX]] n'apparaissent QU'UNE SEULE fois, tout à la fin, JAMAIS dans la prose du chapitre.
+- N'utilise JAMAIS les caractères [[ ni | hors des marqueurs (ni dans la prose, ni dans un dialogue, ni dans un titre) : ils sont RÉSERVÉS à la structure de fin. Si ta prose a besoin d'un trait vertical, écris-le autrement.
 - Les choix sont HUMAINS, dans la trame, RÉELLEMENT différents, et TENEZ COMPTE DE L'ÉTAT DU HÉROS (blessures, objets, PNJ présents) : ce qu'il pourrait vraiment faire dans SA situation actuelle - pas des options génériques.
 - Chaque conséquence est écrite au futur simple et décrit la situation qui en découle.
 - Si l'autorisation de fin est OUI (l'histoire se termine à ce chapitre) : écris la CONCLUSION — réponds à la question dramatique, fais écho à l'ouverture, laisse une dernière image — et N'AJOUTE AUCUN marqueur [[CHOIX]].`;
@@ -684,6 +685,7 @@ export function buildFactRegistry(bible: StoryBible): string {
   if (plan?.noyauImmuable?.length) parts.push(`Vérités immuables du plan : ${plan.noyauImmuable.join(' ; ')}`);
   const pnj = (bible.personnages ?? []).slice(0, 6).map((p) => `${p.nom} (${p.role})`).join(', ');
   if (pnj) parts.push(`Personnages clés : ${pnj}`);
+  parts.push('Les statuts ACTUELS (vivants/morts), les objets possédés et les engagements sont dans l\'ÉTAT DU HÉROS ci-dessous : un PNJ marqué mort ne réapparaît JAMAIS, un objet perdu n\'est jamais retrouvé sans événement écrit, une promesse faite engage la suite.');
   return parts.join('\n');
 }
 
@@ -751,13 +753,14 @@ Réponds UNIQUEMENT en JSON valide (objet JSON, comme demandé) :
 }`;
 }
 
-export function buildSummaryPrompt(previousResume: string, chapterText: string, playerChoice?: string): string {
+export function buildSummaryPrompt(previousResume: string, chapterText: string, playerChoice?: string, playerChoiceConsequence?: string): string {
   return `Résume en un texte bref et précis les événements d'un roman pour permettre à un autre rédacteur de continuer l'histoire sans relire les chapitres. Inclus : les choix majeurs du héros, les personnages rencontrés AVEC LEUR ÉVOLUTION (relations, loyautés, changements, alliances, trahisons, morts), les révélations, l'état émotionnel, les conséquences. Garde les faits importants, omets les descriptions.
 
 RÉSUMÉ PRÉCÉDENT :
 ${previousResume || '(aucun - début du roman)'}
 
 ${playerChoice ? `CHOIX DU HÉROS : ${playerChoice}` : ''}
+${playerChoiceConsequence ? `CONSÉQUENCE ANNONCÉE DE CE CHOIX (à confirmer ou contredire dans le chapitre, puis à retenir pour la suite) : ${playerChoiceConsequence}` : ''}
 
 NOUVEAU CHAPITRE :
 ${chapterText}

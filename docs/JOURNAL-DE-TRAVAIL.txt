@@ -1268,3 +1268,32 @@ FAIT :
         supabase/migrations/20260907000000_reports_and_moderation.sql
         (table reports + colonne games.moderation_flags).
       - Typecheck API + mobile OK. PAS de build iOS (déclenchement manuel).
+
+   28. RÉPONSE AUX 4 POINTS POST-CORRECTIFS (revue utilisateur) :
+      1. MARQUEURS ROBUSTES : prompt interdit [[ et | hors marqueurs ;
+         parseur extrait dans api/lib/chapter-markers.ts (module PUR,
+         testable) : split des choix UNIQUEMENT sur le dernier | (un
+         libellé peut contenir une barre), rattrapage souple marqueur
+         mal orthographié, bodyEnd >= 0 sinon tout le texte (bug
+         slice(-1) trouvé PAR LE TEST). Script tests :
+         scripts/test-marqueurs.mjs (esbuild) — 17 ✔ / 0 ✘ dont les 5
+         sorties tordues + cas sans conséquence.
+      2. CONSÉQUENCE DES CHOIX : vérifié — elle n'est PAS affichée au
+         lecteur (aucun spoiler) MAIS elle n'était pas utilisée côté
+         serveur (coût inutile). Désormais branchée : le client envoie
+         playerChoiceConsequence, buildSummaryPrompt l'injecte
+         (conséquence annoncée à confirmer/contredire puis retenue).
+      3. MODÉRATION BLOQUANTE pour under10/10to15 : génération
+         BUFFERISÉE (llm.generate, aucune diffusion), verdict oui/non
+         AVANT l'affichage ; chapitre refusé -> event error « refusé
+         par la modération » (ni diffusé ni stocké) ; si accepté ->
+         machine à écrire REJOUÉE en morceaux 48 chars/16 ms. Adultes :
+         streaming direct conservé. La tâche parallèle modération a été
+         supprimée (redondante).
+      4. REGISTRE : le schéma d'état vérifié a bien pnj[].statut
+         (vivant/mort/inconnu) + engagements[] ; consigne ajoutée au
+         registre (un PNJ mort ne réapparaît JAMAIS, objet perdu
+         jamais retrouvé sans événement écrit, promesse engage la
+         suite). DERNIER CHAPITRE : pilotage force explicitement
+         « conclus MAINTENANT, AUCUN [[CHOIX]] » à n = total.
+      Typecheck API + mobile OK, tests 17/17. PAS de build iOS.

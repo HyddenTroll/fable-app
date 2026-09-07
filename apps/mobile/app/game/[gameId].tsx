@@ -166,6 +166,8 @@ export default function GameScreen() {
           Alert.alert('Contenu signalé', info.message);
         },
       },
+      // Conséquence annoncée du choix (alimente le résumé du tour suivant)
+      index === -1 ? null : (current.choices[index]?.consequenceResumee ?? null),
     );
   };
 

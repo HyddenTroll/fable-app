@@ -218,11 +218,12 @@ export async function streamChapter(
   playerChoiceIndex: number | null,
   playerChoiceLabel: string | null,
   handlers: ChapterStreamHandlers,
+  playerChoiceConsequence: string | null = null,
 ): Promise<void> {
   const res = await httpFetch(`${apiBase()}/api/game/chapter`, {
     method: 'POST',
     headers: await authHeaders(),
-    body: JSON.stringify({ gameId, playerChoiceIndex, playerChoiceLabel }),
+    body: JSON.stringify({ gameId, playerChoiceIndex, playerChoiceLabel, playerChoiceConsequence }),
     signal: handlers.signal,
   });
 

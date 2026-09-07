@@ -15,6 +15,7 @@ import {
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import { emptyState, applyStateDelta, parseStateDelta, serializeState, type HeroState, type StateDelta } from '../../lib/state';
+import { findFirstMarker, parseChapterMarkers } from '../../lib/chapter-markers';
 import type { AgeGroup, StoryBible, StoryChoice, StoryPlan } from '@fable/shared';
 
 /**
@@ -38,6 +39,8 @@ interface ChapterBody {
   gameId: string;
   playerChoiceIndex?: number | null;
   playerChoiceLabel?: string | null;
+  /** Conséquence du choix annoncée au tour précédent (alimente le résumé). */
+  playerChoiceConsequence?: string | null;
 }
 
 function json(res: VercelResponse, status: number, body: unknown) {
@@ -56,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return json(res, 401, { error: { code: 'unauthorized', message: auth.error } });
   }
 
-  const { gameId, playerChoiceIndex, playerChoiceLabel } = (req.body ?? {}) as ChapterBody;
+  const { gameId, playerChoiceIndex, playerChoiceLabel, playerChoiceConsequence } = (req.body ?? {}) as ChapterBody;
   if (!gameId) {
     return json(res, 400, { error: { code: 'bad_request', message: 'gameId requis' } });
   }
@@ -123,7 +126,10 @@ RÈGLES DE RYTHME :
 - Acte 1 (0-25 %) : installe le monde, le désir du héros, la menace. AUCUNE révélation majeure, AUCUNE confrontation finale. Ouvre des questions.
 - Acte 2 (25-75 %) : complications, alliés, fausses pistes, aggravation. Le milieu (~50 %) apporte une révélation qui change la compréhension de l'enjeu. L'antagoniste reprend la main vers 70 %.
 - Acte 3 (75-100 %) : convergence puis climax. La fin n'est possible qu'ici.
-- Tant que l'autorisation de fin est NON : ne conclus rien, n'épuise pas les révélations — ouvre une nouvelle complication. Tu as ${restants} chapitres devant toi, utilise-les.`;
+- Tant que l'autorisation de fin est NON : ne conclus rien, n'épuise pas les révélations — ouvre une nouvelle complication. Tu as ${restants} chapitres devant toi, utilise-les.
+${nextNumber >= totalChapters
+    ? '- C\'EST LE DERNIER CHAPITRE : conclus MAINTENANT, obligatoirement — climax et résolution, réponds à la question dramatique, AUCUN choix [[CHOIX]].'
+    : ''}`;
   const rule = nextNumber === FREE_CHAPTER_COUNT + 1 ? 'Finis ce chapitre sur un cliffhanger maximal - c\'est la fin de l\'essai gratuit.' : undefined;
 
   const system = buildSystemPrompt();
@@ -176,60 +182,107 @@ RÈGLES DE RYTHME :
   };
 
   try {
-    // Écrire le chapitre en streaming (texte brut). Le modèle produit
-    // TEXTE + TITRE + CHOIX en UN SEUL appel (cohérence par construction) :
-    // le corps est diffusé en direct, les marqueurs finaux [[TITRE]]/[[CHOIX]]
-    // sont strippés du flux et parsés à la fin.
+    // --- Génération du chapitre ---
+    // Mineurs (under10/10to15) : génération BUFFERISÉE + vérification de
+    // contenu BLOQUANTE — le texte n'est diffusé qu'après le verdict ; la
+    // machine à écrire est rejouée en morceaux ensuite (le lecteur attend
+    // "L'IA écrit..." pendant la génération + la vérification).
+    // Adultes : streaming direct (machine à écrire en direct).
+    const modBlocking = age === 'under10' || age === '10to15';
     let chapterText = '';
     let tail = ''; // queue non diffusée (titre + choix)
-    let streamTail = ''; // fenêtre de sécurité pour détecter un marqueur coupé
-    const chapterResult = await (async (): Promise<LLMResult> => {
-      const gen = llm.stream({
+    let moderationFlagged = false;
+    let chapterResult: LLMResult = EMPTY_RESULT;
+
+    if (modBlocking) {
+      const full = await llm.generate({
         messages: chapterMessages,
         kind: 'chapter',
         maxTokens: 4000,
       });
-      let result: LLMResult = EMPTY_RESULT;
-      let bodySent = false;
-      for (;;) {
-        const { value, done } = await gen.next();
-        if (done) {
-          result = (value ?? EMPTY_RESULT) as LLMResult;
-          break;
-        }
-        const delta = value as string;
-        if (bodySent) {
-          tail += delta;
-          continue;
-        }
-        streamTail += delta;
-        const iTitre = streamTail.indexOf('[[TITRE]]');
-        const iChoix = streamTail.indexOf('[[CHOIX]]');
-        const idx = Math.min(iTitre >= 0 ? iTitre : Infinity, iChoix >= 0 ? iChoix : Infinity);
-        if (idx !== Infinity) {
-          // Le corps se termine ici : envoie la partie avant le marqueur.
-          const pre = streamTail.slice(0, idx);
-          if (pre) {
-            chapterText += pre;
-            send('text', { delta: pre });
-          }
-          tail = streamTail.slice(idx);
-          bodySent = true;
-          continue;
-        }
-        // Fenêtre de sécurité (10 chars) pour ne pas couper un marqueur entre
-        // deux deltas ; le reste est diffusé immédiatement.
-        const safe = Math.max(streamTail.length - 10, 0);
-        const diff = streamTail.slice(0, safe);
-        if (diff) {
-          chapterText += diff;
-          send('text', { delta: diff });
-        }
-        streamTail = streamTail.slice(safe);
+      chapterResult = full;
+      chapterText = full.text;
+      const idx = findFirstMarker(chapterText);
+      if (idx >= 0) {
+        tail = chapterText.slice(idx);
+        chapterText = chapterText.slice(0, idx).trimEnd();
       }
-      chapterText += streamTail; // dernier reliquat du corps
-      return result;
-    })();
+      // Verdict bloquant : chapitre refusé -> ni diffusé, ni stocké.
+      try {
+        const mod = await llm.generate({
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: buildModerationPrompt({ chapterText, age }) },
+          ],
+          kind: 'moderation',
+          maxTokens: 10,
+        });
+        moderationFlagged = mod.text.trim().toLowerCase().startsWith('oui');
+      } catch {
+        moderationFlagged = false;
+      }
+      if (moderationFlagged) {
+        console.warn('[chapter] MODÉRATION BLOQUANTE : chapitre refusé', gameId, 'ch', nextNumber);
+        send('error', { message: 'Ce passage a été refusé par la modération. Réessaie.' });
+        res.end();
+        return;
+      }
+      // Machine à écrire rejouée (le lecteur n'a rien vu pendant l'attente).
+      const CHUNK = 48;
+      for (let i = 0; i < chapterText.length; i += CHUNK) {
+        send('text', { delta: chapterText.slice(i, i + CHUNK) });
+        await new Promise((r) => setTimeout(r, 16));
+      }
+    } else {
+      chapterResult = await (async (): Promise<LLMResult> => {
+        const gen = llm.stream({
+          messages: chapterMessages,
+          kind: 'chapter',
+          maxTokens: 4000,
+        });
+        let result: LLMResult = EMPTY_RESULT;
+        let streamTail = ''; // fenêtre de sécurité pour détecter un marqueur coupé
+        let bodySent = false;
+        for (;;) {
+          const { value, done } = await gen.next();
+          if (done) {
+            result = (value ?? EMPTY_RESULT) as LLMResult;
+            break;
+          }
+          const delta = value as string;
+          if (bodySent) {
+            tail += delta;
+            continue;
+          }
+          streamTail += delta;
+          const iTitre = streamTail.indexOf('[[TITRE]]');
+          const iChoix = streamTail.indexOf('[[CHOIX]]');
+          const idx = Math.min(iTitre >= 0 ? iTitre : Infinity, iChoix >= 0 ? iChoix : Infinity);
+          if (idx !== Infinity) {
+            // Le corps se termine ici : envoie la partie avant le marqueur.
+            const pre = streamTail.slice(0, idx);
+            if (pre) {
+              chapterText += pre;
+              send('text', { delta: pre });
+            }
+            tail = streamTail.slice(idx);
+            bodySent = true;
+            continue;
+          }
+          // Fenêtre de sécurité (10 chars) pour ne pas couper un marqueur
+          // entre deux deltas ; le reste est diffusé immédiatement.
+          const safe = Math.max(streamTail.length - 10, 0);
+          const diff = streamTail.slice(0, safe);
+          if (diff) {
+            chapterText += diff;
+            send('text', { delta: diff });
+          }
+          streamTail = streamTail.slice(safe);
+        }
+        chapterText += streamTail; // dernier reliquat du corps
+        return result;
+      })();
+    }
 
     // Titre + choix : fusionnés à la fin du MÊME appel chapitre (le modèle
     // qui vient d'écrire choisit les choix — plus d'appel séparé aveugle).
@@ -297,13 +350,12 @@ RÈGLES DE RYTHME :
           ]
         : null;
 
-    const moderationNeeded = age === 'under10' || age === '10to15';
     const tasks: Promise<unknown>[] = [
       // Résumé glissant (petit appel - intrigue/ton)
       llm.generate({
         messages: [
           { role: 'system', content: system },
-          { role: 'user', content: buildSummaryPrompt(game.resume ?? '', chapterText, playerChoiceLabel ?? undefined) },
+          { role: 'user', content: buildSummaryPrompt(game.resume ?? '', chapterText, playerChoiceLabel ?? undefined, playerChoiceConsequence ?? undefined) },
         ],
         kind: 'summary',
         maxTokens: 600,
@@ -357,33 +409,11 @@ RÈGLES DE RYTHME :
           })()
         : Promise.resolve({ result: EMPTY_RESULT as LLMResult, plan: storyPlan }),
     ];
-    // Vérification de contenu (publics jeunes) : verdict oui/non bon marché.
-    if (moderationNeeded) {
-      tasks.push(
-        (async () => {
-          try {
-            const gen = await llm.generate({
-              messages: [
-                { role: 'system', content: system },
-                { role: 'user', content: buildModerationPrompt({ chapterText, age }) },
-              ],
-              kind: 'moderation',
-              maxTokens: 10,
-            });
-            return { result: gen, flagged: gen.text.trim().toLowerCase().startsWith('oui') };
-          } catch {
-            // pas de verdict = pas de signalement
-            return { result: EMPTY_RESULT as LLMResult, flagged: false };
-          }
-        })(),
-      );
-    }
 
     const outcomes = await Promise.allSettled(tasks);
     const summaryOutcome = outcomes[0];
     const stateOutcome = outcomes[1];
     const planOutcome = outcomes[2];
-    const moderationOutcome = moderationNeeded ? outcomes[3] : undefined;
 
     const summaryResult =
       summaryOutcome?.status === 'fulfilled' ? (summaryOutcome.value as LLMResult) : EMPTY_RESULT;
@@ -405,14 +435,6 @@ RÈGLES DE RYTHME :
     if (planOutcome?.status === 'fulfilled') {
       planResult = (planOutcome.value as { result: LLMResult }).result;
       newPlan = (planOutcome.value as { plan: StoryPlan | null }).plan;
-    }
-    let moderationFlagged = false;
-    if (moderationOutcome?.status === 'fulfilled') {
-      moderationFlagged = Boolean((moderationOutcome.value as { flagged?: boolean }).flagged);
-      if (moderationFlagged) {
-        console.warn('[chapter] MODÉRATION : contenu signalé', gameId, 'ch', nextNumber);
-        send('moderation', { message: 'Ce chapitre contient du contenu potentiellement inadapté. Il a été signalé.' });
-      }
     }
 
     // Stockage
@@ -512,27 +534,6 @@ const EMPTY_RESULT: LLMResult = {
   usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 },
   costUsd: 0,
 };
-
-/**
- * Parse les marqueurs de fin de chapitre produits par le MÊME appel
- * d'écriture : [[TITRE]]|titre puis [[CHOIX]] avec lignes "n|libellé|
- * conséquence". Retourne le titre (optionnel) et les choix.
- */
-function parseChapterMarkers(tail: string): { title?: string; choices: StoryChoice[] } {
-  const titleMatch = /\[\[TITRE\]\]\|([^\n]+)/.exec(tail);
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
-  const choixMatch = /\[\[CHOIX\]\]([\s\S]*)$/.exec(tail);
-  const choices: StoryChoice[] = [];
-  if (choixMatch) {
-    for (const line of choixMatch[1].split('\n')) {
-      const m = /^\s*\d+\|([^|]+)\|([^|]*)\s*$/.exec(line);
-      if (m && m[1].trim()) {
-        choices.push({ libelle: m[1].trim(), consequenceResumee: (m[2] ?? '').trim() });
-      }
-    }
-  }
-  return { title, choices };
-}
 
 /**
  * Phase narrative PROPORTIONNELLE : chaque palier est défini par sa
