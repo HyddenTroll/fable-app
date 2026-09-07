@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
-import { streamChapter, reportGame, ApiError, type HeroState } from '@/services/api';
+import { streamChapter, reportGame, finalizeGame, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii, fonts } from '@/theme';
@@ -144,9 +144,15 @@ export default function GameScreen() {
             currentIndex: updated.length - 1,
             finished: done.isEnd,
           });
-          setHeroState(done.state);
+          // le state frais arrive par /finalize → au prochain chapitre ;
+          // garde l'état courant tant que done.state est null.
+          if (done.state) setHeroState(done.state);
           setIsGenerating(false);
           setPressedChoice(null);
+
+          // POST-TRAITEMENT EN ARRIÈRE-PLAN : résumé/état/plan. Ne bloque
+          // pas l'UI — le prochain /chapter attendra ce post s'il est court.
+          finalizeGame(game.gameId).catch(() => {});
 
           if (done.isEnd) {
             router.push('/game/end');

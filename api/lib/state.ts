@@ -50,6 +50,8 @@ export interface StateDelta {
   };
   inventaire?: {
     ajouter?: Partial<InventoryItem>[];
+    /** Objets donnés, jetés, perdus ou consommés (nom ou id). */
+    retirer?: string[];
   };
   pnj?: {
     ajouter?: Partial<NpcEntry>[];
@@ -111,10 +113,16 @@ export function applyStateDelta(prev: HeroState, delta: StateDelta | null | unde
     if (found) found.soigne = true;
   }
 
-  // Inventaire : ajouter (jamais retirer implicitement)
+  // Inventaire : ajouter + retirer (objet donné, jeté, perdu, consommé)
   for (const it of delta.inventaire?.ajouter ?? []) {
     if (!it.objet) continue;
     next.inventaire.push({ id: uid('i'), objet: it.objet, depuis: it.depuis ?? chapterNumber });
+  }
+  for (const target of delta.inventaire?.retirer ?? []) {
+    const found = next.inventaire.find((i) => i.id === target || i.objet === target);
+    if (found) {
+      next.inventaire = next.inventaire.filter((i) => i !== found);
+    }
   }
 
   // PNJ : ajouter + tuer (par id ou nom)

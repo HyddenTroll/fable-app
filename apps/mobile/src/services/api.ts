@@ -83,7 +83,9 @@ export interface ChapterDone {
   chapter: ApiChapter;
   isEnd: boolean;
   resume: string;
-  state: HeroState;
+  /** null tant que /finalize n'a pas post-traité le chapitre (le state
+   *  courant reste affiché ; le frais arrive avec le chapitre suivant). */
+  state: HeroState | null;
   freeChaptersRemaining: number | null;
   costUsd: number;
 }
@@ -91,6 +93,28 @@ export interface ChapterDone {
 // ---------------------------------------------------------------------------
 // Appels
 // ---------------------------------------------------------------------------
+
+/**
+ * POST-TRAITEMENT en arrière-plan d'un chapitre (résumé/état/plan).
+ * Fire-and-forget : appelé dès réception du done, sans bloquer l'UI.
+ * Idempotent côté serveur (déjà post-traité = no-op) — aucun coût
+ * d'appel supplémentaire n'est ajouté par un double déclenchement, le
+ * serveur skip avant tout LLM pour un chapitre déjà finalisé.
+ */
+export async function finalizeGame(gameId: string): Promise<void> {
+  try {
+    await httpFetch(`${apiBase()}/api/game/finalize`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ gameId }),
+      // timeout global (comportement par défaut du fetch)
+    });
+  } catch (e) {
+    // silencieux : le chapitre suivant attendra (poll borné) puis
+    // continuera avec l'état précédent (repli dégradé assumé)
+    console.warn('[finalize] échec silencieux', gameId, e);
+  }
+}
 
 export async function createGame(body: {
   genre: string;

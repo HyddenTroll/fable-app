@@ -690,6 +690,35 @@ export function buildFactRegistry(bible: StoryBible): string {
 }
 
 /**
+ * RÉSUMÉ INITIAL (mémoire du livre AVANT le premier chapitre) : dérivé de
+ * la bible côté code, SANS le dénouement. CRITIQUE : feedé à
+ * buildSummaryPrompt comme "résumé précédent" — s'il contenait la fin
+ * du synopsis (resumeGeneral), le résumeur la recopierait comme un
+ * événement passé (hallucination du seuil franchi observée en réel).
+ */
+export function buildInitialResume(bible: StoryBible): string {
+  const hero = bible.heros;
+  const monde = bible.monde;
+  const squelette = bible.structure?.squelette;
+  const parts: string[] = [];
+  parts.push(
+    `AVANT LE DÉBUT DU RÉCIT — la vie ordinaire du héros, à l'état initial : ` +
+      `${hero?.nom ? `${hero.nom} vit ` : 'Le héros vit '}${monde?.description ? `dans un monde où ${monde.description.toLowerCase()}` : 'dans son monde ordinaire'}. ` +
+      `${hero?.desir ? `Il veut ${hero.desir.toLowerCase()}. ` : ''}` +
+      `${hero?.peur ? `Il redoute ${hero.peur.toLowerCase()}. ` : ''}` +
+      `${hero?.blessure ? `Sa blessure : ${hero.blessure.toLowerCase()}. ` : ''}` +
+      `${hero?.mensonge ? `Ce qu'il croit à tort : ${hero.mensonge.toLowerCase()}.` : ''}`,
+  );
+  if (squelette?.ouverture) {
+    parts.push(`Son quotidien au début : ${squelette.ouverture}`);
+  }
+  if (bible.antagoniste?.nom) {
+    parts.push(`Il ignore encore que ${bible.antagoniste.nom} existe et a ses propres plans.`);
+  }
+  return parts.join('\n');
+}
+
+/**
  * VÉRIFICATION DE CONTENU (publics jeunes) : verdict oui/non sur un
  * chapitre. Filet de détection post-écriture — pas un blocage (le texte
  * est déjà streamé) : il alimente l'alerte client + le flag en base.
@@ -788,13 +817,15 @@ Mets à jour l'état en fonction de ce qui s'est passé dans ce chapitre. RÈGLE
 - N'invente rien qui ne soit pas dans le chapitre.
 - Une blessure s'ajoute seulement si le chapitre montre clairement une blessure physique.
 - Un objet s'ajoute seulement si le héros le ramasse explicitement.
+- TRACE INTÉGRALE DES OBJETS : liste TOUT objet physique que le héros reçoit, prend, perd, donne, jette ou DÉPLACE dans ce chapitre, même mineur (une clé, une lettre, une enveloppe, un outil). Un objet n'est plus « en sa possession » doit être retiré via "retirer".
 - Un PNJ meurt seulement si le chapitre montre sa mort explicitement.
+- Un lieu ne change que si le chapitre montre explicitement un déplacement.
 - Si rien ne change, renvoie {} .
 
 Réponds UNIQUEMENT en JSON (structure exacte) :
 {
   "blessures": { "ajouter": [{"quoi": "...", "depuis": N, "grave": false}], "soigner": ["id"] },
-  "inventaire": { "ajouter": [{"objet": "...", "depuis": N}] },
+  "inventaire": { "ajouter": [{"objet": "...", "depuis": N}], "retirer": ["nom d'objet ou id"] },
   "pnj": { "ajouter": [{"nom": "...", "relation": "..."}], "tuer": ["id ou nom"] },
   "engagements": { "ajouter": [{"envers": "...", "quoi": "..."}] },
   "lieu": "nouveau lieu si changé"

@@ -93,6 +93,8 @@ export interface GameParams {
   /** Profil de rythme pioché à la création (48 profils informés par
    *  l'étude des best-sellers). Appliqué à tous les chapitres. */
   rythme?: { nom: string; consigne: string };
+  /** Tranche d'âge du joueur (modération bloquante pour les mineurs). */
+  age?: AgeGroup;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,15 +131,30 @@ export interface StoryBible {
     faille: string;
     /** Désir CONSCIENT vs BESOIN INCONSCIENT (arc charactériel). */
     besoinInconscient?: string;
+    /** Bibliothèque complète (bible "architecte"). */
+    blessure?: string;
+    mensonge?: string;
+    verite?: string;
+    arc?: string;
+    attaches?: string;
+    traitOptionnel?: string;
   };
   antagoniste: {
     nom: string;
     motivation: string;
+    besoin?: string;
+    blessure?: string;
+    logique?: string;
+    plan?: string;
+    attaque?: string;
+    miroir?: string;
   };
   personnages: {
     nom: string;
     role: string;
     detail: string;
+    revele?: string;
+    miniArc?: string;
   }[];
   monde: {
     description: string;

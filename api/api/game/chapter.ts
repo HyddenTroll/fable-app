@@ -14,9 +14,9 @@ import {
 } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
-import { emptyState, applyStateDelta, parseStateDelta, serializeState, type HeroState, type StateDelta } from '../../lib/state';
+import { emptyState, serializeState, type HeroState } from '../../lib/state';
 import { findFirstMarker, parseChapterMarkers } from '../../lib/chapter-markers';
-import type { AgeGroup, StoryBible, StoryChoice, StoryPlan } from '@fable/shared';
+import type { AgeGroup, StoryBible, StoryChoice, StoryPlan, GameParams } from '@fable/shared';
 
 /**
  * PILOTAGE DU RÉCIT : la longueur (nb de chapitres) dépend de la
@@ -67,24 +67,64 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const db = getDb();
 
   // Charger la partie (doit appartenir à l'utilisateur)
-  const { data: game, error: gameError } = await db
-    .from('games')
-    .select('*')
-    .eq('id', gameId)
-    .eq('user_id', auth.userId)
-    .single();
+  let game: Record<string, unknown> | null = null;
+  {
+    const { data, error: gameError } = await db
+      .from('games')
+      .select('*')
+      .eq('id', gameId)
+      .eq('user_id', auth.userId)
+      .single();
 
-  if (gameError || !game) {
-    return json(res, 404, { error: { code: 'not_found', message: 'Partie introuvable' } });
+    if (gameError || !data) {
+      return json(res, 404, { error: { code: 'not_found', message: 'Partie introuvable' } });
+    }
+    game = data as Record<string, unknown>;
   }
   if (game.status === 'finished') {
     return json(res, 400, { error: { code: 'finished', message: 'Partie terminée' } });
   }
 
-  const params = game.params as NonNullable<typeof game.params>;
+  // Fraîcheur du post-traitement : le chapitre précédent est finalisé en
+  // ARRIÈRE-PLAN par /api/game/finalize (résumé/état/plan ne bloquent plus
+  // l'affichage des choix). Ce chapitre doit attendre que CE post soit
+  // terminé pour lire un état à jour (borné à 40 s, puis repli dégradé).
+  const chapterCount = Number(game.chapter_count ?? 1);
+  if (chapterCount > 1) {
+    const lastWritten = chapterCount - 1;
+    const posted = (game.params as Record<string, unknown> | null)?.post as
+      | { chapter?: number }
+      | undefined;
+    if ((posted?.chapter ?? -1) < lastWritten) {
+      let waited = 0;
+      while (waited < 40_000) {
+        await new Promise((r) => setTimeout(r, 2000));
+        waited += 2000;
+        const { data: fresh } = await db
+          .from('games')
+          .select('*')
+          .eq('id', gameId)
+          .single();
+        const postedFresh = ((fresh?.params as Record<string, unknown> | null)?.post as
+          | { chapter?: number }
+          | undefined)?.chapter ?? -1;
+        if (postedFresh >= lastWritten) {
+          if (fresh) game = fresh as Record<string, unknown>;
+          break;
+        }
+      }
+      if ((game.params as Record<string, unknown> | null)?.post as { chapter?: number } | undefined) {
+        // passage : le post est arrivé pendant le poll
+      } else {
+        console.warn('[chapter] post-traitement du chapitre précédent non terminé - état potentiellement obsolète', gameId);
+      }
+    }
+  }
+
+  const params = (game.params ?? {}) as GameParams;
   const age = (params?.age ?? 'adult') as AgeGroup;
   const bible = game.story_bible as StoryBible;
-  const nextNumber = game.chapter_count;
+  const nextNumber = Number(game.chapter_count ?? 1);
 
   // Quota serveur (source de vérité)
   const quota = await getQuota(db, auth.userId);
@@ -136,19 +176,19 @@ ${nextNumber >= totalChapters
   const llm = getLLM();
 
   // État structuré (source de vérité pour blessures/inventaire/pnj/engagements)
-  const state: HeroState = { ...emptyState(), ...(game.state ?? {}) } as HeroState;
+  const state: HeroState = { ...emptyState(), ...((game.state ?? {}) as Record<string, unknown>) } as HeroState;
   const stateText = serializeState(state);
 
   // Plan de l'histoire (grandes lignes évolutives, mémoire du cap)
   // Ne s'active que si la colonne story_plan existe en base (migration 0005).
-  const hasStoryPlanColumn = 'story_plan' in (game as Record<string, unknown>);
-  const hasModerationColumn = 'moderation_flags' in (game as Record<string, unknown>);
-  const storyPlan = hasStoryPlanColumn ? ((game as { story_plan: StoryPlan | null }).story_plan ?? null) : null;
+  const hasStoryPlanColumn = 'story_plan' in game;
+  const hasModerationColumn = 'moderation_flags' in game;
+  const storyPlan = hasStoryPlanColumn ? ((game.story_plan as StoryPlan | null) ?? null) : null;
 
   // Messages SÉPARÉS pour le cache : bible verbatim (stable) + contexte (volatile)
   const msgs = buildChapterMessages({
     bible,
-    bibleText: game.bible_text ?? undefined,
+    bibleText: game.bible_text as string | undefined,
     state: stateText,
     plan: storyPlan?.grandesLignes ?? undefined,
     rythme: params?.rythme?.consigne,
@@ -325,121 +365,10 @@ ${nextNumber >= totalChapters
       }
     }
 
-    // POST-TRAITEMENT EN PARALLÈLE : résumé, état et plan sont
-    // indépendants (le plan utilise le résumé PRÉCÉDENT — le résumé frais
-    // arrive en parallèle et sera stocké). 1 appel (texte+choix) puis 3
-    // appels en parallèle au lieu de 5-6 séquentiels.
-    const stateMessages = [
-      { role: 'system' as const, content: system },
-      { role: 'user' as const, content: buildStatePrompt({ state: stateText, chapterText }) },
-    ];
-    const planDirecteur = (bible as StoryBible & { planDirecteur?: unknown }).planDirecteur;
-    const planMessages =
-      hasStoryPlanColumn && playerChoiceLabel && planDirecteur
-        ? [
-            { role: 'system' as const, content: system },
-            {
-              role: 'user' as const,
-              content: buildPlanReconsiderPrompt({
-                planDirecteur: JSON.stringify(planDirecteur, null, 2),
-                currentPlan: storyPlan?.grandesLignes ?? null,
-                resume: game.resume ?? '',
-                playerChoice: playerChoiceLabel,
-              }),
-            },
-          ]
-        : null;
-
-    const tasks: Promise<unknown>[] = [
-      // Résumé glissant (petit appel - intrigue/ton)
-      llm.generate({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: buildSummaryPrompt(game.resume ?? '', chapterText, playerChoiceLabel ?? undefined, playerChoiceConsequence ?? undefined) },
-        ],
-        kind: 'summary',
-        maxTokens: 600,
-      }),
-      // État structuré (deltas) - avec UN retry en cas de parse invalide
-      (async () => {
-        try {
-          const stateGen = await llm.generateJson<StateDelta>({
-            messages: stateMessages,
-            kind: 'state',
-            maxTokens: 800,
-          });
-          return { result: stateGen.result, state: applyStateDelta(state, stateGen.json, nextNumber) };
-        } catch {
-          const retryStateGen = await llm.generateJson<StateDelta>({
-            messages: stateMessages,
-            kind: 'state',
-            maxTokens: 800,
-          });
-          return { result: retryStateGen.result, state: applyStateDelta(state, retryStateGen.json, nextNumber) };
-        }
-      })(),
-      // PLAN (mémoire des grandes lignes) : origine du tournant du lecteur
-      planMessages
-        ? (async () => {
-            try {
-              const planGen = await llm.generateJson<{
-                important?: boolean;
-                grandesLignes?: string;
-                versQuelleFin?: string;
-              }>({
-                messages: planMessages,
-                kind: 'plan',
-                maxTokens: 700,
-              });
-              return {
-                result: planGen.result,
-                plan:
-                  planGen.json.important && planGen.json.grandesLignes?.trim()
-                    ? {
-                        grandesLignes: planGen.json.grandesLignes.trim(),
-                        derniereMiseAJourChapitre: nextNumber,
-                        versQuelleFin: planGen.json.versQuelleFin ?? storyPlan?.versQuelleFin ?? '',
-                      }
-                    : storyPlan,
-              };
-            } catch {
-              // on garde le plan précédent (la route n'a pas besoin de changer)
-              return { result: EMPTY_RESULT as LLMResult, plan: storyPlan };
-            }
-          })()
-        : Promise.resolve({ result: EMPTY_RESULT as LLMResult, plan: storyPlan }),
-    ];
-
-    const outcomes = await Promise.allSettled(tasks);
-    const summaryOutcome = outcomes[0];
-    const stateOutcome = outcomes[1];
-    const planOutcome = outcomes[2];
-
-    const summaryResult =
-      summaryOutcome?.status === 'fulfilled' ? (summaryOutcome.value as LLMResult) : EMPTY_RESULT;
-    if (summaryOutcome?.status === 'rejected') {
-      // Ne pas perdre la mémoire : on conservera l'ancien résumé (voir stockage).
-      console.warn('[chapter] résumé invalide - conservé', gameId);
-    }
-    let stateResult = EMPTY_RESULT;
-    let newState = state;
-    if (stateOutcome?.status === 'fulfilled') {
-      stateResult = (stateOutcome.value as { result: LLMResult }).result;
-      newState = (stateOutcome.value as { state: HeroState }).state;
-    } else {
-      // on garde l'état précédent MAIS on le signale (divergence potentielle)
-      console.warn('[chapter] delta état invalide après retry - état conservé', gameId);
-    }
-    let planResult = EMPTY_RESULT;
-    let newPlan = storyPlan;
-    if (planOutcome?.status === 'fulfilled') {
-      planResult = (planOutcome.value as { result: LLMResult }).result;
-      newPlan = (planOutcome.value as { plan: StoryPlan | null }).plan;
-    }
-
-    // Stockage
-    // Fin de partie : uniquement si la fin est autorisée (>= 75 %) OU si le
-    // plafond de la difficulté est atteint. Le code décide, pas le modèle.
+    // POST-TRAITEMENT DÉLÉGUÉ : le résumé/état/plan du chapitre sont
+    // exécutés en ARRIÈRE-PLAN par /api/game/finalize (déclenché par le
+    // client dès réception du done) — ils ne retardent plus l'affichage
+    // des choix. Ce chapitre ne stocke ici que le texte et les choix.
     const isEnd = (choices.length === 0 && finAutorisee) || nextNumber >= totalChapters;
     const { data: chapter, error: chapterInsertError } = await db
       .from('chapters')
@@ -468,11 +397,8 @@ ${nextNumber >= totalChapters
       .from('games')
       .update({
         chapter_count: newChapterCount,
-        resume: summaryResult.text || game.resume,
         status: isEnd ? 'finished' : 'active',
-        free_chapters_used: game.free_chapters_used + (quota.isPremium ? 0 : 1),
-        state: newState,
-        story_plan: newPlan ?? undefined,
+        free_chapters_used: Number(game.free_chapters_used ?? 0) + (quota.isPremium ? 0 : 1),
         ...(moderationFlags ? { moderation_flags: moderationFlags } : {}),
       })
       .eq('id', gameId);
@@ -480,16 +406,11 @@ ${nextNumber >= totalChapters
     if (gameUpdateError) throw new Error(gameUpdateError.message);
     if (quota.isPremium) await recordPremiumChapter(db, auth.userId);
 
-    // Coûts
+    // Coûts : texte + éventuel filet.
     await logLLMResult(db, auth.userId, gameId, 'chapter', chapterResult);
-    await logLLMResult(db, auth.userId, gameId, 'choices', choicesResult);
-    await logLLMResult(db, auth.userId, gameId, 'summary', summaryResult);
-    await logLLMResult(db, auth.userId, gameId, 'state', stateResult);
-    if (planResult !== EMPTY_RESULT) {
-      await logLLMResult(db, auth.userId, gameId, 'plan', planResult);
+    if (choicesResult !== EMPTY_RESULT) {
+      await logLLMResult(db, auth.userId, gameId, 'choices', choicesResult);
     }
-
-    const totalCost = chapterResult.costUsd + choicesResult.costUsd + summaryResult.costUsd + stateResult.costUsd + planResult.costUsd;
 
     send('done', {
       chapter: {
@@ -499,10 +420,13 @@ ${nextNumber >= totalChapters
         choices: chapter.choices,
       },
       isEnd,
-      resume: summaryResult.text || game.resume,
-      state: newState,
-      freeChaptersRemaining: quota.isPremium ? null : Math.max(0, 5 - (game.free_chapters_used + 1)),
-      costUsd: totalCost,
+      // Résumé/état du tour précédent : le frais arrive par /finalize et
+      // sera fourni avec le prochain chapitre (état à jour garanti par le
+      // poll de fraîcheur au début de ce handler).
+      resume: game.resume ?? '',
+      state: null,
+      freeChaptersRemaining: quota.isPremium ? null : Math.max(0, 5 - (Number(game.free_chapters_used ?? 0) + 1)),
+      costUsd: chapterResult.costUsd + (choicesResult === EMPTY_RESULT ? 0 : choicesResult.costUsd),
     });
     res.end();
   } catch (e) {

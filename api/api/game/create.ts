@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
-import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
+import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, buildInitialResume, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
 import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
@@ -149,7 +149,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       title: bible.titre,
       story_bible: bible,
       bible_text: bibleResult.text, // JSON figé verbatim (préfixe de prompt stable -> cache)
-      resume: bible.resumeGeneral ?? '',
+      // Résumé initial SANS le dénouement (la mémoire interdit la fin) :
+      // bible.resumeGeneral est un synopsis complet qui révélerait le
+      // cap, le résumeur le recopierait comme un passé (hallucination).
+      resume: buildInitialResume(bible),
       status: 'active',
       chapter_count: 1, // prologue
       free_chapters_used: 1, // le prologue compte comme 1 (gratuit)
