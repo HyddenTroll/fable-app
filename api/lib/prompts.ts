@@ -765,6 +765,8 @@ ${playerChoiceConsequence ? `CONSÉQUENCE ANNONCÉE DE CE CHOIX (à confirmer ou
 NOUVEAU CHAPITRE :
 ${chapterText}
 
+RÈGLE D'OR ABSOLUE : n'invente AUCUN événement, AUCUN geste, AUCUNE révélation qui ne se trouve ni dans le résumé précédent ni dans le chapitre ci-dessus. Un dénouement, un seuil franchi, une mort, une rencontre qui n'apparaissent pas dans ce chapitre sont des HALLUCINATIONS À BANNIR. Si tu hésites, écris moins plutôt que d'inventer : ce résumé est la mémoire du livre, il sera relu par l'écrivain des prochains chapitres sans vérifier les originaux.
+
 Réponds UNIQUEMENT avec le nouveau résumé, en texte brut, sans préambule ni titre.`;
 }
 

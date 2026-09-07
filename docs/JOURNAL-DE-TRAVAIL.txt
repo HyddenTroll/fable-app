@@ -1297,3 +1297,31 @@ FAIT :
          suite). DERNIER CHAPITRE : pilotage force explicitement
          « conclus MAINTENANT, AUCUN [[CHOIX]] » à n = total.
       Typecheck API + mobile OK, tests 17/17. PAS de build iOS.
+
+   29. ANALYSE DES DEUX PARTIES RÉELLES (audit B/D/latence) + FIX :
+      - PARTIE 1 (La Lanterne des seuils, fantasy, moyenne) :
+        * Latence chapitre 1 (long 2000 mots) = 221 s (3,7 min).
+        * CONTRADICTION B détectée : le résumé (post ch.1) affirme
+          « Yohan, déjà privé de la lumière rassurante après avoir
+          franchi le seuil interdit » — alors que la bible place ce
+          franchissement au DÉNOUEMENT et que le ch.1 (4 % du livre)
+          n'en contient aucune trace → HALLUCINATION du résumé
+          glissant (contamination en chaîne des chapitres suivants).
+        * État : pnj Mireille vivant + inventaire bobine/carnet =
+          COLLENT au texte ; delta d'état OK, aucun warning.
+        * Choix sans conséquence : choix « Commencer l'inventaire »
+          a un effet réel (ch.1 = inventaire) ; point d'ombre :
+          l'enveloppe de Mireille (sous le bras au ch.1 vs dissimulée
+          sous un registre dans le résumé) — objet actif jamais tracé
+          dans l'état.
+        * Fin précoce : aucune (garde non déclenchée), story_plan
+          null (normal avant le 2e choix).
+      - PARTIE 2 (Le Cachet des Silences, horreur) : prologue seul ;
+        prose soutenue, « tu » tenu ; state {} normal (prologue créé
+        par /create sans appel state).
+      - FIX POUSSÉ : buildSummaryPrompt — RÈGLE D'OR ABSOLUE
+        anti-hallucination (n'inventer aucun événement absent du
+        résumé précédent ou du chapitre ; écrire moins plutôt
+        qu'inventer ; le résumé est LA mémoire relue sans vérifier
+        les originaux).
+      Typecheck API OK.
