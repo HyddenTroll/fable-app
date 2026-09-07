@@ -596,8 +596,11 @@ export function buildChapterMessages(opts: {
   plan?: string;
   /** Profil de rythme du roman (params.rythme) - optionnel. */
   rythme?: string;
+  /** Bloc PILOTAGE du récit (chiffres exacts : n/total, %, acte, fin
+   *  autorisée, mortalité, restants) - optionnel. */
+  pilotage?: string;
 }): { system: string; stable: string; volatile: string } {
-  const { bible, bibleText, state, resume, playerChoice, chapterNumber, totalChapters, act, phase, params, age, rule, plan, rythme } = opts;
+  const { bible, bibleText, state, resume, playerChoice, chapterNumber, totalChapters, act, phase, params, age, rule, plan, rythme, pilotage } = opts;
   const bibleBlock = bibleText ?? JSON.stringify(bible, null, 2);
   const system = buildSystemPrompt();
   const stable = `BIBLE DU ROMAN (référence fixe) :
@@ -618,6 +621,8 @@ ${playerChoice ? `DERNIER CHOIX DU HÉROS : ${playerChoice}` : ''}
 INFO CHAPITRE : Chapitre ${chapterNumber}/${totalChapters}. Position narrative : ${act}. ${phase}.
 PUBLIC : ${ageLabel(age)} | STYLE : ${params.style} | DIFFICULTÉ : ${params.difficulty}
 ${rule ? `RÈGLE SPÉCIALE : ${rule}` : ''}
+${pilotage ? `${pilotage}
+` : ''}
 
 Règles d'écriture :
 - Le chapitre doit avoir un début qui relance, un développement (2-4 scènes complètes), une fin variée (clôture / suspense doux / CLIFFHANGER).
@@ -650,8 +655,11 @@ export function buildChoicesPrompt(opts: {
   chapterNumber: number;
   maxChoices: number;
   age: AgeGroup;
+  /** La fin est-elle autorisée ici ? (servait : % >= 75). Si NON, il est
+   *  INTERDIT de répondre zéro choix : toujours 2-3 options de suite. */
+  finAutorisee?: boolean;
 }): string {
-  const { bible, chapterText, chapterNumber, maxChoices, age } = opts;
+  const { bible, chapterText, chapterNumber, maxChoices, age, finAutorisee } = opts;
   return `Tu es un grand romancier. Voici le chapitre ${chapterNumber} d'un roman interactif.
 
 BIBLE :
@@ -661,6 +669,10 @@ CHAPITRE :
 ${chapterText}
 
 Propose ${2 <= maxChoices ? `de 2 à ${maxChoices}` : '2'} choix de suite pour le lecteur.
+
+${finAutorisee === false
+    ? 'AUTORISATION DE FIN : NON - l\'histoire n\'est PAS terminée. Il est INTERDIT de répondre zéro choix : propose TOUJOURS 2-3 choix qui font continuer l\'histoire et ouvrir une suite. Jamais de conclusion ici.'
+    : 'AUTORISATION DE FIN : OUI - tu peux conclure (zéro choix) si l\'histoire touche vraiment à sa fin.'}
 
 Les choix doivent être HUMAINS et dans la TRAME :
 - HUMANISÉS : comme ce que le lecteur penserait ou dirait vraiment dans cette situation. Varie les registres - prudence, audace, empathie, refus, introspection, tentative maladroite. Tous les choix ne sont pas des actions : écouter, attendre, poser une question, s'abstenir sont de vrais choix.

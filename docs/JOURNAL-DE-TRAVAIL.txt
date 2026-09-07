@@ -1205,3 +1205,26 @@ FAIT :
         * Accueil (tabs)/index.tsx : bouton « 📚 Mes histoires » ->
           /library.
       Typecheck API + mobile OK.
+
+   26. PILOTAGE DU RÉCIT (anti-fin-précoce — le modèle concluait trop tôt) :
+      - NIVEAUX par difficulté (longueur ET léthalité, axes séparés) :
+        facile 12 chapitres / mortalité faible ; moyenne 24 / moyenne ;
+        difficile 40 / élevée. TOTAL_CHAPTERS (50 fixe) supprimé.
+      - BLOC PILOTAGE injecté à chaque chapitre (volatile, après la
+        bible stable pour le cache) : chapitre n/total, % du livre,
+        acte en cours, autorisation de fin (NON avant 75 %), mortalité,
+        chapitres restants + règles de rythme par acte (1 : installation
+        sans révélation majeure ; 2 : complications, point médian ~50 %,
+        l'antagoniste reprend la main ~70 % ; 3 : climax).
+      - GARDE SERVEUR (le code impose l'interdit) : si l'IA répond
+        ZÉRO choix avant 75 % -> régénération des choix avec rappel
+        explicite du rédacteur en chef ; si persiste -> 2 choix forcés.
+        isEnd = (choix vides ET fin autorisée) OU plafond atteint.
+      - actPhase proportionnelle (n/total) : plus de numéros absolus
+        (1-12) incohérents avec 50 chapitres ; paliers relatifs
+        (monde ordinaire, bascule ~10 %, point médian ~50 %, tout est
+        perdu ~75 %, avant-climax ~88 %, climax ~96 %).
+      - buildChoicesPrompt : bloc "AUTORISATION DE FIN : NON/OUI" avec
+        interdiction de répondre zéro choix si NON.
+      - buildChapterMessages : nouveau param pilotage.
+      Typecheck API OK. (Pas de build iOS : déclenchement manuel.)

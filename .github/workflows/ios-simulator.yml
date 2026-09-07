@@ -1,14 +1,9 @@
 name: iOS Simulator build (Appetize)
 
 on:
+  # LANCEMENT MANUEL UNIQUEMENT (quand l'utilisateur le demande) :
+  # GitHub Actions -> iOS Simulator build -> Run workflow.
   workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths:
-      - 'apps/mobile/**'
-      - 'package.json'
-      - 'package-lock.json'
 
 concurrency:
   group: ios-sim

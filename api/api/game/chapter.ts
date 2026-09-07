@@ -16,7 +16,21 @@ import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/qu
 import { emptyState, applyStateDelta, parseStateDelta, serializeState, type HeroState, type StateDelta } from '../../lib/state';
 import type { AgeGroup, StoryBible, StoryChoice, StoryPlan } from '@fable/shared';
 
-const TOTAL_CHAPTERS = 50;
+/**
+ * PILOTAGE DU RÉCIT : la longueur (nb de chapitres) dépend de la
+ * difficulté, et la fin n'est autorisée qu'à partir de 75 % — le code
+ * l'impose, pas seulement le prompt (le modèle a tendance à conclure
+ * trop tôt).
+ */
+const NIVEAUX = {
+  facile: { chapitres: 12, mortalite: 'faible' },
+  moyenne: { chapitres: 24, mortalite: 'moyenne' },
+  difficile: { chapitres: 40, mortalite: 'élevée' },
+} as const;
+
+/** Seuil sous lequel la fin de l'histoire est INTERDITE (%). */
+const SEUIL_FIN_POURCENT = 75;
+
 const MAX_CONTEXT_CHAPTERS = 3; // N derniers chapitres réinjectés
 
 interface ChapterBody {
@@ -88,8 +102,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .map((c) => `--- Chapitre ${c.chapter_number}${c.title ? ` : ${c.title}` : ''} ---\n${c.content}`)
     .join('\n\n');
 
-  const act = nextNumber <= 4 ? 'Acte 1 (exposition)' : nextNumber <= 8 ? 'Acte 2 (confrontation)' : nextNumber <= 12 ? 'Acte 3 (résolution)' : 'Dénouement prolongé';
-  const phase = actPhase(nextNumber);
+  // PILOTAGE DU RÉCIT : longueur selon la difficulté + fin interdite
+  // avant 75 %. Le code impose l'interdit ; le prompt gère le rythme.
+  const totalChapters = NIVEAUX[params.difficulty as keyof typeof NIVEAUX]?.chapitres ?? 24;
+  const pourcent = (nextNumber / totalChapters) * 100;
+  const finAutorisee = pourcent >= SEUIL_FIN_POURCENT;
+  const mortalite = NIVEAUX[params.difficulty as keyof typeof NIVEAUX]?.mortalite ?? 'moyenne';
+  const restants = Math.max(totalChapters - nextNumber, 0);
+  const act = pourcent <= 25 ? 'Acte 1 (mise en place)' : pourcent <= 75 ? 'Acte 2 (complications)' : 'Acte 3 (résolution)';
+  const phase = actPhase(nextNumber, totalChapters);
+  const pilotage = `PILOTAGE DU RÉCIT — ces chiffres sont exacts, respecte-les.
+- Difficulté : ${params.difficulty}
+- Chapitre actuel : ${nextNumber} sur ${totalChapters} (${Math.round(pourcent)} % du livre)
+- Acte en cours : ${act}
+- Autorisation de fin : ${finAutorisee ? 'OUI' : `NON avant ${SEUIL_FIN_POURCENT} %`}
+- Mortalité attendue : ${mortalite}
+- Chapitres restants : ${restants}
+RÈGLES DE RYTHME :
+- Acte 1 (0-25 %) : installe le monde, le désir du héros, la menace. AUCUNE révélation majeure, AUCUNE confrontation finale. Ouvre des questions.
+- Acte 2 (25-75 %) : complications, alliés, fausses pistes, aggravation. Le milieu (~50 %) apporte une révélation qui change la compréhension de l'enjeu. L'antagoniste reprend la main vers 70 %.
+- Acte 3 (75-100 %) : convergence puis climax. La fin n'est possible qu'ici.
+- Tant que l'autorisation de fin est NON : ne conclus rien, n'épuise pas les révélations — ouvre une nouvelle complication. Tu as ${restants} chapitres devant toi, utilise-les.`;
   const rule = nextNumber === FREE_CHAPTER_COUNT + 1 ? 'Finis ce chapitre sur un cliffhanger maximal - c\'est la fin de l\'essai gratuit.' : undefined;
 
   const system = buildSystemPrompt();
@@ -114,12 +147,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     resume: `${game.resume ?? ''}\n\nDerniers chapitres :\n${recentContext}`,
     playerChoice: playerChoiceLabel ?? undefined,
     chapterNumber: nextNumber,
-    totalChapters: TOTAL_CHAPTERS,
+    totalChapters,
     act,
     phase,
     params,
     age,
     rule,
+    pilotage,
   });
   const chapterMessages = [
     { role: 'system' as const, content: msgs.system },
@@ -169,7 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const choicesGen = await llm.generateJson<{ titre?: string; choix?: StoryChoice[] }>({
         messages: [
           { role: 'system', content: system },
-          { role: 'user', content: buildChoicesPrompt({ bible, chapterText, chapterNumber: nextNumber, maxChoices: params.maxChoices, age }) },
+          { role: 'user', content: buildChoicesPrompt({ bible, chapterText, chapterNumber: nextNumber, maxChoices: params.maxChoices, age, finAutorisee }) },
         ],
         kind: 'choices',
         maxTokens: 800,
@@ -177,8 +211,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       title = choicesGen.json.titre ?? title;
       choices = choicesGen.json.choix ?? [];
       choicesResult = choicesGen.result;
+
+      // GARDE SERVEUR : le modèle a tenté de conclure avant la fin
+      // autorisée (zéro choix) -> on refuse et on régénère en interdisant
+      // explicitement la conclusion.
+      if (choices.length === 0 && !finAutorisee) {
+        const retryGen = await llm.generateJson<{ titre?: string; choix?: StoryChoice[] }>({
+          messages: [
+            { role: 'system', content: system },
+            {
+              role: 'user',
+              content: buildChoicesPrompt({ bible, chapterText, chapterNumber: nextNumber, maxChoices: params.maxChoices, age, finAutorisee: false })
+                + '\n\nRAPPEL DU RÉDACTEUR EN CHEF : ta première réponse a conclu l\'histoire au chapitre '
+                + `${nextNumber} sur ${totalChapters} (${Math.round(pourcent)} %). La fin est INTERDITE avant ${SEUIL_FIN_POURCENT} % du livre. `
+                + 'Réécris UNIQUEMENT les choix : 2-3 options courtes qui font CONTINUER l\'histoire et ouvrent une nouvelle complication.',
+            },
+          ],
+          kind: 'choices',
+          maxTokens: 800,
+        });
+        choices = retryGen.json.choix ?? [];
+        choicesResult = retryGen.result; // coût réel : le dernier appel gagne (log unique)
+      }
+
+      // Dernière garde : si le modèle persiste à ne donner aucun choix,
+      // on force deux options génériques plutôt que de terminer l'histoire.
+      if (choices.length === 0 && !finAutorisee) {
+        choices = [
+          { libelle: 'Continuer coûte que coûte', consequenceResumee: 'Le héros ne renonce pas et suit son instinct.' },
+          { libelle: 'Temporiser et observer', consequenceResumee: 'Le héros prend le temps de comprendre ce qui se joue.' },
+        ];
+      }
     } catch {
-      // si l'IA casse le format, on garde les choix vides (fin possible)
+      // si l'IA casse le format, on garde les choix vides (fin possible
+      // seulement si autorisée - sinon le fallback ci-dessus s'applique
+      // aussi via b [...] )
+      if (choices.length === 0 && !finAutorisee) {
+        choices = [
+          { libelle: 'Continuer coûte que coûte', consequenceResumee: 'Le héros ne renonce pas et suit son instinct.' },
+          { libelle: 'Temporiser et observer', consequenceResumee: 'Le héros prend le temps de comprendre ce qui se joue.' },
+        ];
+      }
     }
 
     // Résumé glissant (petit appel - intrigue/ton)
@@ -250,7 +323,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Stockage
-    const isEnd = choices.length === 0 || nextNumber >= TOTAL_CHAPTERS;
+    // Fin de partie : uniquement si la fin est autorisée (>= 75 %) OU si le
+    // plafond de la difficulté est atteint. Le code décide, pas le modèle.
+    const isEnd = (choices.length === 0 && finAutorisee) || nextNumber >= totalChapters;
     const { data: chapter, error: chapterInsertError } = await db
       .from('chapters')
       .insert({
@@ -337,17 +412,26 @@ const EMPTY_RESULT: LLMResult = {
   costUsd: 0,
 };
 
-function actPhase(n: number): string {
-  if (n === 1) return 'Le monde ordinaire du héros : sa vie s\'installe, une première graine discrète apparaît (étrangeté à peine perceptible, jamais explicite).';
-  if (n === 2) return 'La bascule douce : l\'événement déclencheur se produit, le héros commence à s\'inquiéter, le malaise gagne du terrain.';
-  if (n === 3) return 'Montée : les règles du problème se dessinent, premiers obstacles sérieux, les graines des chapitres 1-2 prennent sens.';
-  if (n === 4) return 'Fin de l\'acte 1 : un événement qui change tout - la menace devient claire pour le héros.';
-  if (n === 5) return 'Début de l\'acte 2 : conséquences, nouvelle quête, le héros s\'engage.';
-  if (n === 6) return 'Le héros creuse plus profond, révélations partielles, alliés et ennemis se précisent.';
-  if (n === 7) return 'Point médian : un revers majeur ou une grande révélation change la donne.';
-  if (n === 8) return 'Montée vers le pire, alliés et ennemis se précisent, les coûts se paient.';
-  if (n === 9) return 'Fin de l\'acte 2 : la situation semble perdue.';
-  if (n === 10) return 'Début de l\'acte 3 : le héros prépare sa dernière chance.';
-  if (n === 11) return 'Avant-climax : le héros affronte ses peurs, vérités et choix finaux.';
+/**
+ * Phase narrative PROPORTIONNELLE : chaque palier est défini par sa
+ * position dans le livre (n/total), pas par un numéro absolu — cohérent
+ * quel que soit le nombre de chapitres (12, 24 ou 40 selon difficulté).
+ */
+function actPhase(n: number, total: number): string {
+  const p = n / total; // position dans le livre, 0..1
+  if (p <= 0.25) {
+    if (n <= 1) return 'Le monde ordinaire du héros : sa vie s\'installe, une première graine discrète apparaît (étrangeté à peine perceptible, jamais explicite).';
+    if (p <= 0.1) return 'La bascule douce : l\'événement déclencheur se produit, le héros commence à s\'inquiéter, le malaise gagne du terrain.';
+    return 'Acte 1 : montée - premiers obstacles sérieux, les graines des chapitres précédents prennent sens, la menace reste floue.';
+  }
+  if (p <= 0.75) {
+    if (p <= 0.3) return 'Acte 2 : conséquences - le héros s\'engage, nouvelle quête, alliés et ennemis se précisent.';
+    if (p <= 0.45) return 'Acte 2 : le héros creuse plus profond, révélations partielles, les coûts commencent à se payer.';
+    if (p <= 0.55) return 'Point médian : un revers majeur ou une grande révélation change la donne - le héros ne peut plus reculer.';
+    if (p <= 0.65) return 'Acte 2 : montée vers le pire, l\'antagoniste gagne du terrain, les pertes s\'accumulent.';
+    return 'Fin de l\'acte 2 : la situation semble perdue - les espoirs s\'effondrent.';
+  }
+  if (p <= 0.88) return 'Acte 3 : dernière chance - le héros rassemble ses forces et prépare son coup.';
+  if (p <= 0.96) return 'Acte 3 : avant-climax - le héros affronte ses peurs, les vérités finales éclatent.';
   return 'Climax : la question dramatique trouve sa réponse.';
 }

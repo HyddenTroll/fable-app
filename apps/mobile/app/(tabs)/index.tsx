@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
+import { Logo } from '@/components/Logo';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii, fonts } from '@/theme';
 
@@ -25,7 +26,7 @@ export default function HomeTabScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Fable</Text>
+        <Logo size={54} />
         <View style={styles.headerRight}>
           {!isAuthed && (
             <TouchableOpacity onPress={() => router.push('/auth')} style={styles.headerButton}>
@@ -39,8 +40,6 @@ export default function HomeTabScreen() {
           )}
         </View>
       </View>
-      {/* Fil de lapis : le trait lumineux qui traverse la marque (= l'IA) */}
-      <View style={styles.filLapis} />
 
       {isAuthed ? (
         <Text style={styles.greeting}>Bonjour {email.split('@')[0]}</Text>
@@ -79,18 +78,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.xxl, gap: spacing.xl },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: colors.primary, fontFamily: fonts.grec, fontSize: 28 },
-  filLapis: {
-    alignSelf: 'center',
-    width: 1,
-    height: 30,
-    backgroundColor: colors.primary,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 4,
-  },
   headerRight: { flexDirection: 'row', gap: spacing.md },
   headerButton: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   headerButtonText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
