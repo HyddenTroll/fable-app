@@ -41,6 +41,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return json(res, 500, { error: { code: 'db_error', message: 'Impossible de lire les chapitres' } });
   }
 
+  // CONTRAT CAMELCASE (ApiChapter mobile) : la DB est en snake_case —
+  // un mapping brut cassait "number" côté client ("Chapitre undefined").
+  const normalized = (chapters ?? []).map((c) => ({
+    chapterNumber: c.chapter_number,
+    title: c.title,
+    content: c.content,
+    choices: c.choices,
+    playerChoice: c.player_choice,
+    coverImageUrl: c.cover_image_url,
+    createdAt: c.created_at,
+  }));
+
   return json(res, 200, {
     game: {
       id: game.id,
@@ -57,6 +69,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // pour reprendre une partie sans perdre les conséquences visibles.
       state: game.state ?? null,
     },
-    chapters,
+    chapters: normalized,
   });
 }

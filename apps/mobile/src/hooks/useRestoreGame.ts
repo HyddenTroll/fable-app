@@ -37,9 +37,13 @@ export function useRestoreGame() {
               libelle: x.libelle,
               consequenceResumee: x.consequenceResumee,
             })),
+            // Un chapitre SANS choix n'est PAS la fin d'un livre (un
+            // prologue peut en manquer) : seule une partie 'finished'
+            // marque le dernier chapitre comme fin.
             isEnd:
-              (data.game.status === 'finished' && c.chapterNumber === data.game.chapterCount) ||
-              (c.choices ?? []).length === 0,
+              data.game.status === 'finished'
+                ? c.chapterNumber === (data.game.chapterCount ?? 1) - 1
+                : false,
           }))
           .filter((c) => c.text && c.text.length > 0);
 
