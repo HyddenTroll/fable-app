@@ -40,6 +40,41 @@ export function findFirstMarker(text: string): number {
 }
 
 /**
+ * ANTI-INTERTITRES : le modèle répète parfois le titre du chapitre en
+ * clair dans le corps (« Chapitre 2 · Le troisième tiroir » sur une
+ * ligne seule) pour séparer ses sections. Ces lignes sont retirées du
+ * texte diffusé et stocké — le titre n'apparaît qu'en en-tête.
+ * Ne retire QUE les lignes seules ; la prose est intouchée.
+ */
+export function cleanIntertitles(
+  text: string,
+  title: string | undefined,
+  chapterNumber: number,
+): string {
+  const exacts = new Set<string>();
+  if (title) {
+    const t = title.trim();
+    exacts.add(t);
+    exacts.add(`— ${t} —`);
+    exacts.add(`— ${t}—`);
+  }
+  exacts.add(`Chapitre ${chapterNumber}`);
+  return text
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => {
+      const t = line.trim();
+      if (!t) return true;
+      if (exacts.has(t)) return false;
+      if (/^Chapitre \d+\s*[·.]/.test(t)) return false; // « Chapitre 2 · titre »
+      if (/^—\s*Chapitre \d+/.test(t)) return false; // « — Chapitre 2 · titre — »
+      if (/^-{3,}$/.test(t)) return false; // ligne de séparation « --- »
+      return true;
+    })
+    .join('\n');
+}
+
+/**
  * Parse la queue (à partir du premier marqueur) en titre + choix.
  * - Ligne de choix : "^\s*\d+\| libellé | conséquence $" — on ne coupe
  *   PAS sur le premier |  (un libellé peut en contenir) mais sur le

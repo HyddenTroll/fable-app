@@ -19,7 +19,7 @@ esbuild.buildSync({
   format: 'esm',
   outfile,
 });
-const { parseChapterMarkers, findFirstMarker } = await import(`file://${outfile}`);
+const { parseChapterMarkers, findFirstMarker, cleanIntertitles } = await import(`file://${outfile}`);
 rmSync(outfile, { force: true });
 
 let pass = 0;
@@ -92,6 +92,31 @@ console.log('6) Choix SANS conséquence (une seule barre)');
   check('libellé seul conservé', m.choices[0]?.libelle === 'Juste partir');
   check('conséquence vide tolérée', m.choices[0]?.consequenceResumee === '');
   check('2 choix', m.choices.length === 2);
+}
+
+console.log('7) ANTI-INTERTITRES : titre répété en clair dans le corps');
+{
+  const body =
+    'Le chemin du retour paraît plus court.\n\n' +
+    'Chapitre 2 · Le troisième tiroir\n\n' +
+    'Elle ralentit près d\'un abribus.\n\n' +
+    '— Chapitre 2 · Le troisième tiroir —\n\n' +
+    'Puis la porte se referme.\n\n' +
+    'Chapitre 2\n\n' +
+    'Le mot reste entre vous.';
+  const cleaned = cleanIntertitles(body, 'Le troisième tiroir', 2);
+  check('intertitre "Chapitre 2 · titre" retiré', !cleaned.includes('Chapitre 2 · Le troisième tiroir'));
+  check('variante "— Chapitre 2 · titre —" retirée', !cleaned.includes('— Chapitre 2 ·'));
+  check('ligne "Chapitre 2" seule retirée', !cleaned.includes('\nChapitre 2\n'));
+  check('prose conservée (début)', cleaned.startsWith('Le chemin du retour paraît plus court.'));
+  check('prose conservée (fin)', cleaned.trimEnd().endsWith('Le mot reste entre vous.'));
+}
+
+console.log('8) ANTI-INTERTITRES : une phrase de prose commençant par "Chapitre" reste');
+{
+  const body = 'Chapitre après chapitre, la mémoire revient par fragments.';
+  const cleaned = cleanIntertitles(body, 'Le troisième tiroir', 2);
+  check('prose intacte', cleaned === body);
 }
 
 console.log(`\nRésultat : ${pass} ✔ / ${fail} ✘`);

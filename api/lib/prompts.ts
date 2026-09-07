@@ -28,6 +28,7 @@ const PROSE_RULES = [
   'Interdit le style haché typique de l\'IA : pas de paragraphes d\'une seule phrase en série, pas de phrases nominales alignées ("La nuit. Le froid. Le silence."), pas de structure répétitive ("Elle fit... Elle vit...").',
   'PRENDS LE TEMPS de raconter : chaque moment important mérite plusieurs paragraphes. Pose le décor et les sensations AVANT l\'action, montre le geste dans son détail, puis laisse la conséquence émotionnelle respirer. Une scène ne se brûle jamais en trois lignes.',
   'Interdit les enchaînements précipités d\'actions ("Il ouvrit la porte. Il entra. Il vit la lettre."). Entre deux actions : une perception, une pensée, un détail, le poids d\'un geste.',
+  'JAMAIS de titre de chapitre ni d\'intertitre dans le corps du texte : pas de ligne "Chapitre 2", pas de répétition du titre du chapitre, pas de ligne de séparation, pas de "— —" décoratifs. Le titre n\'existe qu\'en tête de chapitre ; la prose coule d\'un seul bloc sans étiquettes.',
   'La phrase courte est rare : au maximum une par paragraphe, jamais deux de suite. La phrase moyenne fait 18 à 35 mots. Les phrases longues construisent la dynamique, les courtes frappent.',
   'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',

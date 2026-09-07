@@ -15,7 +15,7 @@ import {
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import { emptyState, serializeState, type HeroState } from '../../lib/state';
-import { findFirstMarker, parseChapterMarkers } from '../../lib/chapter-markers';
+import { findFirstMarker, parseChapterMarkers, cleanIntertitles } from '../../lib/chapter-markers';
 import type { AgeGroup, StoryBible, StoryChoice, StoryPlan, GameParams } from '@fable/shared';
 
 /**
@@ -329,6 +329,11 @@ ${nextNumber >= totalChapters
     const meta = parseChapterMarkers(tail);
     if (meta.title) title = meta.title;
     choices = meta.choices;
+
+    // ANTI-INTERTITRES : le modèle répète parfois le titre en clair dans
+    // le corps pour séparer ses sections — on les retire du texte diffusé
+    // et stocké (le titre n'existe qu'en tête de chapitre).
+    chapterText = cleanIntertitles(chapterText, title, nextNumber);
 
     // Filet (rare) : zéro choix alors que la fin n'est PAS autorisée ->
     // rattrapage explicite, puis deux choix forcés en dernière extrémité.

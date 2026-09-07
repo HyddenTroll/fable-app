@@ -187,7 +187,14 @@ export default function GameScreen() {
   const renderPage = ({ item, index }: { item: string; index: number }) => {
     const isLast = index === pages.length - 1;
     return (
-      <View style={[styles.page, { width: winWidth }]}>
+      // Scroll vertical PAR PAGE : la page fait ~200 mots mais quand le
+      // texte (ou les choix) déborde, il reste accessible — un minimum
+      // de défilement, jamais de texte coupé.
+      <ScrollView
+        style={[styles.page, { width: winWidth }]}
+        contentContainerStyle={styles.pageContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.chapterTitle}>
           {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
           {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
@@ -235,7 +242,7 @@ export default function GameScreen() {
             )}
           </>
         )}
-      </View>
+      </ScrollView>
     );
   };
 
@@ -375,8 +382,8 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     padding: spacing.xl,
-    paddingBottom: spacing.xxl,
   },
+  pageContent: { paddingBottom: spacing.xxl },
   streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
   chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, marginBottom: spacing.md },
   pageText: { color: colors.textBody, fontSize: 17, lineHeight: 28 },
