@@ -53,6 +53,11 @@ export interface LLMResult {
   usage: LLMUsage;
   /** coût estimé en USD */
   costUsd: number;
+  /** Raison d'arrêt : 'stop' | 'max_tokens' | ... — 'max_tokens' =
+   *  TRONCATURE (le texte est coupé, marqueurs [[CHOIX]] perdus). */
+  stopReason: string;
+  /** Durée de l'appel LLM (ms) — la latence réelle, pas l'écriture DB. */
+  latencyMs: number;
 }
 
 /** Tarifs $ / 1M tokens (entrée, sortie, cache) - sept. 2026 */
@@ -155,6 +160,8 @@ export class LLM {
       model: this.modelFor(req.kind),
       usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 },
       costUsd: 0,
+      stopReason: 'unknown',
+      latencyMs: 0,
     };
     for (;;) {
       const { value, done } = await inner.next();
@@ -173,6 +180,7 @@ export class LLM {
   private async generateOpenAI(req: LLMRequest): Promise<LLMResult> {
     const client = this.openai!;
     const model = this.modelFor(req.kind);
+    const startedAt = Date.now();
     const res = await client.chat.completions.create({
       model,
       max_completion_tokens: req.maxTokens ?? 2048,
@@ -190,12 +198,17 @@ export class LLM {
       cachedInputTokens: res.usage?.prompt_tokens_details?.cached_tokens ?? 0,
     };
 
+    const rawStop = res.choices[0]?.finish_reason ?? 'unknown';
+
     return {
       text: res.choices[0]?.message?.content ?? '',
       provider: this.provider!,
       model,
       usage,
       costUsd: costFor(model, usage),
+      // OpenAI nomme la troncature 'length' ; on normalise en 'max_tokens'.
+      stopReason: rawStop === 'length' ? 'max_tokens' : rawStop,
+      latencyMs: Date.now() - startedAt,
     };
   }
 
@@ -214,10 +227,13 @@ export class LLM {
     let inputTokens = 0;
     let outputTokens = 0;
     let cachedInputTokens = 0;
+    let stopReason: string = 'unknown';
+    const startedAt = Date.now();
 
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta?.content;
       if (delta) yield delta;
+      if (chunk.choices[0]?.finish_reason) stopReason = chunk.choices[0].finish_reason;
       if (chunk.usage) {
         inputTokens = chunk.usage.prompt_tokens;
         outputTokens = chunk.usage.completion_tokens;
@@ -232,6 +248,8 @@ export class LLM {
       model,
       usage,
       costUsd: costFor(model, usage),
+      stopReason: stopReason === 'length' ? 'max_tokens' : stopReason,
+      latencyMs: Date.now() - startedAt,
     };
   }
 
@@ -272,6 +290,8 @@ export class LLM {
       model,
       usage,
       costUsd: costFor(model, usage),
+      stopReason: res.stop_reason === 'max_tokens' ? 'max_tokens' : res.stop_reason ?? 'stop',
+      latencyMs: 0,
     };
   }
 

@@ -236,7 +236,7 @@ ${nextNumber >= totalChapters
       const full = await llm.generate({
         messages: chapterMessages,
         kind: 'chapter',
-        maxTokens: 4000,
+        maxTokens: 6000,
       });
       chapterResult = full;
       chapterText = full.text;
@@ -276,7 +276,7 @@ ${nextNumber >= totalChapters
         const gen = llm.stream({
           messages: chapterMessages,
           kind: 'chapter',
-          maxTokens: 4000,
+          maxTokens: 6000,
         });
         let result: LLMResult = EMPTY_RESULT;
         let streamTail = ''; // fenêtre de sécurité pour détecter un marqueur coupé
@@ -447,6 +447,8 @@ interface LLMResult {
   model: string;
   usage: { inputTokens: number; outputTokens: number; cachedInputTokens: number };
   costUsd: number;
+  stopReason: string;
+  latencyMs: number;
 }
 
 const EMPTY_RESULT: LLMResult = {
@@ -455,6 +457,8 @@ const EMPTY_RESULT: LLMResult = {
   model: 'unknown',
   usage: { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0 },
   costUsd: 0,
+  stopReason: 'unknown',
+  latencyMs: 0,
 };
 
 /**

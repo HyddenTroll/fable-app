@@ -16,6 +16,9 @@ export async function logCost(
     model: string;
     usage: { inputTokens: number; outputTokens: number; cachedInputTokens: number };
     costUsd: number;
+    /** 'max_tokens' = troncature (texte coupé). */
+    stopReason?: string;
+    latencyMs?: number;
   },
 ): Promise<void> {
   await db.from('cost_logs').insert({
@@ -28,10 +31,12 @@ export async function logCost(
     output_tokens: entry.usage.outputTokens,
     cached_input_tokens: entry.usage.cachedInputTokens,
     cost_usd: entry.costUsd,
+    stop_reason: entry.stopReason ?? null,
+    latency_ms: entry.latencyMs ?? null,
   });
 }
 
-/** Ajoute le log d'un résultat LLM. */
+/** Ajoute le log d'un résultat LLM (et ALARME sur troncature). */
 export async function logLLMResult(
   db: SupabaseClient,
   userId: string,
@@ -39,6 +44,14 @@ export async function logLLMResult(
   kind: PromptKind,
   result: LLMResult,
 ): Promise<void> {
+  // ALERTE TRONCATURE : le texte a été coupé au plafond — les marqueurs
+  // [[CHOIX]]/[[TITRE]] (en fin de texte) sont perdus par construction.
+  // Ce n'est pas un échec silencieux : on le voit dans les logs serveur.
+  if (result.stopReason === 'max_tokens') {
+    console.warn(
+      `[TRONCATURE] ${kind} (${result.model}) — ${result.usage.outputTokens} tokens émis, texte coupé : marqueurs de fin potentiellement perdus`,
+    );
+  }
   await logCost(db, {
     userId,
     gameId,
@@ -47,5 +60,7 @@ export async function logLLMResult(
     model: result.model,
     usage: result.usage,
     costUsd: result.costUsd,
+    stopReason: result.stopReason,
+    latencyMs: result.latencyMs,
   });
 }
