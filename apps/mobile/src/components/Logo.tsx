@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
   },
   fil: {
     position: 'absolute',
-    top: -30,
-    bottom: -14,
+    top: -20,
+    bottom: -8,
     left: '50%',
     marginLeft: -0.5,
     width: 1,

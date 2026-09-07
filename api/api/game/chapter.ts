@@ -87,37 +87,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Fraîcheur du post-traitement : le chapitre précédent est finalisé en
   // ARRIÈRE-PLAN par /api/game/finalize (résumé/état/plan ne bloquent plus
-  // l'affichage des choix). Ce chapitre doit attendre que CE post soit
-  // terminé pour lire un état à jour (borné à 40 s, puis repli dégradé).
+  // l'affichage des choix).
+  // - post.status === 'running' : finalize EN COURS -> attendre (borné) ;
+  // - post absent (finalize jamais lancé : ancien client, utilisateur
+  //   parti, erreur réseau) -> NE JAMAIS attendre : continuer avec l'état
+  //   précédent (repli dégradé assumé, warning). Sans ce garde, un
+  //   chapitre suivant peut rester 40 s muet = "page blanche".
   const chapterCount = Number(game.chapter_count ?? 1);
+  const readPost = () =>
+    ((game?.params as Record<string, unknown> | null)?.post as
+      | { chapter?: number; status?: string }
+      | undefined) ?? null;
   if (chapterCount > 1) {
     const lastWritten = chapterCount - 1;
-    const posted = (game.params as Record<string, unknown> | null)?.post as
-      | { chapter?: number }
-      | undefined;
-    if ((posted?.chapter ?? -1) < lastWritten) {
+    let post = readPost();
+    if ((post?.chapter ?? -1) < lastWritten && post?.status === 'running') {
       let waited = 0;
-      while (waited < 40_000) {
+      while (waited < 20_000) {
         await new Promise((r) => setTimeout(r, 2000));
         waited += 2000;
-        const { data: fresh } = await db
-          .from('games')
-          .select('*')
-          .eq('id', gameId)
-          .single();
-        const postedFresh = ((fresh?.params as Record<string, unknown> | null)?.post as
-          | { chapter?: number }
-          | undefined)?.chapter ?? -1;
-        if (postedFresh >= lastWritten) {
-          if (fresh) game = fresh as Record<string, unknown>;
-          break;
-        }
+        const { data: fresh } = await db.from('games').select('*').eq('id', gameId).single();
+        if (fresh) game = fresh as Record<string, unknown>;
+        post = readPost();
+        if ((post?.chapter ?? -1) >= lastWritten || post?.status !== 'running') break;
       }
-      if ((game.params as Record<string, unknown> | null)?.post as { chapter?: number } | undefined) {
-        // passage : le post est arrivé pendant le poll
-      } else {
-        console.warn('[chapter] post-traitement du chapitre précédent non terminé - état potentiellement obsolète', gameId);
+      if ((post?.chapter ?? -1) < lastWritten) {
+        console.warn('[chapter] post-traitement toujours en cours - continuation avec état précédent', gameId);
       }
+    } else if ((post?.chapter ?? -1) < lastWritten) {
+      console.warn('[chapter] aucun post-traitement lancé pour le chapitre précédent - état précédent', gameId);
     }
   }
 

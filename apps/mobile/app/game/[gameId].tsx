@@ -46,6 +46,7 @@ export default function GameScreen() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamText, setStreamText] = useState('');
+  const [progressMsg, setProgressMsg] = useState<string | null>(null);
   const [pressedChoice, setPressedChoice] = useState<number | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
@@ -119,6 +120,7 @@ export default function GameScreen() {
     setIsGenerating(true);
     setStreamError(null);
     setStreamText('');
+    setProgressMsg(null);
 
     const abort = new AbortController();
     abortRef.current = abort;
@@ -130,6 +132,7 @@ export default function GameScreen() {
       {
         signal: abort.signal,
         onText: (delta) => setStreamText((prev) => prev + delta),
+        onProgress: (message) => setProgressMsg(message),
         onDone: (done) => {
           const next: MockChapter = {
             number: done.chapter.chapterNumber,
@@ -258,7 +261,9 @@ export default function GameScreen() {
       {isGenerating && (
         <View style={styles.generatingRow}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.generatingText}>L'IA écrit la suite...</Text>
+          <Text style={styles.generatingText}>
+            {progressMsg && !streamText ? progressMsg : 'L\u2019IA écrit la suite...'}
+          </Text>
         </View>
       )}
 
@@ -308,10 +313,16 @@ export default function GameScreen() {
   );
 }
 
-/** Affiche l'état structuré reçu du serveur (jamais modifié côté client). */
+/** Affiche l'état structuré reçu du serveur (jamais modifié côté client).
+ *  DÉFENSIF : les parties anciennes ont state = '{}' (migration 0004) —
+ *  un champ manquant ne doit JAMAIS crasher le rendu (page blanche). */
 function renderState(state: HeroState) {
-  const wounds = state.blessures.filter((b) => !b.soigne);
-  const alive = state.pnj.filter((p) => p.statut !== 'mort');
+  const wounds = (state.blessures ?? []).filter((b) => !b.soigne);
+  const alive = (state.pnj ?? []).filter((p) => p.statut !== 'mort');
+  const inventory = state.inventaire ?? [];
+  if (wounds.length === 0 && inventory.length === 0 && alive.length === 0) {
+    return null;
+  }
   return (
     <>
       {wounds.length > 0 && (
@@ -322,10 +333,10 @@ function renderState(state: HeroState) {
           ))}
         </View>
       )}
-      {state.inventaire.length > 0 && (
+      {inventory.length > 0 && (
         <View>
           <Text style={styles.stateLabel}>Inventaire</Text>
-          {state.inventaire.map((it, i) => (
+          {inventory.map((it, i) => (
             <Text key={it.id || i} style={styles.stateItem}>• {it.objet}</Text>
           ))}
         </View>

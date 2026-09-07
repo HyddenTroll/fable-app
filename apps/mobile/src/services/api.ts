@@ -227,6 +227,8 @@ export interface ChapterStreamHandlers {
   onError: (err: Error) => void;
   /** Contenu signalé par la modération (publics jeunes). */
   onModeration?: (info: { message: string }) => void;
+  /** Message de préparation (l'écran de génération n'est jamais muet). */
+  onProgress?: (message: string) => void;
   signal?: AbortSignal;
 }
 
@@ -298,6 +300,9 @@ export async function streamChapter(
           const parsed = JSON.parse(payload) as { message?: string };
           finished = true;
           handlers.onError(new Error(parsed.message ?? 'Erreur de génération'));
+        } else if (event === 'progress' && payload && handlers.onProgress) {
+          const parsed = JSON.parse(payload) as { message?: string };
+          handlers.onProgress(parsed.message ?? 'Préparation…');
         } else if (event === 'moderation' && payload && handlers.onModeration) {
           const parsed = JSON.parse(payload) as { message?: string };
           handlers.onModeration({ message: parsed.message ?? 'Contenu signalé.' });

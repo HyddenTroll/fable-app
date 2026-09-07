@@ -69,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json({ ok: true, skipped: true, chapter: lastNumber });
     }
 
-    const { data: lastChapter } = await db
+    const { data: lastChapter, error: lastChapterError } = await db
       .from('chapters')
       .select('chapter_number, content, player_choice, choices')
       .eq('game_id', gameId)
@@ -77,8 +77,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .limit(1)
       .single();
 
-    if (!lastChapter) {
+    if (lastChapterError || !lastChapter) {
       return res.status(404).json({ error: { code: 'no_chapter', message: 'Chapitre introuvable' } });
+    }
+
+    // Marque le post comme EN COURS dès maintenant (avant les appels LLM) :
+    // /api/game/chapter poll ce drapeau (status 'running' -> continuer
+    // d'attendre ; absent -> ne JAMAIS attendre, finalize jamais lancé).
+    const { error: startError } = await db
+      .from('games')
+      .update({
+        params: {
+          ...params,
+          post: { chapter: lastNumber, startedAt: new Date().toISOString(), status: 'running' },
+        },
+      })
+      .eq('id', gameId);
+    if (startError) {
+      console.warn('[finalize] marquage running impossible', gameId, startError.message);
     }
 
     // Choix pris par le lecteur au dernier tour (source de la conséquence).
@@ -219,7 +235,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         resume: summaryResult?.text || game.resume,
         state: newState,
         story_plan: newPlan ?? undefined,
-        params: { ...params, post: { chapter: lastNumber, doneAt: new Date().toISOString() } },
+        params: {
+          ...params,
+          post: {
+            chapter: lastNumber,
+            doneAt: new Date().toISOString(),
+            status: 'done' as const,
+          },
+        },
       })
       .eq('id', gameId);
     if (gameUpdateError) {
