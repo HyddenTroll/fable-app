@@ -1625,4 +1625,15 @@ FAIT :
       sur l'accueil (172) et la bibliothèque (48) ; new-game : 4e étape « La couverture
       sèche » + generateCover fire-and-forget après enrich (la lecture ne bloque pas).
       Échec doux : si la clé ne sert pas gpt-image-2, la frappée reste affichée.
-      Coût à intégrer au modèle financier : ~0,05–0,15 $ / couverture.
+      Coût à intégrer au modèle financier : ~0,05–0,15 $ / couverture.• COUVERTURES : modèle freemium (rapport GPT Image 2 + décisions produit).
+      COUVERTURE IA = FABLE+ UNIQUEMENT : la route cover.ts rejette les comptes
+      gratuits (getQuota → isPremium, 402 paywall) ET applique un QUOTA MENSUEL de
+      5 couvertures par abonné (comptées sur les chapitres 0 mis à jour ce mois-ci,
+      aucune migration). Le new-game n'appelle la génération que si isPremium.
+      GÉNÉRATION RÉGLÉE SELON LE RAPPORT : gpt-image-2, PORTRAIT 1024×1536 (ratio de
+      la niche, moins cher que le carré à chaque palier), quality MEDIUM (~0,04 $/image),
+      prompt sans texte. Couverture gratuite : COUVERTURE BLANCHE au titre imprimé
+      (Didot, livre nu avant sa jaquette) — la couverture frappée géométrique est
+      déconnectée de l'affichage (le composant CouvertureLivre : image IA sinon blanc+titre).
+      Reste à vérifier sur la console OpenAI : la facturation réelle des paliers,
+      le quota de références et l'accès gpt-image-2 (organisation vérifiée).

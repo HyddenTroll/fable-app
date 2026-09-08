@@ -54,7 +54,9 @@ export async function generateCoverImage(opts: {
     body: JSON.stringify({
       model: IMAGE_MODEL,
       prompt,
-      size: '1024x1024',
+      // PORTRAIT 3/4 (le format de la niche) : moins cher que le carré sur
+      // gpt-image-2 à chaque palier de qualité.
+      size: '1024x1536',
       quality: 'medium',
       output_format: 'jpeg',
       n: 1,

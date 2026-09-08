@@ -119,7 +119,7 @@ export default function HomeScreen() {
       ) : (
         <View style={styles.bloc}>
           <View style={styles.oeuvre}>
-            <CouvertureLivre largeur={COUVERTURE} genre={livre.genre} titre={livre.title} coverImageUrl={couvertureUrl} />
+            <CouvertureLivre largeur={COUVERTURE} titre={livre.title} coverImageUrl={couvertureUrl} />
             <Text style={styles.lecture}>EN COURS DE LECTURE</Text>
             <Text style={styles.titre}>{livre.title}</Text>
             <Text style={styles.meta}>

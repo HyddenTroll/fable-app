@@ -40,6 +40,7 @@ export default function NewGameScreen() {
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
   const setGameParams = useAppStore((s) => s.setGameParams);
   const setHeroState = useAppStore((s) => s.setHeroState);
+  const isPremium = useAppStore((s) => s.isPremium);
   const age = useAppStore((s) => s.age);
 
   const [step, setStep] = useState<Step>('genre');
@@ -122,11 +123,11 @@ export default function NewGameScreen() {
       // de basculer sur l'écran de lecture.
       await new Promise((r) => setTimeout(r, 1200));
       // La couverture IA part en arrière-plan (ne bloque pas la lecture) :
-      // l'accueil affichera l'image quand elle sera prête, la couverture
-      // frappée en attendant.
+      // réservée à Fable+ ; les autres reçoivent la couverture blanche au
+      // titre imprimé.
       setCreateStep(3);
       setBarP(0.92);
-      generateCover(res.gameId).catch(() => {});
+      if (isPremium) generateCover(res.gameId).catch(() => {});
       await new Promise((r) => setTimeout(r, 1100));
       setBarP(1);
       router.push(`/game/${res.gameId}`);

@@ -265,7 +265,7 @@ function LigneEnCours({
             accessibilityRole="button"
             accessibilityLabel={`${jeu.title}, chapitre 1 sur ${jeu.chapterCount}`}
           >
-            <CouvertureLivre titre={jeu.title} genre={jeu.genre} largeur={LARGEUR_COUVERTURE} coverImageUrl={jeu.coverImageUrl} />
+            <CouvertureLivre titre={jeu.title} largeur={LARGEUR_COUVERTURE} coverImageUrl={jeu.coverImageUrl} />
             <View style={styles.infos}>
               <Text style={styles.titre} numberOfLines={2}>
                 {jeu.title}
