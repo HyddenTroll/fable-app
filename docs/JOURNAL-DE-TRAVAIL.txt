@@ -1573,4 +1573,9 @@ FAIT :
         rien au-dessus du texte ») — fini le « Prologue » répété à chaque page.
         Marges de livraison : marge de reliure côté mors (gauche) élargie
         (spacing.xl + 8), marge extérieure réduite (spacing.lg) ; texte
-        justifié (textAlign justify) ; espacement titre/texte ajusté.
+        justifié (textAlign justify) ; espacement titre/texte ajusté.• COQUILLE WEB = RATIO iPHONE EXACT (retour : « moyen d'avoir exactement la
+      taille d'écran d'un iPhone là ça va de bout en bout de haut en bas ») :
+      #root : max-width 430, height min(100dvh, 932px) (14 Pro Max), body flex
+      center vertical + horizontal, fond bureau #C9C6BF, overflow hidden.
+      Vérifié headless : fenêtre 1280×1000 → coquille 432×932 centrée (y=34) ;
+      fenêtre 700 de haut → pleine hauteur. Fenêtres basses inchangées.
