@@ -332,19 +332,19 @@ export default function NewGameScreen() {
  *  Littéraires, sur la CONSTRUCTION générale d'une histoire (pas de champ
  *  lexical d'imprimerie). Roulement toutes les ~3,5 s. */
 const PHRASES_CREATION = [
-  'Une histoire cherche sa première phrase',
-  'Les personnages prennent leur souffle',
-  'L’intrigue tend ses fils, un à un',
-  'Chaque chapitre trouve sa voix',
-  'Le héros apprend à marcher avant de courir',
-  'Les secrets se rangent pour la fin',
-  'Le ton se règle, page après page',
-  'Les lieux s’ouvrent comme des portes',
-  'Les dialogues apprennent à se taire',
-  'La fin attend encore sa première pierre',
-  'Le temps de l’histoire s’accorde au tien',
-  'Les mots cherchent leur lumière',
-  'Chaque personnage garde quelque chose pour lui',
+  'Une histoire ne commence jamais là où elle commence',
+  'Le premier chapitre ouvre une porte ; les suivants décident qui la franchit',
+  'Un personnage n’existe qu’à partir du moment où il choisit',
+  'Chaque intrigue est une promesse que la fin devra tenir',
+  'Le héros ignore encore ce que le lecteur devine déjà',
+  'Les dialogues sont des silences qui parlent',
+  'La fin est déjà là, cachée dans la première page',
+  'Les lieux sont des personnages qui n’ouvrent pas la bouche',
+  'L’intrigue avance quand les questions restent en suspens',
+  'Chaque chapitre doit changer quelque chose à celui qui le lit',
+  'Le style, c’est la voix qu’on reconnaît sans voir le visage',
+  'Les meilleures révélations sont celles qu’on préparait sans le savoir',
+  'On n’écrit pas un livre, on le laisse respirer',
   'Le récit se souvient de tout ce qu’on lui confie',
 ];
 
