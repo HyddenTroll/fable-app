@@ -1435,4 +1435,13 @@ FAIT :
          foreignObject → canvas 2D → PNG → Skia.Image.MakeImageFromEncoded (fonts du document
          respectées). Réserve prod : canvaskit-wasm (~30 Mo d'assets) est embarqué par métro
          dans le bundle natif aussi (code mort, jamais exécuté) → à exclure du build natif
-         quand on passera en distribution (metro par plateforme).
+         quand on passera en distribution (metro par plateforme).• RETOUR AU PLI SIMPLE (demande utilisateur : « on oublie [le curl Skia], ça fait tout buguer ;
+         je veux juste qu'on puisse tourner les pages en avant et en arrière ») :
+         SKIA ABANDONNÉ : restauration du fold 2 faces en vues reanimated (commit f6c896c) :
+         avant ET retour, fond plein (page suivante en z0 + fond pierre), ombre du pli ; zéro
+         dépendance lourde. Supprimé : pagecurl.tsx (cp. Skia), metro.config.js (wasm assetExts),
+         types/assets.d.ts ; @shopify/react-native-skia retiré des package.json + package-lock
+         (npm install). Causes des bugs web évitées par construction : WASM, figement de
+         Skia à l'import, capture foreignObject, bundle +3 Mo. Leçon : le « curl cylindrique
+         parfait » ne vaut pas une lecture qui casse — le pli vues animées suffit (60 fps,
+         2 dépendances déjà présentes). TSC API 0 / MOBILE 0, tests 23/23, bundle web 2,5 Mo.

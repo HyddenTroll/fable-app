@@ -191,73 +191,67 @@ export default function GameScreen() {
   const showChoices =
     !isGenerating && !streamError && !current.isEnd && !finished;
 
-  // ── Contenu de fin de chapitre (overlay « tail ») ──
-  // Le texte des pages est dessiné par le canvas Skia ; seuls le trait
-  // de fin, l'état du héros et les choix restent du React, posés
-  // par-dessus la DERNIÈRE page (et qui s'effacent quand le pli s'ouvre).
-  const tailNode = (
-    <>
-      <Text style={styles.pageFooter}>— {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`} —</Text>
-      {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
-      {showChoices && current.choices.length > 0 && (
-        <View style={styles.choices}>
-          <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
-          {current.choices.map((c, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
-              onPress={() => handleChoice(i)}
-              accessibilityRole="button"
-              accessibilityLabel={c.libelle}
-            >
-              <Text style={styles.choiceText}>{c.libelle}</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={continueNaturally}
-            accessibilityRole="button"
-            accessibilityLabel="Continuer naturellement"
-          >
-            <Text style={styles.continueText}>Continuer naturellement →</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      {showChoices && current.choices.length === 0 && (
-        <View style={styles.choices}>
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={continueNaturally}
-            accessibilityRole="button"
-            accessibilityLabel="Continuer naturellement"
-          >
-            <Text style={styles.continueText}>Continuer naturellement →</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </>
-  );
-
-  const chapterTitle = `${current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}${
-    current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''
-  }`;
-
-  const [bodyH, setBodyH] = useState(0);
-
-  // Reset de la pagination au changement de chapitre (les nouvelles pages
-  // repartent de la page 1 ; l'index est une prop contrôlée du PageTurn).
-  useEffect(() => {
-    setPageIndex(0);
-  }, [current.number]);
-
-  // Rendu d'une page pour la capture Skia : titre + texte (mêmes styles
-  // que l'ancienne pagination ; le fond est posé par le canvas).
-  const renderSheetPage = (i: number) => (
-    <View style={[styles.pageSheet, { width: winWidth, height: bodyH }]}>
-      <Text style={styles.chapterTitle}>{chapterTitle}</Text>
-      <Text style={styles.pageText}>{pages[i]}</Text>
-    </View>
-  );
+  const renderPage = ({ item, index }: { item: string; index: number }) => {
+    const isLast = index === pages.length - 1;
+    return (
+      // Scroll vertical PAR PAGE : la page fait ~200 mots mais quand le
+      // texte (ou les choix) déborde, il reste accessible — un minimum
+      // de défilement, jamais de texte coupé.
+      <ScrollView
+        style={[styles.page, { width: winWidth }]}
+        contentContainerStyle={styles.pageContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.chapterTitle}>
+          {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+          {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
+        </Text>
+        <Text style={styles.pageText}>{item}</Text>
+        {isLast && (
+          <>
+            <Text style={styles.pageFooter}>— {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`} —</Text>
+            {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
+            {showChoices && current.choices.length > 0 && (
+              <View style={styles.choices}>
+                <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
+                {current.choices.map((c, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
+                    onPress={() => handleChoice(i)}
+                    accessibilityRole="button"
+                    accessibilityLabel={c.libelle}
+                  >
+                    <Text style={styles.choiceText}>{c.libelle}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={continueNaturally}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continuer naturellement"
+                >
+                  <Text style={styles.continueText}>Continuer naturellement →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {showChoices && current.choices.length === 0 && (
+              <View style={styles.choices}>
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={continueNaturally}
+                  accessibilityRole="button"
+                  accessibilityLabel="Continuer naturellement"
+                >
+                  <Text style={styles.continueText}>Continuer naturellement →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
+      </ScrollView>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -306,22 +300,15 @@ export default function GameScreen() {
           chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
         />
       ) : (
-        // Pagination « livre » : le papier s'enroule sur un cylindre et
-        // suit le doigt (Skia). Les pages sont rendues en React puis
-        // capturées ; l'état + les choix sont l'overlay « tail ».
-        <View style={styles.pagerBody} onLayout={(e) => setBodyH(e.nativeEvent.layout.height)}>
-          {bodyH > 0 && (
-            <PageTurn
-              renderPage={renderSheetPage}
-              count={pages.length}
-              index={pageIndex}
-              onChangeIndex={setPageIndex}
-              width={winWidth}
-              height={bodyH}
-              tail={tailNode}
-            />
-          )}
-        </View>
+        // Pagination « livre » : la page suit le doigt (rotateY + snap),
+        // avec scroll vertical minimal dans la page quand elle déborde.
+        <PageTurn
+          pages={pages}
+          width={winWidth}
+          renderPage={renderPage}
+          onPageChange={(i) => setPageIndex(i)}
+          chapterKey={current.number}
+        />
       )}
     </View>
   );
@@ -394,11 +381,6 @@ function renderState(state: HeroState) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  pagerBody: { flex: 1 },
-  pageSheet: {
-    paddingTop: 20,
-    paddingHorizontal: 28,
-  },
   header: {
     paddingHorizontal: spacing.xl,
     paddingTop: 48,
