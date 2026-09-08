@@ -101,14 +101,19 @@ export function PageTurn<T>({
     })
     .onEnd(() => {
       const f = fold.value;
-      if (f > 0.45) {
-        const target =
-          dir.value === 1 ? Math.min(index.value + 1, pages.length - 1) : Math.max(index.value - 1, 0);
-        if (target !== index.value) {
-          fold.value = withSpring(1, { damping: 18, stiffness: 200 });
-          setTimeout(() => commitJS(target), 340);
-          return;
-        }
+      const avant = dir.value === 1;
+      // AVANT : valide quand le pli est déployé > 45 %.
+      // RETOUR : valide quand le pli s'est refermé < 45 % (le geste retour
+      // referme le volet vers la droite — l'ancienne logique exigeait
+      // toujours > 45 %, le retour était donc systématiquement annulé).
+      const cible = avant
+        ? Math.min(index.value + 1, pages.length - 1)
+        : Math.max(index.value - 1, 0);
+      const valide = avant ? f > 0.45 : f < 0.45;
+      if (valide && cible !== index.value) {
+        fold.value = withSpring(avant ? 1 : 0, { damping: 18, stiffness: 200 });
+        setTimeout(() => commitJS(cible), 340);
+        return;
       }
       // Annulation : la page revient ET la direction repasse à « avant ».
       fold.value = withSpring(0, { damping: 18, stiffness: 220 });

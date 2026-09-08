@@ -1512,3 +1512,12 @@ FAIT :
        • Phrases dattente de la création RÉÉCRITES : direction « construction générale dune
          histoire » (première phrase, personnages, intrigue, chapitres, voix) — plus de champ
          lexical dimprimerie/grec.
+• RETOUR ARRIÈRE corrigé (2e bug trouvé par test headless sur branchement réel) : le geste
+         retour referme le volet (fold décroissant) alors que la validation exigeait toujours
+         fold > 45 % → le retour était systématiquement annulé (l'avance fonctionnait depuis
+         le fix du commit par délai JS). Fix : validation selon le SENS (avant : fold > 45 % ;
+         retour : fold < 45 %, pli refermé). Test headless sur branchement EXACT de la lecture
+         (pagerBody/onLayout/ScrollView) : index 0 → 1 (avance) → 0 (retour) : OK.
+         Les deux causes du « les pages ne se tournent pas » : ① le callback de fin
+         d'animation withSpring jamais exécuté sur le web (commit remplacé par délai JS) ;
+         ② le retour toujours annulé.
