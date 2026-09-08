@@ -16,6 +16,7 @@ const ANTI_AI_SLOP = [
   'Varie la longueur des phrases et des paragraphes. Alterne action, dialogue, description et introspection.',
   'Les dialogues sonnent naturels, avec des voix distinctes.',
   'Ne mentionne jamais que tu es une IA. Ne casse pas le 4e mur.',
+  'Aucun caractère de dessin dans le texte : pas de cadres (╔═╗), pas de blocs (█▀▄), pas de barres ou lignes décoratives (===, ---, ***, ####), pas d\'ASCII art, pas d\'émojis. Le texte est uniquement de la prose française avec sa ponctuation normale.',
 ].join('\n');
 
 /**

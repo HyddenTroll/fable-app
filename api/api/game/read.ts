@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
 import { handleCorsOPTIONS } from '../../lib/cors';
+import { cleanText } from '../../lib/text';
 
 function json(res: VercelResponse, status: number, body: unknown) {
   res.statusCode = status;
@@ -48,8 +49,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const normalized = (chapters ?? []).map((c) => ({
     chapterNumber: c.chapter_number,
     title: c.title,
-    content: c.content,
-    choices: c.choices,
+    content: cleanText(c.content),
+    choices: Array.isArray(c.choices)
+      ? c.choices.map((ch: unknown) => {
+          if (ch && typeof ch === 'object' && 'libelle' in (ch as Record<string, unknown>)) {
+            return { ...(ch as Record<string, unknown>), libelle: cleanText(String((ch as { libelle?: unknown }).libelle ?? '')) };
+          }
+          return ch;
+        })
+      : c.choices,
     playerChoice: c.player_choice,
     coverImageUrl: c.cover_image_url,
     createdAt: c.created_at,

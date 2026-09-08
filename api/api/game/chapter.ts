@@ -16,6 +16,7 @@ import {
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import { emptyState, serializeState, type HeroState } from '../../lib/state';
+import { cleanText } from '../../lib/text';
 import { findFirstMarker, parseChapterMarkers, cleanIntertitles } from '../../lib/chapter-markers';
 import type { AgeGroup, StoryBible, StoryChoice, StoryPlan, GameParams } from '@fable/shared';
 
@@ -318,7 +319,7 @@ ${nextNumber >= totalChapters
             }
             break;
           }
-          const delta = value as string;
+          const delta = cleanText(value as string);
           if (bodySent) {
             tail += delta;
             continue;
@@ -371,7 +372,7 @@ ${nextNumber >= totalChapters
             result = (value ?? EMPTY_RESULT) as LLMResult;
             break;
           }
-          const delta = value as string;
+          const delta = cleanText(value as string);
           if (bodySent) {
             tail += delta;
             continue;

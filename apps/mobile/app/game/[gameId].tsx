@@ -235,11 +235,15 @@ export default function GameScreen() {
         contentContainerStyle={styles.pageContent}
         showsVerticalScrollIndicator={false}
       >
-        {index === 0 && <Chapiteau />}
-        <Text style={styles.chapterTitle}>
-          {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
-          {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
-        </Text>
+        {index === 0 && (
+          <>
+            <Chapiteau />
+            <Text style={styles.chapterTitle}>
+              {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+              {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
+            </Text>
+          </>
+        )}
         <Text style={styles.pageText}>{item}</Text>
         {isLast && (
           <>
@@ -453,14 +457,18 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   page: {
     flex: 1,
+    // Mise en page LIVRE : marge de reliure côté mors (gauche) plus large
+    // que la marge extérieure (droite), comme un livre imprimé.
     padding: spacing.xl,
+    paddingLeft: spacing.xl + 8,
+    paddingRight: spacing.lg,
     // Pages « papier blanc » (le livre) sur le fond pierre de l'écran.
     backgroundColor: '#FFFFFF',
   },
   pageContent: { paddingBottom: spacing.xxl },
   streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
-  chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 19, lineHeight: 24, marginBottom: spacing.md },
-  pageText: { color: colors.text, fontFamily: fonts.ia, fontSize: 15, lineHeight: 26 },
+  chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 19, lineHeight: 24, marginBottom: spacing.lg, marginTop: spacing.md },
+  pageText: { color: colors.text, fontFamily: fonts.ia, fontSize: 15, lineHeight: 26, textAlign: 'justify' },
   pageFooter: {
     color: colors.textMuted,
     fontSize: 12,

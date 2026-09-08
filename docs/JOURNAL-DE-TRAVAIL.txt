@@ -1559,4 +1559,18 @@ FAIT :
       quand on la tourne ; la suivante apparaît dessous. L'ombre du mors est
       déplacée à left 0. Le texte n'est jamais scindé (un seul plan). Geste
       inchangé : droite→gauche suivante, gauche→droite revenir.
-      Test headless : 0 → 1 → 0 → 0.
+      Test headless : 0 → 1 → 0 → 0.• TEXTES GÉNÉRÉS POLLUÉS + MISE EN PAGE LIVRE (retour : « ╔═╗ ╔═╗… c'est bugué,
+      et pareil y a marqué prologue tout du long »).
+     ① Nettoyage serveur : api/lib/text.ts (cleanText) — supprime les cadres
+        ASCII (╔═╗), blocs (█▀▄), formes géométriques, lignes décoratives
+        (----, ====, ***, ####) et les lignes de cadratins seules ; appliqué
+        au flux chapitre (chapter.ts, les 2 deltas) et au rechargement
+        (read.ts : content + libelles des choix). Vérifié sur un échantillon.
+     ② Prompt : nouvelle règle commune interdisant tout caractère de dessin /
+        ASCII art / émojis dans la prose (règle du 4e mur conservée).
+     ③ MISE EN PAGE DU LIVRE : le titre du chapitre + le chapiteau n'apparaissent
+        QUE sur la première page d'un chapitre (DA : « les pages suivantes n'ont
+        rien au-dessus du texte ») — fini le « Prologue » répété à chaque page.
+        Marges de livraison : marge de reliure côté mors (gauche) élargie
+        (spacing.xl + 8), marge extérieure réduite (spacing.lg) ; texte
+        justifié (textAlign justify) ; espacement titre/texte ajusté.
