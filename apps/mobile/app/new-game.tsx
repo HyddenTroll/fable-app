@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList,
+  View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -149,13 +149,18 @@ export default function NewGameScreen() {
     <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
 
       {creating && (
-        <View style={styles.creationBox}>
-          <Text style={styles.creationTitle}>Création de ton histoire...</Text>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${((createStep + 1) / CREATE_STEPS.length) * 100}%` }]} />
+        <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+          {/* Écran de chargement PLEIN DEVANT : rien d'autre n'est visible
+              ni touchable pendant la création (les boutons de l'écran
+              resteraient cliquables sinon → doubles appels). */}
+          <View style={styles.creationOverlay}>
+            <AttenteCreation />
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${((createStep + 1) / CREATE_STEPS.length) * 100}%` }]} />
+            </View>
+            <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
           </View>
-          <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
-        </View>
+        </Modal>
       )}
 
       <View style={styles.header}>
@@ -323,6 +328,38 @@ export default function NewGameScreen() {
   );
 }
 
+/** Phrases d'attente de la création — écrites à la main, AUCUN appel API.
+ *  Roulement toutes les ~3,5 s : faire patienter sans être technique. */
+const PHRASES_CREATION = [
+  'On broie la pierre pour la presse',
+  'La charpente du récit prend sa place',
+  'Les voix des personnages s’accordent',
+  'Le fil de l’histoire se déroule',
+  'On règle l’encrage, goutte à goutte',
+  'Les chapitres se rangent comme des planches',
+  'La trame se serre, les nœuds se nouent',
+  'Le titre cherche sa place au fronton',
+  'Les énigmes tirent leurs fils',
+  'Le héros attend qu’on lui ouvre la porte',
+  'L’imprimeur vérifie sa casse',
+  'La première page sèche tranquillement',
+  'Les phrases se posent sur le papier',
+  'Encore une passe, la plume approche',
+];
+
+function AttenteCreation() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % PHRASES_CREATION.length), 3500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <View style={styles.creationPhraseWrap}>
+      <Text style={styles.creationTitle}>{PHRASES_CREATION[i]}…</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.xxl, paddingBottom: spacing.xxl },
   creationBox: {
@@ -334,16 +371,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     gap: spacing.sm,
   },
-  creationTitle: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  creationOverlay: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  creationPhraseWrap: { marginBottom: spacing.xxl, paddingHorizontal: spacing.lg },
+  creationTitle: { color: colors.text, fontSize: 15, fontWeight: '600', textAlign: 'center', lineHeight: 22 },
   progressTrack: {
     height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.surfaceAlt,
+    borderRadius: 0,
     overflow: 'hidden',
+    backgroundColor: colors.surfaceAlt,
+    alignSelf: 'stretch',
+    marginHorizontal: spacing.xxl,
   },
   progressFill: {
     height: 8,
-    borderRadius: 4,
+    borderRadius: 0,
     backgroundColor: colors.primary,
   },
   creationStep: { color: colors.textSecondary, fontSize: 13 },
