@@ -193,9 +193,9 @@ export default function HomeTabScreen() {
         <Text style={styles.empty}>Aucune histoire pour l'instant — chaque aventure générée s'enregistrera ici.</Text>
       )}
       {isAuthed &&
-        (games ?? []).map((g) => (
+        (games ?? []).map((g, i) => (
           <View key={g.id} style={styles.gameCard}>
-            <ColonneJauge chapters={g.chapterCount} label={jaugeLabel(g.title)} />
+            <ColonneJauge chapters={g.chapterCount} label={jaugeLabel(g.title)} index={i} />
             <View style={styles.gameCardBody}>
               <TouchableOpacity style={styles.gameInfos} onPress={() => open(g)}>
                 <Text style={styles.gameTitle}>{g.title}</Text>

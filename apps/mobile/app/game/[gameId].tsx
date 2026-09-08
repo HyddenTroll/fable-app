@@ -8,11 +8,12 @@ import { streamChapter, reportGame, finalizeGame, warmGame, ApiError, type HeroS
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { PageTurn } from '@/components/PageTurn';
-import { Meander } from '@/components/Meander';
 import { Oves } from '@/components/Oves';
 import { Chapiteau } from '@/components/Chapiteau';
+import { ProgressionMeandre } from '@/components/ProgressionMeandre';
+import { FilQuiEcrit } from '@/components/FilQuiEcrit';
+import { ListeDeChoix } from '@/components/ListeDeChoix';
 import { DialogueFable, type DialogueAction } from '@/components/DialogueFable';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import { colors, spacing, radii, fonts } from '@/theme';
 
 /** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
@@ -246,17 +247,10 @@ export default function GameScreen() {
               <View style={styles.choices}>
                 <Oves />
                 <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
-                {current.choices.map((c, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={[styles.choiceButton, pressedChoice === i && styles.choicePressed]}
-                    onPress={() => handleChoice(i)}
-                    accessibilityRole="button"
-                    accessibilityLabel={c.libelle}
-                  >
-                    <Text style={styles.choiceText}>{c.libelle}</Text>
-                  </TouchableOpacity>
-                ))}
+                <ListeDeChoix
+                  choix={current.choices.map((c) => c.libelle)}
+                  onChoisir={handleChoice}
+                />
                 <TouchableOpacity
                   style={styles.continueButton}
                   onPress={continueNaturally}
@@ -343,7 +337,7 @@ export default function GameScreen() {
 
       {!isGenerating && pages.length > 1 && (
         <View style={styles.readerFooter}>
-          <Meander progress={pageIndex / Math.max(1, pages.length - 1)} height={12} />
+          <ProgressionMeandre page={pageIndex + 1} total={pages.length} />
           <Text style={styles.folio}>p. {pageIndex + 1} / {pages.length}</Text>
         </View>
       )}
@@ -381,32 +375,8 @@ const StreamText = memo(function StreamText({
     >
       <Text style={styles.chapterTitle}>{chapterLabel}</Text>
       <Text style={styles.pageText}>{text || '…'}</Text>
-      <FilLapis />
+      <FilQuiEcrit actif />
     </ScrollView>
-  );
-});
-
-/** Le FIL QUI ÉCRIT : fil de lapis (halo) qui s'allonge puis repart,
- *  remplace tout spinner pendant la génération. Décoratif. */
-const FilLapis = memo(function FilLapis() {
-  const progress = useSharedValue(0);
-  useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }),
-      -1,
-      true,
-    );
-  }, [progress]);
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleX: 0.25 + 0.75 * progress.value }],
-    opacity: 0.25 + 0.75 * progress.value,
-  }));
-  return (
-    <Animated.View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[styles.threadBase, animatedStyle]}
-    />
   );
 });
 

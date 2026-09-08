@@ -1484,4 +1484,21 @@ FAIT :
          • TSC API 0 / MOBILE 0, tests 23/23, export web OK.
          • RÉSERVE : la suppression web ne marchera PAS tant que la migration 0010 n'est pas
            exécutée (CHECK games_status_check refuse 'deleted' → API 500) — à exécuter par
-           l'utilisateur dans le SQL Editor Supabase.
+           l'utilisateur dans le SQL Editor Supabase.47. SYSTÈME DE MOUVEMENT (les six micro-animations, spec utilisateur) + TOKEN :
+         • src/theme/motion.ts : DUREE (court 140 / moyen 260 / long 620) + COURBE
+           (doux bezier / sortie bezier / gravure linéaire) — toute animation de l'app
+           passe par ces combinaisons ; useReducedMotion respecté partout.
+         • 6 composants : FilQuiEcrit (boucle 1.9 s, effacement des 30 derniers %, s'arrête
+           net) branché dans StreamText à la place du fil de l'agent 1 ; NicheQuiSeRemplit
+           (balayage fil lapis en boucle + image qui ne monte qu'à l'ARRIVÉE RÉELLE — prêt
+           pour la génération d'images) ; ListeDeChoix (carte touchée s'emplit 140 ms, les
+           autres s'effacent 260 ms, décision seule ~900 ms avant l'appel — branché dans la
+           fin de chapitre, remplace les cartes statiques) ; SoldeEncres (décrément unité par
+           unité + denticules droite→gauche + PieceEncre) ; ColonneJauge animée (montée en
+           cascade 60+80·i, UNE seule fois par session via flag module) ; ProgressionMeandre
+           (gravure linéaire, couche largeur TOTALE révélée par conteneur → jamais étirée)
+           branchée en pied de lecture (remplace l'ancien Meander statique).
+         • Meander refondu : couche gravée en largeur fixe + pixels lapis à droite.
+         • TOKEN : PieceEncre (SVG réactif : listel/gorge/champ/goutte, PERLES générées,
+           une seule prop size) — remplace le carré bronze du solde.
+         • TSC 0/0, export web OK, tests 23/23. Aucun spinner restant.

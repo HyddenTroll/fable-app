@@ -1,30 +1,61 @@
 /**
  * COLONNE-JAUGE — avancement d'un livre (accueil).
- * Le fût cannelé se remplit PAR LE BAS : la pierre monte à mesure qu'on
- * lit. Les colonnes côte à côte rendent les livres comparables d'un seul
- * regard. Chapiteau + fût (cannelures) + base + titre abrégé.
+ * Le fût cannelé se remplit PAR LE BAS : la pierre monte à mesure qu'on lit.
+ * À l'ouverture de l'accueil, les colonnes montent en cascade (décalage de
+ * 80 ms) — UNE SEULE fois par session (flag module) : au retour sur l'écran
+ * elles sont déjà pleines, sinon l'animation rejouerait à chaque navigation.
  */
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withDelay,
+  withTiming,
+  useReducedMotion,
+} from 'react-native-reanimated';
 import { colors, fonts } from '@/theme';
+import { DUREE, COURBE } from '@/theme/motion';
+
+let colonnesAnimees = false; // une seule orchestration par session
 
 interface Props {
-  /** Nombre de chapitres lus (détermine la hauteur de remplissage). */
+  /** Nombre de chapitres lus (détermine la proportion du remplissage). */
   chapters: number;
-  /** Nombre de chapitres cible (référence pour la proportion) — défaut 24. */
+  /** Nombre de chapitres cible (référence) — défaut 24. */
   total?: number;
   label: string;
+  /** Index dans la rangée : décale la montée en cascade. */
+  index?: number;
 }
 
-export function ColonneJauge({ chapters, total = 24, label }: Props) {
+export function ColonneJauge({ chapters, total = 24, label, index = 0 }: Props) {
   const ratio = Math.max(0.06, Math.min(1, total > 0 ? chapters / total : 1));
+  const reduit = useReducedMotion();
+  const h = useSharedValue(colonnesAnimees ? ratio : 0);
+
+  useEffect(() => {
+    if (colonnesAnimees) {
+      h.value = ratio;
+      return;
+    }
+    colonnesAnimees = true;
+    h.value = withDelay(
+      reduit ? 0 : 60 + index * 80,
+      withTiming(ratio, { duration: reduit ? 0 : DUREE.long, easing: COURBE.sortie }),
+    );
+  }, [ratio, index, reduit]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const style = useAnimatedStyle(() => ({ height: `${h.value * 100}%` }));
+
   return (
     <View style={styles.cj} accessibilityLabel={`${label}, chapitre ${chapters} sur ${total}`} accessible>
       <View style={styles.cap} />
       <View style={styles.fut}>
-        {[...Array.from({ length: 13 }).map((_, i) => (
+        {Array.from({ length: 13 }).map((_, i) => (
           <View key={i} style={[styles.cannelure, { left: 3 + i * 4 }]} />
-        ))]}
-        <View style={[styles.remplissage, { height: `${Math.round(ratio * 100)}%` }]} />
+        ))}
+        <Animated.View style={[styles.remplissage, style]} />
       </View>
       <View style={styles.base} />
       <Text style={styles.label} numberOfLines={1}>
