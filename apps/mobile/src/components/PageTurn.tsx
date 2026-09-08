@@ -191,7 +191,7 @@ export function PageTurn<T>({
                 affichée en miroir pendant le pli). */}
             <Animated.View style={[styles.absolute, { alignItems: 'flex-end', backfaceVisibility: 'hidden' }, rectoStyle]}>
               <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
-            </View>
+            </Animated.View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
                 (visible quand le volet passe au-delà de 90°) */}
             <Animated.View
