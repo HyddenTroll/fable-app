@@ -139,13 +139,13 @@ export function PageTurn<T>({
     opacity: fold.value > 0.01 ? 1 : 0,
   }));
 
-  // Volet : LA PAGE ENTIÈRE, pivotée AUTOUR DU MORS (la charnière de reliure,
-  // fixe au centre) comme une porte — le texte n'est jamais coupé en deux
-  // moitiés : c'est un seul plan qui s'incline et se rabat.
+  // Volet : LA PAGE ENTIÈRE, pivotée AUTOUR DU MORS placé TOUT À GAUCHE
+  // (la reliure du livre) — la page se lève comme une porte et sort par la
+  // gauche quand on la tourne ; le texte n'est jamais scindé.
   const flapStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        { translateX: width * 0.5 },
+        { translateX: 0 },
         { perspective: ROBOT },
         { rotateY: `${-180 * fold.value}deg` },
       ],
@@ -199,7 +199,7 @@ export function PageTurn<T>({
             {/* Recto du volet : la page COURANTE en entier — sa face arrière est
                 CACHÉE : au-delà de 90°, seul le verso (la page suivante)
                 est visible. */}
-            <Animated.View style={[styles.absolute, { marginLeft: -width / 2, backfaceVisibility: 'hidden' }, rectoStyle]}>
+            <Animated.View style={[styles.absolute, { backfaceVisibility: 'hidden' }, rectoStyle]}>
               <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
             </Animated.View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
@@ -208,7 +208,6 @@ export function PageTurn<T>({
               style={[
                 styles.absolute,
                 {
-                  marginLeft: -width / 2,
                   transformOrigin: 'left center',
                   backfaceVisibility: 'hidden',
                   transform: [{ rotateY: '180deg' }],
@@ -223,14 +222,14 @@ export function PageTurn<T>({
           </Animated.View>
         )}
 
-        {/* Ombre du mors : la charnière de reliure, au centre, discrète au
+        {/* Ombre du mors : la charnière de reliure TOUT À GAUCHE, discrète au
             repos, marquée quand la page pivote autour. */}
         <Animated.View
           pointerEvents="none"
           style={[
             styles.mors,
             morsStyle,
-            { left: width / 2 - 1 },
+            { left: 0 },
           ]}
         />
       </View>
