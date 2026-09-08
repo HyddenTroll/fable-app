@@ -60,6 +60,16 @@ export default function GameScreen() {
   const setHeroState = useAppStore((s) => s.setHeroState);
   const updateCurrentGame = useAppStore((s) => s.updateCurrentGame);
 
+  // Personne narrative du livre : adapte les libellés du joueur.
+  const voix = useAppStore((s) => s.gameParams?.narrateur ?? 'tu');
+  const heroNom = useAppStore((s) => s.currentGame?.heroName);
+  const libelleChoix =
+    voix === 'je'
+      ? 'Que fais-je ?'
+      : voix === 'il'
+        ? `Que fait-${/e$/.test((heroNom ?? '').toLowerCase()) && !/é$|è$/.test((heroNom ?? '').toLowerCase()) ? 'elle' : 'il'} ?`
+        : 'Que fais-tu ?';
+
   // Restauration serveur (réessaie si la partie a changé)
   useRestoreGame();
 
@@ -264,7 +274,7 @@ export default function GameScreen() {
             {showChoices && current.choices.length > 0 && (
               <View style={styles.choices}>
                 <Oves />
-                <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
+                <Text style={styles.choicesLabel}>{libelleChoix}</Text>
                 <ListeDeChoix
                   choix={current.choices.map((c) => c.libelle)}
                   onChoisir={handleChoice}

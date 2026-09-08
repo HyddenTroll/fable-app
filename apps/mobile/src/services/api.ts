@@ -146,6 +146,7 @@ export async function createGame(body: {
   chapterLength: string;
   style: string;
   maxChoices: number;
+  narrateur?: 'tu' | 'je' | 'il';
   age: string;
   heroName?: string;
   heroTrait?: string;

@@ -52,6 +52,8 @@ export default function NewGameScreen() {
   const [chapterLength, setChapterLength] = useState<GameParams['chapterLength']>('moyen');
   const [style, setStyle] = useState<GameParams['style']>('classique');
   const [maxChoices, setMaxChoices] = useState<GameParams['maxChoices']>(3);
+  // Personne narrative : 'auto' = laissée au tirage serveur (variété).
+  const [narrateur, setNarrateur] = useState<'auto' | 'tu' | 'je' | 'il'>('auto');
   const [creating, setCreating] = useState(false);
   const [createStep, setCreateStep] = useState(0);
   // Statut Fable+ lu côté serveur (le store local peut être périmé).
@@ -83,6 +85,7 @@ export default function NewGameScreen() {
       chapterLength,
       style,
       maxChoices,
+      narrateur: narrateur === 'auto' ? undefined : narrateur,
     };
     setCreating(true);
     setCreateStep(0);
@@ -99,6 +102,7 @@ export default function NewGameScreen() {
         chapterLength,
         style,
         maxChoices,
+        narrateur: params.narrateur,
         age: age ?? 'adult',
         heroName: heroName || undefined,
         heroTrait: heroTrait ?? undefined,
@@ -326,6 +330,24 @@ export default function NewGameScreen() {
                 onPress={() => setMaxChoices(n as GameParams['maxChoices'])}
               >
                 <Text style={styles.subGenreText}>{n} choix</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.label}>La voix du récit</Text>
+          <View style={styles.chipsRow}>
+            {([
+              { cle: 'auto', label: 'Auto' },
+              { cle: 'tu', label: 'Tu' },
+              { cle: 'je', label: 'Je' },
+              { cle: 'il', label: 'Il / Elle' },
+            ] as { cle: 'auto' | 'tu' | 'je' | 'il'; label: string }[]).map((v) => (
+              <TouchableOpacity
+                key={v.cle}
+                style={[styles.chip, narrateur === v.cle && styles.selectedChip]}
+                onPress={() => setNarrateur(v.cle)}
+              >
+                <Text style={styles.subGenreText}>{v.label}</Text>
               </TouchableOpacity>
             ))}
           </View>

@@ -36,7 +36,7 @@ const PROSE_RULES = [
   'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
   'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
-  'RÈGLE DE NON-INTRUSION (2e personne) : la narration décrit ce que le héros PERÇOIT, FAIT et DIT — rien de plus. Interdits : « tu ressens », « tu sais », « tu penses », « tu te souviens », « tu comprends ». TOUT fait intérieur (souvenir, habitude, opinion, émotion) doit soit être établi dans la bible, soit découler d\'un choix du lecteur — sinon, il n\'existe pas. Les émotions passent par le corps et les gestes, jamais par une voix off psychologique.',
+  'RÈGLE DE NON-INTRUSION : la narration décrit ce que le héros PERÇOIT, FAIT et DIT — rien de plus, quelle que soit la personne narrative. Interdits : les formulations d\'introspection directe (« tu ressens », « je ressens », « il ressent », « tu sais », « il comprend », « je me souviens »). TOUT fait intérieur (souvenir, habitude, opinion, émotion) doit soit être établi dans la bible, soit découler d\'un choix du lecteur — sinon, il n\'existe pas. Les émotions passent par le corps et les gestes, jamais par une voix off psychologique.',
   'Chaque chapitre = 2 à 4 scènes complètes, chacune avec son début, son développement et sa fin.',
   'Soigne les transitions entre scènes : pas de coupures brutales sans respiration.',
 ].join('\n');
@@ -68,7 +68,7 @@ const COHERENCE_RULES = [
   'N\'introduis jamais un élément qui contredit une scène déjà écrite (un lieu réapparaît détruit, un allié devient traître sans transition, une information déjà sue est redécouverte avec surprise).',
   'Les personnages secondaires restent cohérents : s\'ils étaient hostiles, ils le restent progressivement ; s\'ils étaient présents ou absents d\'une scène, ne les téléporte pas.',
   'Le ton et la voix narrative ne dérivent pas : on reste dans le registre imposé du début à la fin.',
-  'PERSONNE NARRATIVE CONSTANTE : le roman est écrit à la 2e personne ("tu") du début à la fin, y compris au prologue et dans les fins. Le héros est toujours désigné par "tu" (éventuellement son prénom dans les dialogues), jamais basculé en "il/elle" ou "je". Une bascule de personne = faute.',
+  'PERSONNE NARRATIVE UNIQUE ET CONSTANTE : le roman garde UNE personne narrative du début à la fin (2e, 1re ou 3e — selon la consigne donnée à chaque chapitre), y compris au prologue et dans les fins. Varier entre « tu », « je » et « il/elle » pour désigner le héros est une faute.',
 ].join('\n');
 
 /**
@@ -592,6 +592,23 @@ Réponds en UN SEUL JSON complet (tous les champs du schéma d'une bible complè
 }`;
 }
 
+/** Consigne de personne narrative — jamais laissée implicite dans un prompt. */
+export function consigneNarrateur(
+  narrateur: 'tu' | 'je' | 'il' | undefined,
+  heroNom?: string,
+): string {
+  if (narrateur === 'je') {
+    return 'NARRATION À LA 1re PERSONNE ("je") : le héros raconte lui-même, dès la première phrase, comme dans tout le reste du roman. Jamais de "tu" ni de "il/elle" pour désigner le héros. Les autres personnages sont désignés par leur nom.';
+  }
+  if (narrateur === 'il') {
+    const nom = (heroNom ?? '').trim();
+    const elle = /e$/.test(nom.toLowerCase()) && !/é$|è$|ê$/.test(nom.toLowerCase());
+    const p = elle ? 'elle' : 'il';
+    return `NARRATION À LA 3e PERSONNE : le héros${nom ? ` ${nom}` : ''} est désigné par son prénom et par "${p}", dès la première phrase, comme dans tout le reste du roman. Jamais de "tu" ni de "je" pour désigner le héros.`;
+  }
+  return 'NARRATION À LA 2e PERSONNE ("tu") : le lecteur EST le héros, dès la première phrase, comme dans tout le reste du roman. Jamais de "il/elle" pour désigner le héros, jamais de passage à la 3e personne.';
+}
+
 export function buildProloguePrompt(bible: StoryBible, params: GameParams, age: AgeGroup): string {
   return `Tu es un grand romancier. Écris le PROLOGUE de ce roman.
 
@@ -605,7 +622,7 @@ ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narrati
 
 Le prologue doit :
 - INSTALLER la vie ordinaire du héros : sa routine, son travail, les gens qui l'entourent, ses manies, ce qu'il désire et ce qu'il redoute. On doit entrer dans son monde et s'attacher à lui AVANT toute bascule.
-- NARRATION À LA 2e PERSONNE ("tu") : le lecteur EST le héros, dès la première phrase, comme dans tout le reste du roman. Jamais de "il/elle" pour désigner le héros, jamais de passage à la 3e personne.
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
 - Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
 - L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
 - Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
@@ -625,7 +642,7 @@ Rappel : un prologue de lecture mobile = 600 à 900 mots, en prose soignée. Cha
 Réponds UNIQUEMENT en JSON valide :
 {
   "titre": "Prologue",
-  "texte": "..." (le prologue, 600-900 mots, à la 2e personne "tu"),
+  "texte": "..." (le prologue, 600-900 mots, à la personne narrative choisie),
   "descriptionCouverture": "description visuelle détaillée de la couverture (style de l'image, ambiance, couleurs, héros, lieu)",
   "choix": [
     {"libelle": "Un choix humain et COURT (4 à 9 mots max - action + enjeu, pas de phrase développée)", "consequenceResumee": "ce que ce choix engage pour la suite"},
@@ -681,7 +698,7 @@ Règles d'écriture :
 - Les MOTIFS récurrents (dans la bible) peuvent revenir, changés de sens.
 - VOIX INTÉRIEURE : au moins une fois par chapitre, montre la pensée du héros qui CONTREDIT son geste ou sa parole (il se ment à lui-même, s'observe, se juge) — c'est ce qui donne de la profondeur au personnage.
 - ${ageLimit(age)}
-- 2e personne ("tu") : le lecteur EST le héros.
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
 
 ${ANTI_AI_SLOP}
 
@@ -762,7 +779,7 @@ Règles d'écriture :
 - Le héros agit selon son trait mais le joueur garde le contrôle via les choix.
 - Conséquences visibles des choix précédents : les blessures, objets et personnages de l'état du héros doivent rester cohérents.
 - ${ageLimit(age)}
-- 2e personne ("tu") : le lecteur EST le héros.
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
 
 VOIX NARRATIVE (obligatoire - écris ce chapitre DANS CE REGISTRE, pas dans un autre ; respecte le rythme de phrase, la densité descriptive, la place du dialogue et de l'introspection) :
 ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}

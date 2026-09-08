@@ -24,7 +24,8 @@ interface CreateBody {
   chapterLength: string;
   style: string;
   maxChoices: number;
-  age: AgeGroup;
+    narrateur?: 'tu' | 'je' | 'il';
+    age: AgeGroup;
   heroName?: string;
   heroTrait?: string;
 }
@@ -52,18 +53,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const maxChoices = [2, 3, 4].includes(Number(body.maxChoices))
-    ? (Number(body.maxChoices) as GameParams['maxChoices'])
-    : 2;
+      ? (Number(body.maxChoices) as GameParams['maxChoices'])
+      : 2;
 
-  const params: GameParams = {
-    genre: body.genre as GameParams['genre'],
-    subGenre: body.subGenre,
-    difficulty: body.difficulty as GameParams['difficulty'],
-    chapterLength: body.chapterLength as GameParams['chapterLength'],
-    style: body.style as GameParams['style'],
-    maxChoices,
-    rythme: undefined, // rempli après le tirage ci-dessous
-  };
+    // Personne narrative : le choix du lecteur si fourni, sinon TIRAGE serveur
+    // (variété : un livre au « tu », le suivant au « je » ou à la 3e personne).
+    const narrateur =
+      body.narrateur === 'je' || body.narrateur === 'il' || body.narrateur === 'tu'
+        ? body.narrateur
+        : (['tu', 'je', 'il'] as const)[Math.floor(Math.random() * 3)];
+
+    const params: GameParams = {
+      genre: body.genre as GameParams['genre'],
+      subGenre: body.subGenre,
+      difficulty: body.difficulty as GameParams['difficulty'],
+      chapterLength: body.chapterLength as GameParams['chapterLength'],
+      style: body.style as GameParams['style'],
+      maxChoices,
+      narrateur,
+      rythme: undefined, // rempli après le tirage ci-dessous
+    };
 
   // Profil de rythme pioché dans les 8 du genre choisi (étude best-sellers)
   const rythmesGenre = RYTHMES_PAR_GENRE[params.genre] ?? [];

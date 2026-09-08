@@ -1677,4 +1677,14 @@ FAIT :
       CORRECTIONS D'INTÉGRATION : colors.gris → gris2 (8 usages) ; ExLibris import Text.
       Vérifié headless : /profile et /settings rendent leur structure complète, aucune
       erreur JS. Reste à brancher plus tard : la suppression de compte serveur (V1 :
-      confirmation + déconnexion).
+      confirmation + déconnexion).• PERSONNE NARRATIVE VARIABLE (retour : « c'est toujours TU au lieu d'être à JE ou à
+      la 3e personne »). GameParams + narrateur ('tu'|'je'|'il') ; à la création :
+      choix « La voix du récit » (Auto / Tu / Je / Il·Elle) dans les paramètres ; si
+      Auto (défaut), le SERVEUR tire la personne (variété : jamais toujours « tu ») et
+      le params tiré est STOCKÉ (les chapitres suivants gardent la même).
+      prompts.ts : consigneNarrateur(narrateur, heroNom) injectée dans le prologue
+      (2 endroits) et les chapitres (2 endroits) ; 3e personne : pronom il/elle déduit
+      du prénom (/e$/ sans é/è) ; non-intrusion généralisée (tu ressens / je ressens /
+      il ressent interdits également) ; « PERSONNE NARRATIVE UNIQUE » remplace la règle
+      figée en « tu ». Libellés du joueur adaptés : Que fais-tu ? / Que fais-je ? /
+      Que fait-il·elle ?. Les livres existants (params sans narrateur) restent au « tu ».
