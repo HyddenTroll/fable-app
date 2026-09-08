@@ -20,8 +20,9 @@ import { colors } from '@/theme';
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent = `
-    html, body { background: #C9C6BF !important; overscroll-behavior: none; }
-    #root { max-width: 430px; margin: 0 auto; min-height: 100vh; background: #E4E2DC; }
+    html, body { background: #C9C6BF !important; overscroll-behavior: none; overflow-x: hidden; }
+    #root { max-width: 430px; margin: 0 auto; min-height: 100vh; background: #E4E2DC; overflow-x: hidden; }
+    #root * { max-width: 100%; }
     @media (min-width: 480px) {
       #root { border-left: 1px solid #D8D4CB; border-right: 1px solid #D8D4CB; }
     }
