@@ -35,6 +35,7 @@ const PROSE_RULES = [
   'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
   'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
+  'RÈGLE DE NON-INTRUSION (2e personne) : la narration décrit ce que le héros PERÇOIT, FAIT et DIT — rien de plus. Interdits : « tu ressens », « tu sais », « tu penses », « tu te souviens », « tu comprends ». TOUT fait intérieur (souvenir, habitude, opinion, émotion) doit soit être établi dans la bible, soit découler d\'un choix du lecteur — sinon, il n\'existe pas. Les émotions passent par le corps et les gestes, jamais par une voix off psychologique.',
   'Chaque chapitre = 2 à 4 scènes complètes, chacune avec son début, son développement et sa fin.',
   'Soigne les transitions entre scènes : pas de coupures brutales sans respiration.',
 ].join('\n');
@@ -471,10 +472,75 @@ Réponds en UN SEUL JSON (COURT, ≤ 350 mots) :
 }
 
 /**
- * ENRICHISSEMENT de la bible (en arrière-plan pendant la lecture du
- * prologue) : on part de la bible légère déjà écrite et on la complète
- * en bible complète d'architecte, sans contredire ce qui est posé.
+ * PROMPT D'ENRICHISSEMENT V2 — en attente de validation par test A/B
+ * (scripts/test-bible-ab.mjs) AVANT d'être branché sur la route /enrich.
+ *
+ * Différences avec v1 (dossier « structure avant d'écrire », 07/09/2026) :
+ * - question dramatique UNIQUE + réponse en fin (chaque fin répond à LA
+ *   question — sinon les fins sont des arrêts, pas des réponses) ;
+ * - FRISE CHRONOLOGIQUE COMPACTE : une ligne de faits datés vérifiés
+ *   (anti-anachronisme), jamais un récit (garde-fou dilution) ;
+ * - catalogue des relations : qui aime/doit/trahit/ment à qui, avec état
+ *   début → événement → fin ;
+ * - cartes de scènes PAR ACTE (méthode « cartes ») : objectif, obstacle,
+ *   résultat + écart, valeur qui bascule, question ouverte, type
+ *   SCÈNE/SEQUELLE — injectées acte par acte (jamais toutes à la fois,
+ *   garde-fou dilution du préfixe stable) ;
+ * - setups → payoffs : tout ce qui est planté est payé ;
+ * - biographie complète : traits physiques, réplique-type, « ce qu'il ne
+ *   fera jamais ».
+ * La checklist de solidité est un SECOND APPEL adversarial (relire), pas
+ * une auto-vérification dans le même passage.
  */
+export function buildEnrichBiblePromptV2(
+  quickBible: StoryBible,
+  params: GameParams,
+  age: AgeGroup,
+  voix: { nom: string; consigne: string },
+  variety?: import('./variety').VecteurVariete,
+): string {
+  const loisGenre = LOIS_PAR_GENRE[params.genre];
+  const loisBlock = loisGenre ? `LOIS DU GENRE (à respecter) :\n${loisGenre}\n` : '';
+  const varietyBlock = variety
+    ? `AXES IMPOSÉS (le livre est construit sur eux, conserve-les) : ${variety.theme} — ton ${variety.ton}, registre ${variety.registre}, lieu ${variety.lieu}, époque ${variety.epoque}, enjeu ${variety.enjeu}.
+STYLE D'AUTEUR (toute la bible et les chapitres s'écrivent dans cette voix) : "${variety.auteur.nom}" — ${variety.auteur.consigne}
+`
+    : '';
+  return `Tu es un ARCHITECTE NARRATIF. Une bible LÉGÈRE existe déjà. Étends-la en bible COMPLÈTE et VÉRIFIABLE : conserve FIDÈLEMENT tout ce qui est écrit (aucune contradiction), complète chaque section. Ne rédige AUCUN chapitre.
+
+VOIX NARRATIVE IMPOSÉE : "${voix.nom}" (${voix.consigne}).
+${varietyBlock}
+BIBLE LÉGÈRE EXISTANTE (à étendre, ne pas contredire) :
+${JSON.stringify(quickBible, null, 2)}
+
+${loisBlock}
+RÈGLES MÉTHODE (dans l'ordre) :
+1. QUESTION DRAMATIQUE UNIQUE : la question posée au début, à laquelle le climax ET CHAQUE fin répondent explicitement. Une seule. Si une fin ne répond pas à cette question, ce n'est pas une fin : c'est un arrêt.
+2. FRISE CHRONOLOGIQUE COMPACTE : une ligne de FAITS DATÉS vérifiés (naissance, événements, âges, durées, distances). Pas un récit : des dates et des durées qui ne se contredisent pas entre elles. Le héros né en X ne fête pas ses dix ans devant un événement de l'année X-10.
+3. CATALOGUE DES RELATIONS : qui aime, qui doit, qui trahit, qui ment à qui. Pour chaque relation clé : état au début → événement qui la change → état à la fin.
+4. CARTES DE SCÈNES PAR ACTE (méthode des cartes) : chaque acte a 4-7 cartes. Une carte = une scène : {titre de travail, personnages présents, lieu et moment (cohérents avec la frise), objectif (ce que le héros veut), obstacle, résultat + ÉCART avec l'attendu, valeur qui bascule (sécurité→danger, confiance→doute…), question ouverte qui pousse vers la suite, type SCÈNE (action) ou SÉQUELLE (réaction) — alterne}. Toute carte sans objectif ou sans bascule est INUTILE : supprime-la ou fusionne-la.
+5. SETUPS → PAYOFFS : tout ce qui est planté (objet, phrase, détail, capacité) est payé à un endroit exact ; tout ce qui sert a été planté. Un tableau à deux colonnes.
+6. BIOGRAPHIE COMPLÈTE : pour le héros ET l'antagoniste : traits physiques mémorables, voix (réplique-type), « ce qu'il ne ferait JAMAIS » — et le moment où le livre l'y pousse.
+
+CONCISION : listes à 4 items max, chaque champ est une phrase dense. La frise est COMPACTE (10-15 faits). JSON total ≤ 4200 mots.
+
+Réponds en UN SEUL JSON complet : {
+  "titre", "genre", "sousGenre", "logline", "questionDramatique" (la question à laquelle LA fin répond), "theme", "these",
+  "contratGenre" (4 champs), "promesseExperience", "resumeGeneral" (150-250 mots),
+  "structure": {"squelette": 7 points},
+  "heros": {"nom","desir","besoinInconscient","peur","faille","blessure","mensonge","verite","arc","attaches","traitsPhysiques","repliqueType","jamaisFera","traitOptionnel"},
+  "antagoniste": {"nom","motivation","besoin","blessure","logique","plan","attaque","miroir","tantQuIlARaison","traitsPhysiques","repliqueType","jamaisFera"},
+  "personnages": [{"nom","role","detail","revele","miniArc","voix"}],
+  "relations": [{"entre": ["X","Y"], "nature": "aime|doit|trahit|ment|allie|rival", "debut": "...", "evenement": "...", "fin": "..."}],
+  "monde": {"description","regles" (permet/interdit/coûte), "lieuxCles" (3-5 lieux + fonction dramatique), "societe", "cicatrices", "textures"},
+  "frise": [faits datés compacts, ex. {"date": "...", "fait": "..."}],
+  "conflits": 3, "enjeuxParActe": [3], "horloge", "coutVictoire",
+  "sousIntrigues": [1-3 avec croisement], "retournements": [avec indices], "rythme", "motifs": [3], "pov", "fiable", "registre",
+  "setupsPayoffs": [{"plante": "...", "payeA": "acte/chapitre approximatif"}],
+  "cartesDeScenes": [{"acte": 1, "cartes": [4-7 cartes]}, {"acte": 2, ...}, {"acte": 3, ...}],
+  "tonStyle", "planDirecteur": {"destination","noyauImmuable","actes","pointMedian","sousIntrigue","carrefours","fins" (chacune répondant à la question dramatique)}
+}`;
+}
 export function buildEnrichBiblePrompt(
   quickBible: StoryBible,
   params: GameParams,
