@@ -58,13 +58,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // La voix narrative n'est pas persistée à part, on la déduit de tonStyle
   // (ou on retombe sur un défaut) - l'enrichissement conserve tonStyle.
   const voix = { nom: 'Registre du roman', consigne: quickBible.tonStyle ?? 'prose classique équilibrée' };
+  // Variété : le vecteur tiré à la création est stocké dans params.variety
+  // — l'enrichissement conserve les axes (thème/ton/lieu/époque/auteur).
+  const variety = (
+    game.params as (GameParams & { variety?: import('../../lib/variety').VecteurVariete }) | null
+  )?.variety;
 
   try {
     const llm = getLLM();
     const gen = await llm.generateJson<StoryBible>({
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: buildEnrichBiblePrompt(quickBible, params, age, voix) },
+        { role: 'user', content: buildEnrichBiblePrompt(quickBible, params, age, voix, variety) },
       ],
       kind: 'story_bible',
       // 3 500 mots français ≈ 5 500-6 500 tokens : on reste large, une

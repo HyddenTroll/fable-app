@@ -7,6 +7,7 @@
 
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
 import { AGE_GROUPS } from '@fable/shared';
+import { MOTIFS_INTERDITS } from './variety';
 
 const ANTI_AI_SLOP = [
   'Écris en français naturel et soigné, comme un écrivain confirmé. Évite les tournures typiques de l\'IA.',
@@ -30,6 +31,7 @@ const PROSE_RULES = [
   'Interdit les enchaînements précipités d\'actions ("Il ouvrit la porte. Il entra. Il vit la lettre."). Entre deux actions : une perception, une pensée, un détail, le poids d\'un geste.',
   'JAMAIS de titre de chapitre ni d\'intertitre dans le corps du texte : pas de ligne "Chapitre 2", pas de répétition du titre du chapitre, pas de ligne de séparation, pas de "— —" décoratifs. Le titre n\'existe qu\'en tête de chapitre ; la prose coule d\'un seul bloc sans étiquettes.',
   'La phrase courte est rare : au maximum une par paragraphe, jamais deux de suite. La phrase moyenne fait 18 à 35 mots. Les phrases longues construisent la dynamique, les courtes frappent.',
+  'Distinction vocale des personnages : chacun a SA voix (vocabulaire, longueur de réplique, syntaxe, ce qu\'il tait). Deux personnages ne parlent JAMAIS pareil — si on ne peut pas deviner qui parle sans le nom, réécris le dialogue.',
   'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
   'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
@@ -394,15 +396,52 @@ CONCISION ABSOLUE : chaque champ = 1 phrase dense, 3 items max par liste, le JSO
 export function buildQuickBiblePrompt(
   params: GameParams,
   age: AgeGroup,
-  opts?: { heroName?: string; heroTrait?: string; voix?: { nom: string; consigne: string }; briques?: { label: string; valeur: string }[] }
+  opts?: {
+    heroName?: string;
+    heroTrait?: string;
+    voix?: { nom: string; consigne: string };
+    briques?: { label: string; valeur: string }[];
+    variety?: import('./variety').VecteurVariete;
+    titresConnus?: string[];
+    rappelAntiDoublon?: string;
+  }
 ): string {
-  const { heroName, heroTrait, voix, briques } = opts ?? {};
+  const { heroName, heroTrait, voix, briques, variety, titresConnus, rappelAntiDoublon } = opts ?? {};
   const variationSeed = Math.floor(Math.random() * 999_999);
   const briquesBlock = briques?.length
     ? `ÉLÉMENTS IMPOSÉS PAR LA DIRECTION (le roman DOIT les intégrer naturellement) :\n${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}\n`
     : '';
   const loisGenre = LOIS_PAR_GENRE[params.genre];
   const loisBlock = loisGenre ? `LOIS DU GENRE (à respecter) :\n${loisGenre}\n` : '';
+  // Variété : axes tirés au sort côté serveur (jamais par température).
+  const varietyBlock = variety
+    ? `AXES IMPOSÉS (tirés au sort — respecte-les tous, ils définissent CE livre) :
+- HISTOIRE : ${variety.theme}
+- TON : ${variety.ton}
+- REGISTRE DE LANGUE : ${variety.registre}
+- LIEU : ${variety.lieu}   - ÉPOQUE : ${variety.epoque}
+- ENJEU DU HÉROS : ${variety.enjeu}${variety.twist ? `\n- MODIFICATEUR NARRATIF : ${variety.twist}` : ''}
+`
+    : '';
+  const auteurBlock = variety
+    ? `STYLE D'AUTEUR (écris comme lui, du premier mot au dernier) : "${variety.auteur.nom}" — ${variety.auteur.consigne}
+`
+    : '';
+  const gabaritBlock = variety
+    ? `TITRE — GABARIT IMPOSÉ (une seule de ces formes, tirée au sort) : ${variety.gabaritTitre}.
+INTERDIT la structure « Le/La/Les + nom + de/sous + complément » (ex. « La Lanterne des seuils »).
+INTERDIT dans le titre : eau, mer, marée, noyé, vague, silence, flamme, feu, lumière, ombre, seuil, porte, voix, sang, murmure, écho, brume — sauf si le gabarit l'exige.
+Le titre doit refléter le GENRE (${params.genre}) : un titre d'horreur et un titre de comédie ne se ressemblent jamais.
+`
+    : '';
+  const antiClicheBlock = `MOTIFS À ÉVITER (surexploités — n'en fais JAMAIS le centre) : ${MOTIFS_INTERDITS}
+`;
+  const memoireBlock =
+    titresConnus && titresConnus.length > 0
+      ? `MÉMOIRE DE DIVERSITÉ — voici ce qui a déjà été généré pour ce lecteur : ${titresConnus.join(' · ')}. Produis quelque chose de NETTEMENT différent en genre de ton, d'univers, d'époque et de titre.
+`
+      : '';
+  const antiDoublonBlock = rappelAntiDoublon ? `\n${rappelAntiDoublon}\n` : '';
   return `Tu es un romancier. Établis EN QUELQUES SECONDES la charpente d'un roman interactif (livre dont le lecteur est le héros). RÉPONDS TRÈS VITE : sois dense, chaque champ est UNE phrase courte, listes à 3 items max. Pas de remplissage.
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
@@ -413,6 +452,7 @@ ${heroTrait ? `TRAIT DU HÉROS : ${heroTrait}` : ''}
 ${briquesBlock}${loisBlock}
 VOIX NARRATIVE IMPOSÉE : "${voix?.nom ?? 'Réalisme classique'}" (${voix?.consigne ?? 'prose classique équilibrée'}). "tonStyle" décrira cette voix en 2 phrases.
 
+${varietyBlock}${auteurBlock}${gabaritBlock}${antiClicheBlock}${memoireBlock}${antiDoublonBlock}
 INDICE DE CRÉATION : ${variationSeed} - variation originale, anti-cliché.
 
 Réponds en UN SEUL JSON (COURT, ≤ 350 mots) :
@@ -439,14 +479,21 @@ export function buildEnrichBiblePrompt(
   quickBible: StoryBible,
   params: GameParams,
   age: AgeGroup,
-  voix: { nom: string; consigne: string }
+  voix: { nom: string; consigne: string },
+  variety?: import('./variety').VecteurVariete,
 ): string {
   const loisGenre = LOIS_PAR_GENRE[params.genre];
   const loisBlock = loisGenre ? `LOIS DU GENRE (à respecter) :\n${loisGenre}\n` : '';
+  const varietyBlock = variety
+    ? `AXES IMPOSÉS (le livre est construit sur eux, conserve-les) : ${variety.theme} — ton ${variety.ton}, registre ${variety.registre}, lieu ${variety.lieu}, époque ${variety.epoque}, enjeu ${variety.enjeu}.
+STYLE D'AUTEUR (toute la bible et les chapitres s'écrivent dans cette voix) : "${variety.auteur.nom}" — ${variety.auteur.consigne}
+`
+    : '';
   return `Tu es un ARCHITECTE NARRATIF. Une bible LÉGÈRE a déjà été posée. Étends-la en bible COMPLÈTE : conserve FIDÈLEMENT tout ce qui est déjà écrit (aucune contradiction), et complète chaque section avec précision. Ne rédige AUCUN chapitre.
 
 VOIX NARRATIVE IMPOSÉE : "${voix.nom}" (${voix.consigne}).
 
+${varietyBlock}
 BIBLE LÉGÈRE EXISTANTE (à étendre, ne pas contredire) :
 ${JSON.stringify(quickBible, null, 2)}
 
@@ -455,7 +502,7 @@ Section 4 CONFLITS : {"externe", "interne", "philosophique"} (les trois culminen
 "enjeuxParActe" : ce que le héros perd s'il échoue, acte par acte (ça monte) + "horloge" (échéance) + "coutVictoire" (ce que la réussite exige de sacrifier).
 "contratGenre" : {"promesse", "sceneObligatoire", "clichesAEviter", "clichesAAssumer"} du genre.
 "promesseExperience" : une phrase.
-"personnages" : réseau de 3-6 secondaires (allié, mentor, faux allié, rival, miroir...) avec {"nom","role","detail","revele","miniArc"}.
+"personnages" : réseau de 3-6 secondaires (allié, mentor, faux allié, rival, miroir...) avec {"nom","role","detail","revele","miniArc","voix"} — "voix" = didascalie vocale : registre, longueur de réplique, tics de langage, ce que le personnage ne dit jamais. Chaque personnage parle DIFFÉREMMENT.
 "monde" : enrichis {"regles" (permet/interdit/coûte), "lieuxCles" (3-5 lieux + fonction dramatique), "societe", "cicatrices", "textures"}.
 "sousIntrigues" : 1-3 liées au thème avec "croisement".
 "retournements" : twists + "indices" ; "rythme" : où ça respire / accélère.
@@ -565,6 +612,7 @@ Règles d'écriture :
 - L'HORLOGE du roman (dans la bible) avance d'un cran dans ce chapitre.
 - La SCÈNE OBLIGATOIRE du genre (contratGenre, dans la bible) se prépare ici par petites touches - elle éclate au climax, pas avant.
 - Les MOTIFS récurrents (dans la bible) peuvent revenir, changés de sens.
+- VOIX INTÉRIEURE : au moins une fois par chapitre, montre la pensée du héros qui CONTREDIT son geste ou sa parole (il se ment à lui-même, s'observe, se juge) — c'est ce qui donne de la profondeur au personnage.
 - ${ageLimit(age)}
 - 2e personne ("tu") : le lecteur EST le héros.
 
@@ -607,16 +655,23 @@ export function buildChapterMessages(opts: {
   const { bible, bibleText, state, resume, playerChoice, chapterNumber, totalChapters, act, phase, params, age, rule, plan, rythme, pilotage, facts } = opts;
   const bibleBlock = bibleText ?? JSON.stringify(bible, null, 2);
   const system = buildSystemPrompt();
-  const stable = `BIBLE DU ROMAN (référence fixe) :
-${bibleBlock}`;
-  const volatile = `${state ? `ÉTAT DU HÉROS (référence fixe, à respecter) :
-${state}
-` : ''}${plan ? `GRANDES LIGNES DU PLAN (où l'histoire va - à respecter, la route peut s'adapter mais pas le cap) :
-${plan}
-` : 'PLAN : la bible contient le plan directeur (cap, actes, scènes clés). Suis-le.'}
-${rythme ? `RYTHME DU ROMAN (structure du récit - à respecter absolument, c'est la respiration du livre) :
-${rythme}
-` : ''}
+  // VARIÉTÉ : le style d'auteur est une variable tirée au sort (jamais
+  // une constante) — il s'applique à tout le chapitre.
+  const variety = (params as GameParams & { variety?: import('./variety').VecteurVariete }).variety;
+  const auteurBlock = variety?.auteur
+    ? `STYLE D'AUTEUR (écris tout le chapitre dans cette voix, du premier mot au dernier) : "${variety.auteur.nom}" — ${variety.auteur.consigne}\n\n`
+    : '';
+  const persosVoix = ((bible.personnages ?? []) as { nom?: string; voix?: string }[]).filter(
+    (p) => p.nom && p.voix,
+  );
+  const voixBlock =
+    persosVoix.length > 0
+      ? `VOIX DES PERSONNAGES (à respecter à CHAQUE réplique) :\n${persosVoix
+          .map((p) => `- ${p.nom} : ${p.voix}`)
+          .join('\n')}\n`
+      : `VOIX DES PERSONNAGES : chaque personnage a SA voix — vocabulaire, longueur de réplique, syntaxe, ce qu'il tait. Deux personnages ne parlent JAMAIS pareil : si on ne peut pas deviner qui parle sans le nom, réécris.\n`;
+  const stable = `BIBLE DU ROMAN (référence fixe) :\n${bibleBlock}`;
+  const volatile = `${auteurBlock}${voixBlock}\n${state ? `ÉTAT DU HÉROS (référence fixe, à respecter) :\n${state}\n` : ''}${plan ? `GRANDES LIGNES DU PLAN (où l'histoire va - à respecter, la route peut s'adapter mais pas le cap) :\n${plan}\n` : 'PLAN : la bible contient le plan directeur (cap, actes, scènes clés). Suis-le.'}\n${rythme ? `RYTHME DU ROMAN (structure du récit - à respecter absolument, c'est la respiration du livre) :\n${rythme}\n` : ''}
 ${facts ? `FAITS IMMUABLES DU ROMAN (la source de vérité - ne jamais les contredire, ils ne changent que si le texte montre explicitement un événement qui les brise) :
 ${facts}
 ` : ''}

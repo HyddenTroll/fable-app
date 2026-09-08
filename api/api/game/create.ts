@@ -3,6 +3,7 @@ import { requireUserId, getDb } from '../../lib/auth';
 import { getLLM } from '../../lib/llm/provider';
 import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, buildInitialResume, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
 import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
+import { tirerVecteur, titreTropProche } from '../../lib/variety';
 import { logLLMResult } from '../../lib/cost';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
@@ -79,6 +80,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return json(res, 402, { error: { code: access.reason, message: access.message }, paywall: true });
   }
 
+  // VARIÉTÉ : tirage d'axes + mémoire anti-répétition (la variété se joue
+  // dans les contraintes injectées, jamais dans la température).
+  const variety = tirerVecteur(params.genre);
+  const { data: titresRows } = await db
+    .from('games')
+    .select('title')
+    .eq('user_id', auth.userId)
+    .order('created_at', { ascending: false })
+    .limit(15);
+  const titresConnus = (titresRows ?? [])
+    .map((r) => String((r as { title?: unknown }).title ?? ''))
+    .filter(Boolean);
+
   // 1) Story bible LÉGÈRE (démarrage rapide) : charpente minimale générée
   // très vite (~15-25 s) pour ne pas faire attendre le lecteur. La bible
   // COMPLÈTE est enrichie ensuite en arrière-plan par /api/game/enrich.
@@ -97,20 +111,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })),
     ...(rythme ? [{ label: 'Rythme du roman', valeur: `${rythme.nom} (inspiré de ${rythme.inspirePar}) : ${rythme.consigne}` }] : []),
   ];
-  let bible: StoryBible;
-  let bibleResult;
+  let bible: StoryBible = {} as StoryBible;
+  let bibleResult: import('../../lib/llm/provider').LLMResult | null = null;
   try {
     const llm = getLLM();
-    const gen = await llm.generateJson<StoryBible>({
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: buildQuickBiblePrompt(params, body.age, { heroName: body.heroName, heroTrait: body.heroTrait, voix, briques }) },
-      ],
-      kind: 'story_bible',
-      maxTokens: 1800,
-    });
-    bible = gen.json;
-    bibleResult = gen.result;
+    const makePrompt = (rappel?: string) =>
+      buildQuickBiblePrompt(params, body.age ?? 'adult', {
+        heroName: body.heroName,
+        heroTrait: body.heroTrait,
+        voix,
+        briques,
+        variety,
+        titresConnus,
+        rappelAntiDoublon: rappel,
+      });
+    // ANTI-DOUBLON : le titre est vérifié contre les titres déjà générés
+    // pour ce lecteur (égalité ou trop proche en mots-clés) → régénération
+    // bornée (max 2) avec rappel explicite. La mémoire inter-livres empêche
+    // le doublon « Les Voix sous la marée ».
+    let attempt = 0;
+    while (attempt < 3) {
+      const gen = await llm.generateJson<StoryBible>({
+        messages: [
+          { role: 'system', content: system },
+          {
+            role: 'user',
+            content: makePrompt(
+              attempt > 0
+                ? `Le titre généré (« ${bible.titre} ») est trop proche d'un titre déjà généré pour ce lecteur (${titresConnus.join(' · ')}). Recommence : NOUVEAU titre radicalement différent (autre gabarit, autre univers si nécessaire), tout en gardant les axes imposés.`
+                : undefined,
+            ),
+          },
+        ],
+        kind: 'story_bible',
+        maxTokens: 1800,
+      });
+      bible = gen.json;
+      bibleResult = gen.result;
+      if (attempt === 0 || !titreTropProche(String(bible.titre ?? ''), titresConnus)) break;
+      attempt++;
+    }
+    if (!bibleResult) throw new Error('Génération de la bible vide');
     await logLLMResult(db, auth.userId, null, 'story_bible', bibleResult);
   } catch (e) {
     return json(res, 502, {
@@ -158,7 +199,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       free_chapters_used: 1, // le prologue compte comme 1 (gratuit)
       hero_name: heroName,
       hero_trait: body.heroTrait,
-      params,
+      params: { ...params, variety } as GameParams & { variety: unknown },
     })
     .select()
     .single();

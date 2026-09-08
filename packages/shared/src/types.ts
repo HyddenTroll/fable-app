@@ -155,6 +155,8 @@ export interface StoryBible {
     detail: string;
     revele?: string;
     miniArc?: string;
+    /** Didascalie vocale : registre, longueur de réplique, tics, ce qu'il tait. */
+    voix?: string;
   }[];
   monde: {
     description: string;
