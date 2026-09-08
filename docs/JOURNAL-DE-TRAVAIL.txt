@@ -1502,3 +1502,13 @@ FAIT :
          • TOKEN : PieceEncre (SVG réactif : listel/gorge/champ/goutte, PERLES générées,
            une seule prop size) — remplace le carré bronze du solde.
          • TSC 0/0, export web OK, tests 23/23. Aucun spinner restant.
+       • PAGE TURN : cause du « toujours la même page » trouvée par test headless réel (route
+         factice + Chromium) : le CALLBACK de fin danimation withSpring nest PAS exécuté sur
+         le web → le commit (changement de page) narrivait jamais. Fix : commit déclenché par
+         setTimeout JS (340 ms = fin du rabat), plus aucune dépendance au callback ; annulation
+         par délai aussi. Vérifié : drag avant → INDEX 1 (page suivante affichée), drag retour
+         → INDEX 0. Push effectué. Le test local prouve le fix : lutilisateur testait lANCIEN
+         build (le fix navait pas encore été poussé).
+       • Phrases dattente de la création RÉÉCRITES : direction « construction générale dune
+         histoire » (première phrase, personnages, intrigue, chapitres, voix) — plus de champ
+         lexical dimprimerie/grec.

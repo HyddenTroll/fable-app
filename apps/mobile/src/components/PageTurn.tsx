@@ -69,13 +69,15 @@ export function PageTurn<T>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterKey]);
 
-  const commit = (page: number) => {
-    'worklet';
+  // Commit du tournage — exécuté en JS (pas dans un worklet) : le callback de
+  // fin d'animation n'est pas fiable partout (web) → on déclenche le commit
+  // par un simple délai après le début du rabat.
+  const commitJS = (page: number) => {
     index.value = page;
     fold.value = 0;
     dir.value = 1;
-    runOnJS(setDirBoth)(1);
-    runOnJS(onPageChange ?? (() => {}))(page);
+    setDirS(1);
+    onPageChange?.(page);
   };
 
   const pan = Gesture.Pan()
@@ -103,22 +105,19 @@ export function PageTurn<T>({
         const target =
           dir.value === 1 ? Math.min(index.value + 1, pages.length - 1) : Math.max(index.value - 1, 0);
         if (target !== index.value) {
-          fold.value = withSpring(1, { damping: 18, stiffness: 200 }, (finished) => {
-            'worklet';
-            if (finished) commit(target);
-          });
+          fold.value = withSpring(1, { damping: 18, stiffness: 200 });
+          setTimeout(() => commitJS(target), 340);
           return;
         }
       }
-      // Annulation : la page revient ET la direction repasse à « avant »
-      // (sinon un re-render après coup afficherait la page précédente).
-      fold.value = withSpring(0, { damping: 18, stiffness: 220 }, () => {
-        'worklet';
+      // Annulation : la page revient ET la direction repasse à « avant ».
+      fold.value = withSpring(0, { damping: 18, stiffness: 220 });
+      setTimeout(() => {
         if (dir.value === -1) {
           dir.value = 1;
-          runOnJS(setDirS)(1);
+          setDirS(1);
         }
-      });
+      }, 300);
     });
 
   const curIdx = index.value;

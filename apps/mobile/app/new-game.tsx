@@ -329,22 +329,23 @@ export default function NewGameScreen() {
 }
 
 /** Phrases d'attente de la création — écrites à la main, AUCUN appel API.
- *  Roulement toutes les ~3,5 s : faire patienter sans être technique. */
+ *  Littéraires, sur la CONSTRUCTION générale d'une histoire (pas de champ
+ *  lexical d'imprimerie). Roulement toutes les ~3,5 s. */
 const PHRASES_CREATION = [
-  'On broie la pierre pour la presse',
-  'La charpente du récit prend sa place',
-  'Les voix des personnages s’accordent',
-  'Le fil de l’histoire se déroule',
-  'On règle l’encrage, goutte à goutte',
-  'Les chapitres se rangent comme des planches',
-  'La trame se serre, les nœuds se nouent',
-  'Le titre cherche sa place au fronton',
-  'Les énigmes tirent leurs fils',
-  'Le héros attend qu’on lui ouvre la porte',
-  'L’imprimeur vérifie sa casse',
-  'La première page sèche tranquillement',
-  'Les phrases se posent sur le papier',
-  'Encore une passe, la plume approche',
+  'Une histoire cherche sa première phrase',
+  'Les personnages prennent leur souffle',
+  'L’intrigue tend ses fils, un à un',
+  'Chaque chapitre trouve sa voix',
+  'Le héros apprend à marcher avant de courir',
+  'Les secrets se rangent pour la fin',
+  'Le ton se règle, page après page',
+  'Les lieux s’ouvrent comme des portes',
+  'Les dialogues apprennent à se taire',
+  'La fin attend encore sa première pierre',
+  'Le temps de l’histoire s’accorde au tien',
+  'Les mots cherchent leur lumière',
+  'Chaque personnage garde quelque chose pour lui',
+  'Le récit se souvient de tout ce qu’on lui confie',
 ];
 
 function AttenteCreation() {
