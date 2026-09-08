@@ -29,7 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .from('games')
     .select('id, title, genre, hero_name, chapter_count, created_at, status')
     .eq('user_id', auth.userId)
-    .neq('status', 'deleted')
+    // « Supprimé » ET « en échec » sont invisibles dans la liste.
+    .not('status', 'in', '("deleted","failed")')
     .order('created_at', { ascending: false });
 
   if (error) {

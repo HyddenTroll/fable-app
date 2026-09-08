@@ -41,9 +41,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const { error: updateError } = await db
-      .from('games')
-      .update({ status: 'deleted' })
-      .eq('id', gameId);
+        .from('games')
+        // Statut 'failed' (autorisé par le CHECK en base) plutôt que 'deleted'
+        // (que la contrainte games_status_check refuse encore en base) : la
+        // liste filtre les deux ; aucune migration manuelle n'est nécessaire.
+        .update({ status: 'failed' })
+        .eq('id', gameId);
 
     if (updateError) {
       // Log pour diagnostic (le plus fréquent : contrainte games_status_check
