@@ -1583,3 +1583,14 @@ FAIT :
          « rentrent toujours dans p1/4 ») : stripDeco() dans [gameId].tsx appliqué AVANT
          la pagination — aucun cadre ASCII/bloc/ligne décorative ne peut plus safficher,
          même si un chapitre ancien en base est pollué. Complète cleanText serveur.
+• CRÉATION (barre figée) : le fetch /create est SYNCHRONE (aucun événement
+      intermédiaire) → la barre restait à 1/N sans bouger. Fix : barP (progression
+      lisse) : tic-tac doux pendant l'attente (0.10 → 0.48), paliers à chaque étape
+      réelle (0.55 charpente/prologue OK, 0.85 enrichissement, 1 avant navigation),
+      animation withTiming 520 ms courbe sortie (motion.ts).
+      Modale de création : même largeur que la coquille web (maxWidth 430, centrée)
+      — le Modal RN-web se rend dans un portal, hors de #root, il s'étirait donc sur
+      toute la fenêtre.
+• TEXTE : prologue de création nettoyé côté serveur (create.ts : cleanText) ;
+      affichage du stream en lecture blindé (stripDeco sur StreamText) — aucun
+      caractère de dessin ne peut plus s'afficher même pendant l'écriture.

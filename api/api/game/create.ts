@@ -6,6 +6,7 @@ import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, buildIni
 import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
 import { tirerVecteur, titreTropProche } from '../../lib/variety';
 import { logLLMResult } from '../../lib/cost';
+import { cleanText } from '../../lib/text';
 import { getQuota, canCreateGame, recordPremiumChapter, FREE_CHAPTER_LIMIT } from '../../lib/quota';
 import type { AgeGroup, GameParams, StoryBible } from '@fable/shared';
 
@@ -216,7 +217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       game_id: game.id,
       chapter_number: 0,
       title: prologue.titre ?? 'Prologue',
-      content: prologue.texte ?? '',
+      content: cleanText(prologue.texte ?? ''),
       choices: prologue.choix ?? [],
       cover_image_url: null,
     })

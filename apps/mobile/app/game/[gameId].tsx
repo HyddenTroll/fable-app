@@ -338,7 +338,7 @@ export default function GameScreen() {
         // texte final, une fois l'écriture terminée. Composant memo :
         // seuls le texte se re-rend à chaque chunk.
         <StreamText
-          text={streamText}
+          text={stripDeco(streamText)}
           chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
         />
       ) : (

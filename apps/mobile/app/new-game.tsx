@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList, Modal,
 } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { COURBE } from '@/theme/motion';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { GameParams } from '@fable/shared';
@@ -51,6 +53,13 @@ export default function NewGameScreen() {
   const [maxChoices, setMaxChoices] = useState<GameParams['maxChoices']>(3);
   const [creating, setCreating] = useState(false);
   const [createStep, setCreateStep] = useState(0);
+  // Progression LISSE de la barre : le fetch de création est synchrone (aucun
+  // événement intermédiaire) → la barre avance par paliers doux au fil des
+  // étapes réelles, plus un tic-tac léger pendant l'attente.
+  const [barP, setBarP] = useState(0);
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${withTiming(barP * 100, { duration: 520, easing: COURBE.sortie })}%`,
+  }));
   const [error, setError] = useState<string | null>(null);
 
   const selectedGenre = GENRES.find((g) => g.code === genreCode)!;
@@ -67,6 +76,9 @@ export default function NewGameScreen() {
     setCreating(true);
     setCreateStep(0);
     setError(null);
+    // Tic-tac doux pendant la longue attente synchrone (le fetch /create).
+    setBarP(0.1);
+    const tick = setInterval(() => setBarP((b) => Math.min(0.48, b + 0.012)), 320);
     try {
       // Étape 1 : charpente + prologue (la route /create fait les deux en série)
       const res = await createGame({
@@ -81,6 +93,8 @@ export default function NewGameScreen() {
         heroTrait: heroTrait ?? undefined,
       });
       setCreateStep(1);
+      setBarP(0.55);
+      clearInterval(tick);
       setGameParams(params);
       setHeroState(null);
       setCurrentGame({
@@ -102,12 +116,15 @@ export default function NewGameScreen() {
       // Étape 2 : enrichissement de la bible EN ARRIÈRE-PLAN - ne bloque
       // pas la lecture, on part tout de suite lire le prologue.
       setCreateStep(2);
+      setBarP(0.85);
       enrichBible(res.gameId);
       // Petite respiration pour afficher la barre "Enrichissement" avant
       // de basculer sur l'écran de lecture.
       await new Promise((r) => setTimeout(r, 1200));
+      setBarP(1);
       router.push(`/game/${res.gameId}`);
     } catch (e) {
+      clearInterval(tick);
       if (e instanceof ApiError && e.paywall) {
         router.push('/paywall');
       } else {
@@ -149,14 +166,15 @@ export default function NewGameScreen() {
     <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
 
       {creating && (
-        <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+        <Modal visible transparent animationType="fade" onRequestClose={() => {}} style={styles.creationModal}>
           {/* Écran de chargement PLEIN DEVANT : rien d'autre n'est visible
               ni touchable pendant la création (les boutons de l'écran
-              resteraient cliquables sinon → doubles appels). */}
+              resteraient cliquables sinon → doubles appels).
+              Même largeur que la coquille web (430 px). */}
           <View style={styles.creationOverlay}>
             <AttenteCreation />
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${((createStep + 1) / CREATE_STEPS.length) * 100}%` }]} />
+              <Animated.View style={[styles.progressFill, fillStyle]} />
             </View>
             <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
           </View>
@@ -378,6 +396,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
+  },
+  creationModal: {
+    flex: 1,
+    maxWidth: 430,
+    width: '100%',
+    alignSelf: 'center',
   },
   creationPhraseWrap: { marginBottom: spacing.xxl, paddingHorizontal: spacing.lg },
   creationTitle: { color: colors.text, fontSize: 15, fontWeight: '600', textAlign: 'center', lineHeight: 22 },
