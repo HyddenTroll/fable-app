@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Platform,
+} from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
@@ -82,27 +84,37 @@ export default function HomeTabScreen() {
     }
   };
 
+  const doDelete = async (g: GameItem) => {
+    setBusyId(g.id);
+    try {
+      await deleteGame(g.id);
+      setGames((prev) => (prev ?? []).filter((x) => x.id !== g.id));
+      // Si l'histoire supprimée était la partie en cours, on la retire du store.
+      if (currentGame?.gameId === g.id) setCurrentGame(null);
+    } catch (e) {
+      Alert.alert('Erreur', e instanceof Error ? e.message : 'Impossible de supprimer.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const remove = (g: GameItem) => {
+    // React Native Web ignore les boutons d'Alert.alert → confirmation
+    // native window.confirm sur le web, Alert ailleurs.
+    if (Platform.OS === 'web') {
+      const ok =
+        typeof window !== 'undefined' && typeof window.confirm === 'function'
+          ? window.confirm(`Supprimer « ${g.title} » et tous ses chapitres ?`)
+          : true;
+      if (ok) void doDelete(g);
+      return;
+    }
     Alert.alert(
       'Supprimer cette histoire ?',
       `« ${g.title} » et tous ses chapitres ne seront plus visibles.`,
       [
         { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            setBusyId(g.id);
-            try {
-              await deleteGame(g.id);
-              setGames((prev) => (prev ?? []).filter((x) => x.id !== g.id));
-            } catch (e) {
-              Alert.alert('Erreur', e instanceof Error ? e.message : 'Impossible de supprimer.');
-            } finally {
-              setBusyId(null);
-            }
-          },
-        },
+        { text: 'Supprimer', style: 'destructive', onPress: () => void doDelete(g) },
       ],
     );
   };
