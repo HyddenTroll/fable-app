@@ -183,7 +183,7 @@ export function PageTurn<T>({
         {/* z2 : le VOLET — la partie droite de la courante, pivot au pli */}
         {verso !== undefined && (
           <Animated.View
-            style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center', transformStyle: 'preserve-3d' }]}
+            style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center' }]}
           >
             {/* Recto du volet : courante, aligné à droite — sa face arrière
                 est CACHÉE : au-delà de 90°, seul le verso (la page suivante)
