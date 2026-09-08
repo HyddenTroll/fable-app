@@ -1418,4 +1418,21 @@ FAIT :
          « tail » (état + choix) par-dessus la dernière page, s'efface dès que le pli bouge ;
          index = prop contrôlée (reset au changement de chapitre côté écran) ; scroll vertical
          retiré (les pages tiennent — le canvas coupe le texte au pli).
-         TSC 0/0, expo export web OK (WASM Skia).
+         TSC 0/0, expo export web OK (WASM Skia).• SUITE « CURL CYLINDRIQUE » : port web validé EN VRAI par test headless Chromium
+         (Playwright) sur la route temporaire test-curl : feuille pivotée + ombres au fil du
+         drag, snap 42 %/700 px/s, page tournée au lâcher. Pièges web surmontés (séquentiels) :
+         ① `Skia.Path.Make()` crashe avant la fin du chargement du WASM → le clip du plat
+         devient un RECT porté par la même rotation que le rouleau (la ligne de coupe reste
+         inclinée, zéro Path) ; ② deadlock du chargement : le <Canvas> ne monte qu'une fois
+         prêt et le WASM n'est chargé que par le <Canvas> → `LoadSkiaWeb()` explicite ; ③ le
+         .wasm n'était pas bundlé (métro ne connaît pas l'extension) → metro.config.js
+         (+assetExts 'wasm') + `locateFile` renvoyant l'URI de l'asset ; ④ CAUSE RACINE :
+         `Skia = JsiSkApi(global.CanvasKit)` est FIGÉ à l'évaluation du module web → le module
+         curl (pagecurl.tsx, imports Skia statiques) est chargé en LAZY après LoadSkiaWeb
+         (wrapper PageTurn.tsx : ensureSkia + Suspense ; fond pierre pendant le chargement) ;
+         natif : import paresseux instantané (bindings natifs, zéro WASM). ⑤ la capture web :
+         makeImageFromView exige un callback côté web → rasterisation du noeud DOM en SVG
+         foreignObject → canvas 2D → PNG → Skia.Image.MakeImageFromEncoded (fonts du document
+         respectées). Réserve prod : canvaskit-wasm (~30 Mo d'assets) est embarqué par métro
+         dans le bundle natif aussi (code mort, jamais exécuté) → à exclure du build natif
+         quand on passera en distribution (metro par plateforme).

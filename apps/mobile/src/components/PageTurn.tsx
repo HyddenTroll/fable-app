@@ -1,316 +1,52 @@
 /**
- * PageTurn — le papier S'ENROULE sur un cylindre, le pli suit le doigt
- * (port Skia du modèle validé par l'utilisateur, implémentation déclarative).
+ * PageTurn — wrapper « curl de page » prêt pour TOUTES les plateformes.
  *
- *   • partie encore à plat : [0, xt]    avec xt = W − d
- *   • le rouleau           : [xt, xt+R] consomme π·R de papier
- *   • le verso retombé     : [xt−v, xt] avec v = max(0, d − π·R)
+ * Le module pagecurl importe Skia statiquement ; or sur le web,
+ * Skia = JsiSkApi(global.CanvasKit) est FIGÉ à l'évaluation du module :
+ * le WASM doit être chargé AVANT. Ce wrapper :
+ *   1. charge le WASM (LoadSkiaWeb + l'URL exacte de l'asset, grâce à
+ *      metro.config.js → assetExts 'wasm') ;
+ *   2. n'importe le module curl qu'ENSUITE (lazy) — le composant Skia
+ *      est donc toujours construit avec un CanvasKit prêt ;
+ *   3. affiche un fond pierre pendant ce chargement (1er visite web).
  *
- * Les pages sont rendues en React React natif (renderPage) puis capturées
- * en SkImage (makeImageFromView) : on garde TOUT le rendu de page existant,
- * le texte n'est jamais re-layouté par frame. Le rouleau est un dégradé dont
- * les arrêts reprennent la courbe d'éclairement du cylindre (sin θ) ; le pli
- * s'incline selon la hauteur de la prise (θ = (y0/H − .5)·.40) ; snap à
- * 42 % ou 700 px/s. Retour : la feuille précédente part entièrement enroulée
- * (d ≈ DMAX) → aucun saut au changement de sens. Tout le geste vit sur le
- * thread UI (derived values), zéro re-render React pendant le drag.
+ * Sur natif, l'import paresseux est instantané et le module curl utilise
+ * les bindings natifs (zéro WASM).
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import {
-  Canvas,
-  Group,
-  Image as SkiaImage,
-  LinearGradient,
-  Rect,
-  Skia,
-  makeImageFromView,
-  vec,
-  type SkImage,
-} from '@shopify/react-native-skia';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+import { lazy, Suspense } from 'react';
+import { StyleSheet, View, Platform } from 'react-native';
+import type { PageTurnProps } from './pagecurl';
 
-const PIERRE = '#E4E2DC';
-const R = 38; // rayon d'enroulement, constant
-const ARC = Math.PI * R;
-
-interface PageTurnProps {
-  /** Rendu d'une page (React natif, capturé en SkImage). */
-  renderPage: (index: number) => React.ReactNode;
-  count: number;
-  /** Page courante — prop contrôlée par le parent. */
-  index: number;
-  onChangeIndex: (next: number) => void;
-  /** false pendant le streaming : la pagination ne bouge pas. */
-  enabled?: boolean;
-  width: number;
-  height: number;
-  /** Overlay « état + choix » par-dessus la dernière page (s'efface au geste). */
-  tail?: React.ReactNode;
-  backgroundColor?: string;
+let skiaReady: Promise<void> | null = null;
+function ensureSkia(): Promise<void> {
+  if (Platform.OS !== 'web') return Promise.resolve();
+  if (!skiaReady) {
+    skiaReady = (async () => {
+      const [{ LoadSkiaWeb }, wasm] = await Promise.all([
+        import('@shopify/react-native-skia/lib/module/web'),
+        import('canvaskit-wasm/bin/full/canvaskit.wasm'),
+      ]);
+      const uri = (wasm as { default?: string }).default ?? (wasm as unknown as string);
+      await LoadSkiaWeb({ locateFile: () => uri });
+    })();
+  }
+  return skiaReady;
 }
 
-export function PageTurn({
-  renderPage,
-  count,
-  index,
-  onChangeIndex,
-  enabled = true,
-  width: W,
-  height: H,
-  tail,
-  backgroundColor = PIERRE,
-}: PageTurnProps) {
-  const DMAX = W + 2 * R;
+const Curl = lazy(async () => {
+  await ensureSkia();
+  return import('./pagecurl');
+});
 
-  /* ── Captures des pages en SkImage ─────────────────────────── */
-  const refPrec = useRef<View>(null);
-  const refCour = useRef<View>(null);
-  const refSuiv = useRef<View>(null);
-  const [imgs, setImgs] = useState<{ prec: SkImage | null; cour: SkImage | null; suiv: SkImage | null }>({
-    prec: null,
-    cour: null,
-    suiv: null,
-  });
-
-  useEffect(() => {
-    let vivant = true;
-    const t = setTimeout(async () => {
-      const shot = async (r: React.RefObject<View | null>, ok: boolean) => {
-        if (!ok || !r.current) return null;
-        try {
-          return await makeImageFromView(r as React.RefObject<View>);
-        } catch {
-          return null;
-        }
-      };
-      const [prec, cour, suiv] = await Promise.all([
-        shot(refPrec, index > 0),
-        shot(refCour, true),
-        shot(refSuiv, index < count - 1),
-      ]);
-      if (vivant) setImgs({ prec, cour, suiv });
-    }, 32); // laisse une frame au rendu avant la capture
-    return () => {
-      vivant = false;
-      clearTimeout(t);
-    };
-  }, [index, count, W, H]);
-
-  /* ── État animé ────────────────────────────────────────────── */
-  const d = useSharedValue(0); // distance tirée
-  const theta = useSharedValue(0); // inclinaison du pli
-  const py = useSharedValue(H / 2); // hauteur de la prise
-  const dir = useSharedValue<1 | -1>(1);
-  const [sens, setSens] = useState<1 | -1>(1);
-
-  const majSens = useCallback((s: 1 | -1) => setSens(s), []);
-
-  const repos = useCallback(() => {
-    d.value = 0;
-    theta.value = 0;
-    dir.value = 1;
-    setSens(1);
-  }, [d, theta, dir]);
-
-  const commit = useCallback(
-    (delta: number) => {
-      onChangeIndex(index + delta);
-      repos();
-    },
-    [index, onChangeIndex, repos],
-  );
-
-  /* ── Geste ─────────────────────────────────────────────────── */
-  const pan = Gesture.Pan()
-    .enabled(enabled)
-    .activeOffsetX([-15, 15])
-    .failOffsetY([-14, 14])
-    .onBegin((e) => {
-      py.value = Math.min(Math.max(e.y, 0), H);
-      theta.value = (e.y / H - 0.5) * 0.4; // prise : ±~11°
-    })
-    .onUpdate((e) => {
-      const avant = e.translationX < 0;
-      const s: 1 | -1 = avant ? 1 : -1;
-      if (s !== dir.value) {
-        dir.value = s;
-        runOnJS(majSens)(s);
-      }
-      const possible = avant ? index < count - 1 : index > 0;
-      const tire = Math.min(Math.abs(e.translationX), DMAX);
-      // au retour, la feuille précédente part ENTIÈREMENT enroulée
-      // (d ≈ DMAX, invisible) : aucun saut au changement de sens.
-      if (!possible) {
-        d.value = avant ? tire * 0.1 : DMAX - tire * 0.1;
-      } else {
-        d.value = avant ? tire : DMAX - tire;
-      }
-    })
-    .onEnd((e) => {
-      const avant = dir.value === 1;
-      const possible = avant ? index < count - 1 : index > 0;
-      const prog = avant ? d.value / DMAX : 1 - d.value / DMAX;
-      const valide = possible && (prog > 0.42 || Math.abs(e.velocityX) > 700);
-      const cible = valide ? (avant ? DMAX : 0) : avant ? 0 : DMAX;
-
-      d.value = withTiming(cible, { duration: 280, easing: Easing.out(Easing.cubic) }, (fini) => {
-        if (!fini) return;
-        if (valide) runOnJS(commit)(avant ? 1 : -1);
-        else runOnJS(repos)();
-      });
-    });
-
-  /* ── Géométrie dérivée (thread UI) ─────────────────────────── */
-  const xt = useDerivedValue(() => W - d.value); // le pli
-  const vLen = useDerivedValue(() => Math.max(0, d.value - ARC)); // verso
-  const xVerso = useDerivedValue(() => xt.value - vLen.value);
-  const largeurRouleau = useDerivedValue(() =>
-    Math.min(R, R * Math.sin(Math.min(Math.PI / 2, d.value / R))),
-  );
-  const xCrete = useDerivedValue(() => xt.value + largeurRouleau.value - 1);
-
-  /* Découpe de la partie encore à plat : demi-plan X < xt, incliné. */
-  const clipPlat = useDerivedValue(() => {
-    const p = Skia.Path.Make();
-    const c = Math.cos(theta.value);
-    const s = Math.sin(theta.value);
-    const x = xt.value;
-    const y = py.value;
-    const L = H * 2; // au-delà de l'écran
-    const ax = x + s * L;
-    const ay = y - c * L;
-    const bx = x - s * L;
-    const by = y + c * L;
-    p.moveTo(ax, ay);
-    p.lineTo(bx, by);
-    p.lineTo(bx - W * 2 * c, by + W * 2 * s);
-    p.lineTo(ax - W * 2 * c, ay + W * 2 * s);
-    p.close();
-    return p;
-  });
-
-  /* Rotation du rouleau et du verso autour du pli. */
-  const transformCurl = useDerivedValue(() => [
-    { translateX: xt.value },
-    { translateY: py.value },
-    { rotate: theta.value },
-    { translateX: -xt.value },
-    { translateY: -py.value },
-  ]);
-
-  const visible = useDerivedValue(() => (d.value > 0.5 && d.value < DMAX - 0.5 ? 1 : 0));
-  const opaquePlat = useDerivedValue(() => (d.value >= DMAX - 0.5 ? 0 : 1));
-
-  const imgFeuille = sens === 1 ? imgs.cour : imgs.prec;
-  const imgDessous = sens === 1 ? imgs.suiv : imgs.cour;
-
-  const T = -H;
-  const HH = H * 3;
-
-  /* ── Overlay « tail » (état + choix) : s'efface quand le pli s'ouvre ── */
-  const tailStyle = useAnimatedStyle(() => ({
-    opacity: d.value < 3 ? 1 : 0,
-    transform: [{ translateY: d.value < 3 ? 0 : 14 }],
-  }));
-
+export function PageTurn(props: PageTurnProps) {
+  const { width, height, backgroundColor = '#E4E2DC' } = props;
   return (
-    <GestureDetector gesture={pan}>
-      <View style={[styles.scene, { width: W, height: H, backgroundColor }]}>
-        {/* Pages rendues hors écran puis capturées en SkImage */}
-        <View style={styles.hors} pointerEvents="none">
-          <View ref={refPrec} collapsable={false} style={{ width: W, height: H }}>
-            {index > 0 ? renderPage(index - 1) : null}
-          </View>
-          <View ref={refCour} collapsable={false} style={{ width: W, height: H }}>
-            {renderPage(index)}
-          </View>
-          <View ref={refSuiv} collapsable={false} style={{ width: W, height: H }}>
-            {index < count - 1 ? renderPage(index + 1) : null}
-          </View>
-        </View>
-
-        <Canvas style={{ width: W, height: H }}>
-          {/* 1. la page révélée dessous */}
-          {imgDessous ? (
-            <SkiaImage image={imgDessous} x={0} y={0} width={W} height={H} fit="fill" />
-          ) : (
-            <Rect x={0} y={0} width={W} height={H} color={backgroundColor} />
-          )}
-
-          {/* 2. partie encore à plat, coupée par la ligne de pli */}
-          <Group clip={clipPlat} opacity={opaquePlat}>
-            {imgFeuille ? <SkiaImage image={imgFeuille} x={0} y={0} width={W} height={H} fit="fill" /> : null}
-          </Group>
-
-          {/* 3. rouleau + verso, dans le repère incliné */}
-          <Group transform={transformCurl} opacity={visible}>
-            {/* 3a. ombre portée à gauche du verso */}
-            <Rect x={xVerso} y={T} width={24} height={HH}>
-              <LinearGradient
-                start={vec(0, 0)}
-                end={vec(24, 0)}
-                colors={['rgba(16,17,20,0)', 'rgba(16,17,20,0.20)']}
-              />
-            </Rect>
-
-            {/* 3b. verso retombé à plat */}
-            <Rect x={xVerso} y={T} width={vLen} height={HH}>
-              <LinearGradient
-                start={vec(0, 0)}
-                end={vec(W, 0)}
-                colors={['#f1efeb', '#e7e4dd', '#d4d0c7']}
-                positions={[0, 0.7, 1]}
-              />
-            </Rect>
-
-            {/* 3c. LE ROULEAU — dégradé reprenant la courbe d'éclairement du cylindre */}
-            <Rect x={xt} y={T} width={largeurRouleau} height={HH}>
-              <LinearGradient
-                start={vec(0, 0)}
-                end={vec(R, 0)}
-                colors={[
-                  '#c8c5be', // raccord, dans l'ombre
-                  '#e3e0d9',
-                  '#f6f4ef',
-                  '#ffffff', // le reflet
-                  '#f2efe9',
-                  '#d9d5cc', // crête
-                ]}
-                positions={[0, 0.18, 0.45, 0.62, 0.82, 1]}
-              />
-            </Rect>
-
-            {/* 3d. crête nette */}
-            <Rect x={xCrete} y={T} width={1.2} height={HH} color="rgba(16,17,20,0.18)" />
-          </Group>
-        </Canvas>
-
-        {/* état + choix : au-dessus du canvas, s'effacent dès que le pli bouge */}
-        {tail && index === count - 1 && (
-          <Animated.View style={[styles.tailBox, tailStyle]}>{tail}</Animated.View>
-        )}
-      </View>
-    </GestureDetector>
+    <Suspense fallback={<View style={[styles.scene, { width, height, backgroundColor }]} />}>
+      <Curl {...props} />
+    </Suspense>
   );
 }
 
 const styles = StyleSheet.create({
-  scene: { backgroundColor: PIERRE, overflow: 'hidden' },
-  // hors écran : rendu réel des pages, jamais visible
-  hors: { position: 'absolute', left: -10000, top: 0, opacity: 0 },
-  tailBox: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+  scene: { overflow: 'hidden' },
 });
