@@ -1,12 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, ScrollView, useWindowDimensions, Alert,
+  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, useWindowDimensions, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { streamChapter, reportGame, finalizeGame, warmGame, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
+import { PageTurn } from '@/components/PageTurn';
 import { colors, spacing, radii, fonts } from '@/theme';
 
 /** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
@@ -50,7 +51,6 @@ export default function GameScreen() {
   const [pressedChoice, setPressedChoice] = useState<number | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
-  const listRef = useRef<FlatList<string>>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastChoiceRef = useRef<number | null>(null);
 
@@ -87,10 +87,6 @@ export default function GameScreen() {
     () => splitIntoPages(current.text),
     [current.text, current.number],
   );
-  useEffect(() => {
-    setPageIndex(0);
-    listRef.current?.scrollToOffset({ offset: 0, animated: false });
-  }, [current.number]);
 
   const retryChoice = () => {
     const idx = lastChoiceRef.current;
@@ -304,20 +300,14 @@ export default function GameScreen() {
           chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
         />
       ) : (
-        <FlatList
-          ref={listRef}
-          data={pages}
-          keyExtractor={(_, i) => `${current.number}-${i}`}
-          renderItem={renderPage}
-          horizontal
-          pagingEnabled
-          decelerationRate="fast"
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(e) => {
-            const w = e.nativeEvent.layoutMeasurement.width || 1;
-            setPageIndex(Math.round(e.nativeEvent.contentOffset.x / w));
-          }}
-          style={styles.body}
+        // Pagination « livre » : la page suit le doigt (rotateY + snap),
+        // avec scroll vertical minimal dans la page quand elle déborde.
+        <PageTurn
+          pages={pages}
+          width={winWidth}
+          renderPage={renderPage}
+          onPageChange={(i) => setPageIndex(i)}
+          chapterKey={current.number}
         />
       )}
     </View>

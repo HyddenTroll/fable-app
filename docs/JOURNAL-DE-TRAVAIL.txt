@@ -1381,4 +1381,11 @@ FAIT :
        ⑤ memo : texte streamé isolé dans StreamText (memo) — le header/choix ne re-rendent plus à chaque chunk (~1-3 re-renders/s pendant 60-120 s).
        ⑥ Le mobile n'utilise pas encore la télémétrie done (ttftMs…) ; la table telemetry_chapters client reste à faire (audit section 5).
        Tests : marqueurs 23/23, variété 16/16, TSC API 0 / MOBILE 0.
-       ⚠ À FAIRE PAR L'UTILISATEUR : migration 0009 dans le SQL Editor (sinon warm → 500 silencieux et pas de ttft_ms en base) + vérifier plan Vercel (Hobby ? → aucune garantie de durée).
+       ⚠ À FAIRE PAR L'UTILISATEUR : migration 0009 dans le SQL Editor (sinon warm → 500 silencieux et pas de ttft_ms en base) + vérifier plan Vercel (Hobby ? → aucune garantie de durée).42. ANIMATION « PAGE QUI TOURNE » (PageTurn) — feu vert utilisateur :
+       • Dépendances : expo install react-native-reanimated 4.5.1 + react-native-gesture-handler 2.32 (babel auto via babel-preset-expo — pas de babel.config.js dans le projet).
+       • MECANIQUE : Gesture.Pan (activeOffsetX 10px, failOffsetY 14px → coexiste avec le scroll vertical interne des pages) ; sharedValues progress/dir sur l'UI thread ; la page pivote en rotateY(-180°×progress) autour de son bord gauche (transformOrigin 'left center', perspective 1600, backfaceVisibility hidden) ; snap au relâchement (>35 % → withSpring bascule, < 35 % → retour) ; commit = index++/-- + onPageChange (p. x/y).
+       • RETOUR EN ARRIÈRE SUPPORTÉ : 4 couches fixes rendues (courante z3, précédente z2 candidate retour, suivante z1 révélée dessous, courante z0 dessous retour) — visibilité pilotée par opacités animées (pas de dépendance à une sharedValue au rendu React).
+       • Intégration : _layout.tsx enveloppé dans GestureHandlerRootView ; [gameId].tsx : FlatList horizontale REMPLACÉE par <PageTurn> (renderPage garde le contrat {item, index}) ; listRef/useEffect de reset supprimés (chapterKey gère le reset + pageIndex).
+       • Le « p. x/y » de l'en-tête continue de fonctionner (onPageChange).
+       • TSC 0/0, expo export web OK (reanimated bundle web ✓). Test réel : téléphone (le simulateur Appetize 3 min suffit pour la lecture d'un chapitre ; le geste se teste bien sur téléphone).
+       • Pièges surmontés : renderItem contrat (objet {item,index}), StyleSheet.absoluteFillObject retiré des typings RN 0.86, tableau de styles `as const` rejeté.

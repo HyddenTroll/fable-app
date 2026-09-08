@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts as useDidotFonts,
   GFSDidot_400Regular,
@@ -24,7 +25,10 @@ export default function RootLayout() {
   });
 
   return (
-    <>
+    // GestureHandlerRootView : requis par react-native-gesture-handler
+    // (pan de la pagination « livre » PageTurn).
+    // eslint-disable-next-line react/no-unescaped-entities
+    <GestureHandlerRootView style={{ flex: 1 }}>
       {/* Fond clair pierre -> icônes de statut sombres */}
       <StatusBar style="dark" />
       <Stack
@@ -45,6 +49,6 @@ export default function RootLayout() {
         <Stack.Screen name="shop" />
         <Stack.Screen name="settings" />
       </Stack>
-    </>
+    </GestureHandlerRootView>
   );
 }
