@@ -22,8 +22,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
   runOnJS,
 } from 'react-native-reanimated';
+import { COURBE } from '@/theme/motion';
 
 interface PageTurnProps<T = string> {
   pages: T[];
@@ -145,6 +147,16 @@ export function PageTurn<T>({
     };
   });
 
+  // Recto (la courante) : visible tant que le pli n'a pas dépassé 50 %.
+  const rectoStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(fold.value < 0.5 ? 1 : 0, { duration: 110, easing: COURBE.doux }),
+  }));
+
+  // Verso (la page vers laquelle on va) : apparaît après mi-course.
+  const versoStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(fold.value > 0.62 ? 1 : 0, { duration: 110, easing: COURBE.doux }),
+  }));
+
   // Ombrage du pli : fondu sur le bord du volet qui soulève.
   const shadeStyle = useAnimatedStyle(() => ({
     opacity: 0.05 + 0.1 * fold.value,
@@ -171,22 +183,30 @@ export function PageTurn<T>({
         {/* z2 : le VOLET — la partie droite de la courante, pivot au pli */}
         {verso !== undefined && (
           <Animated.View
-            style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center' }]}
+            style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center', transformStyle: 'preserve-3d' }]}
           >
-            {/* Recto du volet : courante, aligné à droite */}
-            <View style={[styles.absolute, { alignItems: 'flex-end' }]}>
+            {/* Recto du volet : courante, aligné à droite — sa face arrière
+                est CACHÉE : au-delà de 90°, seul le verso (la page suivante)
+                est visible (transparent sinon : la page courante resterait
+                affichée en miroir pendant le pli). */}
+            <Animated.View style={[styles.absolute, { alignItems: 'flex-end', backfaceVisibility: 'hidden' }, rectoStyle]}>
               <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
             </View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
                 (visible quand le volet passe au-delà de 90°) */}
-            <View
+            <Animated.View
               style={[
                 styles.absolute,
-                { transformOrigin: 'left center', backfaceVisibility: 'hidden', transform: [{ rotateY: '180deg' }] },
+                {
+                  transformOrigin: 'left center',
+                  backfaceVisibility: 'hidden',
+                  transform: [{ rotateY: '180deg' }],
+                },
+                versoStyle,
               ]}
             >
               <View style={{ width }}>{renderPage({ item: verso, index: versoIdx })}</View>
-            </View>
+            </Animated.View>
             {/* Ombrage du pli */}
             <Animated.View style={[styles.shade, shadeStyle, { width: 28 }]} />
           </Animated.View>
