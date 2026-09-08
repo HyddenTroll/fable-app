@@ -1389,3 +1389,12 @@ FAIT :
        • Le « p. x/y » de l'en-tête continue de fonctionner (onPageChange).
        • TSC 0/0, expo export web OK (reanimated bundle web ✓). Test réel : téléphone (le simulateur Appetize 3 min suffit pour la lecture d'un chapitre ; le geste se teste bien sur téléphone).
        • Pièges surmontés : renderItem contrat (objet {item,index}), StyleSheet.absoluteFillObject retiré des typings RN 0.86, tableau de styles `as const` rejeté.
+       • CORRECTIF « VRAI PLI » (reto utilisateur : « pas de fond, leffet 3D doit être À lendroit du doigt ») :
+         PageTurn réécrit en modèle « fold 2 faces » : le pli vertical se forme à la position du doigt
+         (onStart : fold = 1 - e.x/width, direction selon la moitié décran touchée) et le SUIT en temps
+         réel (onUpdate) ; le volet (partie droite de la page) pivote autour de son bord gauche
+         (translateX + rotateY, perspective 1500, transformOrigin left center) avec UNE FACE ARRIÈRE
+         pré-rotatée 180° contenant la page suivante (rester du flipbook) ; z0 = page révélée PLEINE
+         ÉCRAN (jamais de trou) ; ombrage du pli (Animated.View) ; snap > 45 % → rabat via withSpring
+         + commit, sinon retour ; aucune animation de layout (que des transforms) = 60 fps.
+         TSC 0/0, export web OK.
