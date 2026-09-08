@@ -61,6 +61,7 @@ export interface ApiChapter {
   content: string;
   choices: { libelle: string; consequenceResumee: string }[];
   playerChoice?: number | null;
+  coverImageUrl?: string | null;
 }
 
 export interface ApiCreateResponse {
@@ -174,7 +175,7 @@ export async function readGame(gameId: string): Promise<{ game: ApiGame; chapter
  * Chaque génération écrit la partie + le chapitre en base.
  */
 export async function listGames(): Promise<
-  { id: string; title: string; genre: string; heroName: string; chapterCount: number; createdAt: string; status: string }[]
+  { id: string; title: string; genre: string; heroName: string; chapterCount: number; createdAt: string; status: string; coverImageUrl?: string | null }[]
 > {
   const res = await httpFetch(`${apiBase()}/api/game/list`, {
     method: 'GET',
@@ -190,7 +191,20 @@ export async function listGames(): Promise<
     chapterCount: Number(g.chapter_count ?? 1),
     createdAt: String(g.created_at ?? ''),
     status: String(g.status ?? 'active'),
+    coverImageUrl: (g.cover_image_url as string | null) ?? null,
   }));
+}
+
+/** Génère la couverture IA du livre (chapitre 0) — idempotente côté serveur. */
+export async function generateCover(gameId: string): Promise<string> {
+  const res = await httpFetch(`${apiBase()}/api/game/cover`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ gameId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur couverture', data.error?.code, data.paywall);
+  return String(data.coverImageUrl ?? '');
 }
 
 /** Supprime une histoire (soft delete serveur). */

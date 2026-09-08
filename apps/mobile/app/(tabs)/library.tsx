@@ -23,7 +23,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SoldeEncres } from '@/components/SoldeEncres';
-import { CouvertureFrappee } from '@/components/CouvertureFrappee';
+import { CouvertureLivre } from '@/components/CouvertureLivre';
 import { DialogueFable, type DialogueAction } from '@/components/DialogueFable';
 import { Button } from '@/components/Button';
 import { formatDateRelative, progression } from '@/lib/dates';
@@ -39,6 +39,7 @@ interface Livre {
   chapterCount: number;
   createdAt: string;
   status: string;
+  coverImageUrl?: string | null;
 }
 
 /** Balayage : amplitude max du glissement (px), seuil d'accroche, bloc révélé. */
@@ -264,7 +265,7 @@ function LigneEnCours({
             accessibilityRole="button"
             accessibilityLabel={`${jeu.title}, chapitre 1 sur ${jeu.chapterCount}`}
           >
-            <CouvertureFrappee titre={jeu.title} genre={jeu.genre} largeur={LARGEUR_COUVERTURE} />
+            <CouvertureLivre titre={jeu.title} genre={jeu.genre} largeur={LARGEUR_COUVERTURE} coverImageUrl={jeu.coverImageUrl} />
             <View style={styles.infos}>
               <Text style={styles.titre} numberOfLines={2}>
                 {jeu.title}

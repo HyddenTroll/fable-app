@@ -1612,4 +1612,17 @@ FAIT :
       les tests de rendu (remplacer par les vraies clés).
       VÉRIFICATION headless (coquille 432×932, clés placeholder, sans session) : /age ok,
       /library (Bibliothèque + erreur propre + 4 onglets), /images (frise + mention IA +
-      onglets), /profile (ex-libris + réglages + onglets) : AUCUNE erreur JS. TSC 0.
+      onglets), /profile (ex-libris + réglages + onglets) : AUCUNE erreur JS. TSC 0.• COUVERTURE IA À LA CRÉATION (demande : « est-ce qu'on peut faire la génération de
+      l'image de la photo de couverture à la création ? » + « gpt image 2 obligatoire »).
+      Serveur : api/lib/cover.ts — génération image OpenAI (modèle OPENAI_IMAGE_MODEL ??
+      'gpt-image-2', 1024, prompt DA d'éditeur sobre sans texte, STYLES tirés côté serveur
+      pour la variété) + upload bucket Supabase 'covers' créé à la volée (clé
+      service_role) + enregistrement sur chapter 0 (prologue : cover_image_url, AUCUNE
+      migration). Route api/game/cover.ts : POST auth, IDEMPOTENTE (une couverture par
+      livre, pas de double coût), erreurs propres. list.ts renvoie cover_image_url
+      (prologues en un seul aller-retour).
+      Client : CouvertureLivre (image IA sinon couverture frappée en attente) branchée
+      sur l'accueil (172) et la bibliothèque (48) ; new-game : 4e étape « La couverture
+      sèche » + generateCover fire-and-forget après enrich (la lecture ne bloque pas).
+      Échec doux : si la clé ne sert pas gpt-image-2, la frappée reste affichée.
+      Coût à intégrer au modèle financier : ~0,05–0,15 $ / couverture.

@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { CouvertureFrappee } from '@/components/CouvertureFrappee';
+import { CouvertureLivre } from '@/components/CouvertureLivre';
 import { Logo } from '@/components/Logo';
 import { SoldeEncres } from '@/components/SoldeEncres';
 import { formatDateRelative, progression } from '@/lib/dates';
@@ -41,6 +41,7 @@ export default function HomeScreen() {
   // null = chargement : logotype + solde restent en place, le reste est vide.
   const [games, setGames] = useState<Histoire[] | null>(null);
   const [chapitreCourant, setChapitreCourant] = useState<number | null>(null);
+  const [couvertureUrl, setCouvertureUrl] = useState<string | null>(null);
 
   // Rafraîchit la liste à chaque retour sur l'accueil (histoire créée,
   // chapitre ajouté ou histoire supprimée ailleurs).
@@ -79,6 +80,8 @@ export default function HomeScreen() {
         if (!actif) return;
         const n = chapters.length || 1;
         setChapitreCourant(Math.max(1, Math.min(n, total)));
+        const couverture = chapters[0]?.coverImageUrl ?? null;
+        if (couverture) setCouvertureUrl(couverture);
       })
       .catch(() => {
         if (actif) setChapitreCourant(1);
@@ -116,7 +119,7 @@ export default function HomeScreen() {
       ) : (
         <View style={styles.bloc}>
           <View style={styles.oeuvre}>
-            <CouvertureFrappee largeur={COUVERTURE} genre={livre.genre} titre={livre.title} />
+            <CouvertureLivre largeur={COUVERTURE} genre={livre.genre} titre={livre.title} coverImageUrl={couvertureUrl} />
             <Text style={styles.lecture}>EN COURS DE LECTURE</Text>
             <Text style={styles.titre}>{livre.title}</Text>
             <Text style={styles.meta}>

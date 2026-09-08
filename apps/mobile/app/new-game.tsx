@@ -10,7 +10,7 @@ import type { GameParams } from '@fable/shared';
 import {
   GENRES, HERO_TRAITS, NARRATIVE_STYLES, CHAPTER_LENGTHS, DIFFICULTIES,
 } from '@/data/mock';
-import { createGame, enrichBible, ApiError } from '@/services/api';
+import { createGame, enrichBible, generateCover, ApiError } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { Stylobate } from '@/components/Stylobate';
@@ -19,7 +19,7 @@ import { colors, spacing, radii, fonts } from '@/theme';
 type Step = 'genre' | 'hero' | 'params';
 
 /** Étapes visibles de la création, pour la barre de progression. */
-const CREATE_STEPS = ['Charpente du récit', 'Prologue', 'Enrichissement du monde'];
+const CREATE_STEPS = ['Charpente du récit', 'Prologue', 'Enrichissement du monde', 'La couverture sèche'];
 
 /** Sous-titres d'étape (11.5px, gris) sous le titre en Didot. */
 const STEP_SUBTITLES: Record<Step, string> = {
@@ -121,6 +121,13 @@ export default function NewGameScreen() {
       // Petite respiration pour afficher la barre "Enrichissement" avant
       // de basculer sur l'écran de lecture.
       await new Promise((r) => setTimeout(r, 1200));
+      // La couverture IA part en arrière-plan (ne bloque pas la lecture) :
+      // l'accueil affichera l'image quand elle sera prête, la couverture
+      // frappée en attendant.
+      setCreateStep(3);
+      setBarP(0.92);
+      generateCover(res.gameId).catch(() => {});
+      await new Promise((r) => setTimeout(r, 1100));
       setBarP(1);
       router.push(`/game/${res.gameId}`);
     } catch (e) {
