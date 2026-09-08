@@ -433,6 +433,7 @@ function renderState(state: HeroState) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  pagerBody: { flex: 1 },
   header: {
     paddingHorizontal: spacing.xl,
     paddingTop: 48,
