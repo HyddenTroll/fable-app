@@ -10,17 +10,18 @@ import { getDb } from './auth';
 const OPENAI_IMAGES_URL = 'https://api.openai.com/v1/images/generations';
 const IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL ?? 'gpt-image-2';
 
-/** Styles visuels tirés côté serveur (variété par tirage, jamais température). */
-const STYLES = [
-  'linogravure deux tons, traces de presse',
-  'sérigraphie au trait, aplats nets, un seul élément',
-  'gravure ancienne au burin, hachures serrées',
-  'collage de papiers déchirés, ombres franches',
-  'aquatinte sombre, fondu de valeurs',
-  'tissu sérigraphié, motifs répétés discrets',
-  'photogravure granuleuse, fort contraste',
-  'fresque murale écaillée, pigments bruts',
-];
+/** Ton graphique par genre : une direction, pas une formule — le modèle compose
+ *  librement la composition, la palette et le langage à partir de cette couleur. */
+const TONS_PAR_GENRE: Record<string, string> = {
+  horreur: 'froid et sourd, presque abstrait : une seule image inquiétante, silence, espaces vides',
+  thriller: 'tendu et net : contrastes durs, lignes coupantes, lumière basse',
+  fantastique: 'matière ancienne : objets curieux, lumière rasante, patine du temps',
+  'science-fiction': 'formes pures, horizons artificiels, froid industriel, exactitude',
+  drame: 'intime : matières, corps, lumière douce, pudeur',
+  western: 'ciel immense, terre, couleurs séchées par le soleil',
+  romance: 'chaud : dégradé doux, motif intime, tendresse retenue',
+  comédie: 'clair et simple : presque une affiche d’opérette, énergie sobre',
+};
 
 export async function generateCoverImage(opts: {
   title: string;
@@ -30,19 +31,19 @@ export async function generateCoverImage(opts: {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY manquante (génération de couverture)');
 
-  const seed = (opts.title + opts.genre).length % STYLES.length;
   const resume = opts.resume ? opts.resume.slice(0, 240) : '';
+  const ton = TONS_PAR_GENRE[opts.genre?.toLowerCase() ?? ''] ?? 'sobre, éditeur indépendant';
 
   const prompt = [
-    `Couverture de roman — art d'éditeur indépendant, SOBRE, sans aucun texte ni lettrage.`,
-    `Genre : ${opts.genre}. Titre : ${opts.title}.`,
+    `Conçois la couverture d'un roman publié — un VRAI objet de librairie, pas une illustration, pas une affiche.`,
+    `Titre : ${opts.title}.`,
+    `Genre : ${opts.genre}.`,
     resume ? `L'histoire : ${resume}` : '',
-    `Style : ${STYLES[seed]}.`,
-    `Règles : composition lisible en miniature (la couverture s'affiche à 48 px de large) ; `,
-    `aucune typographie, aucun mot, aucun chiffre ; pas de silhouettes génériques de dos, `,
-    `pas de clichés d'illustrateur (dragon éclairé, cape au vent, épée levée) ; palette sobre `,
-    `(argile, obsidienne, bronze, pierre, un seul accent) ; UN seul élément fort, le reste épuré ; `,
-    `la moitié basse reste calme pour accueillir le titre en surimpression.`,
+    `Couleur de ton : ${ton}. La composition, la palette et le langage graphique doivent être UNIQUES et nés de ce thème — jamais une formule générique.`,
+    `Règles : aucun texte ni lettrage (le titre est imprimé séparément, la moitié basse reste calme pour l'accueillir en surimpression) ; `,
+    `pas de silhouette générique de dos ; pas de clichés d'illustrateur (dragon éclairé, cape au vent, épée levée) ; `,
+    `pas de rendu photographique de banque d'images ; palette restreinte (deux ou trois couleurs maximum, dominante sombre ou argile) ; `,
+    `UN seul élément fort, le reste épuré ; composition lisible en miniature (la couverture s'affiche à 48 px de large dans une bibliothèque).`,
   ].filter(Boolean).join(' ');
 
   const res = await fetch(OPENAI_IMAGES_URL, {
