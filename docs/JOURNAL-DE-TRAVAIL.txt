@@ -1705,4 +1705,19 @@ FAIT :
       — STYLE NARRATIF : 8 nouveaux (incisif, atmosphérique, épistolaire, onirique,
         oral, épuré, poétique, vif) → 14 ; « Tirer au sort pour moi » devient
         « Laisser l'IA décider ».
-      TSC API 0 / MOBILE 0. poussé `7b1f4f6`
+      TSC API 0 / MOBILE 0. poussé `7b1f4f6`• COUVERTURE IA REFONDUE + LIBELLÉ CHARGEMENT (retour : « le fond marron revient
+      toujours, inspire-toi de ce qui existe » + « la couverture doit être à plat »).
+      — cover.ts : DIRECTIONS_PAR_GENRE (6 par rayon, 30 au total) : de vrais
+        courants de librairie (poche noir 70s, bois gravé, enluminure, Série
+        Noire, néons cyber, solarpunk, eau-forte, couchant corail...), TIRÉES
+        AU SORT à chaque génération ; palette de la direction OBLIGATOIRE,
+        « jamais de brun ni d'argile dominant » (la cause du fond marron).
+      — Consigne « LA COUVERTURE EST L'IMAGE ENTIÈRE » : vue de face, à plat,
+        plein cadre 3:4 bord à bord, aucun livre en perspective, aucun fond,
+        aucune main, aucun cadre.
+      — Fix au passage : clef de genre cassée ('science-fiction' ≠ code réel
+        'science_fiction') → le fallback « sobre » s'appliquait toujours ;
+        alias ajouté.
+      — new-game.tsx : « Charpente du récit » → « Création de votre histoire
+        en cours... » (1re étape de la barre de chargement).
+      TSC API 0 / MOBILE 0. poussé `8a2e631`

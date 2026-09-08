@@ -19,7 +19,7 @@ import { colors, spacing, radii, fonts } from '@/theme';
 type Step = 'genre' | 'hero' | 'params';
 
 /** Étapes visibles de la création, pour la barre de progression. */
-const CREATE_STEPS = ['Charpente du récit', 'Prologue', 'Enrichissement du monde', 'La couverture sèche'];
+const CREATE_STEPS = ['Création de votre histoire en cours...', 'Prologue', 'Enrichissement du monde', 'La couverture sèche'];
 
 /** Sous-titres d'étape (11.5px, gris) sous le titre en Didot. */
 const STEP_SUBTITLES: Record<Step, string> = {
