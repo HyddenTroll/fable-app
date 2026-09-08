@@ -1,20 +1,20 @@
 /**
- * PageTurn — vrai pli de page « livre » qui suit le doigt.
+ * PageTurn — pli de page « livre », avant ET retour, fond toujours plein.
  *
- * Modèle « fold 2 faces » (comme les flipbooks) :
- * - le pli vertical se forme À LA POSITION DU DOIGT (onStart + onUpdate) :
- *   la partie droite de la page se soulève en pivotant autour du pli ;
- * - le volet a DEUX faces : son recto = la partie droite de la page
- *   courante, son verso (pré-rotaté à 180°) = la page suivante/retour —
- *   quand le volet se rabat au-delà de 90°, le verso apparaît ;
- * - le dessous (z0) = la page révélée PLEINE ÉCRAN : jamais de trou ;
- * - snap au relâchement : pli < 45 % → retour, sinon rabat complet
- *   (withSpring, 60 fps : purement des transforms, aucun re-layout).
+ * Mécanique (fold 2 faces, 60 fps, uniquement des transforms) :
+ * - le pli se forme à la position du doigt, la partie droite de la page
+ *   pivote en rotateY autour de son bord gauche (perspective) ;
+ * - le volet a DEUX faces : recto = la page courante (deuxième moitié),
+ *   verso (pré-rotaté 180°) = la page vers laquelle on va ;
+ * - z0 (dessous) = la page qui sera révélée, PLEINE écran → jamais de trou ;
+ * - snap : pli < 45 % → la page revient, sinon rabat complet (withSpring).
  *
- * Contrat identique à l'ancienne version : pages, renderPage({item,index}),
- * onPageChange, chapterKey, width. Uniquement du JS/TS — marche natif et web.
+ * DIRECTION = état React (rendu toujours cohérent, jamais de « page qui
+ * reste » après une annulation) : le geste met à jour dir.value (thread UI)
+ * pour le volet et dirS (React) pour le contenu des faces ; l'annulation
+ * remet les deux à « avant ».
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -33,7 +33,7 @@ interface PageTurnProps<T = string> {
   /** Reset de l'animation quand le chapitre change. */
   chapterKey?: string | number;
   width: number;
-  /** Fond derrière le pli (le « livre ») : couleur pierre par défaut. */
+  /** Fond derrière le pli (le « livre ») : papier blanc par défaut. */
   backgroundColor?: string;
 }
 
@@ -48,14 +48,21 @@ export function PageTurn<T>({
   backgroundColor = '#FFFFFF',
 }: PageTurnProps<T>) {
   const index = useSharedValue(0);
-  const dir = useSharedValue(1); // 1 = avant ; -1 = retour
-  const fold = useSharedValue(0); // 0 = fermé (pli au bord droit) ; 1 = rabattu
+  const dir = useSharedValue(1); // 1 = avant ; -1 = retour (thread UI)
+  const [dirS, setDirS] = useState<1 | -1>(1); // direction vue par le rendu
+  const fold = useSharedValue(0); // 0 = fermé ; 1 = rabattu
+
+  const setDirBoth = (s: 1 | -1) => {
+    dir.value = s;
+    setDirS(s);
+  };
 
   // Reset au changement de chapitre.
   useEffect(() => {
     index.value = 0;
     fold.value = 0;
     dir.value = 1;
+    setDirS(1);
     onPageChange?.(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterKey]);
@@ -64,7 +71,8 @@ export function PageTurn<T>({
     'worklet';
     index.value = page;
     fold.value = 0;
-    if (dir.value === -1) dir.value = 1;
+    dir.value = 1;
+    runOnJS(setDirBoth)(1);
     runOnJS(onPageChange ?? (() => {}))(page);
   };
 
@@ -76,7 +84,9 @@ export function PageTurn<T>({
       const canForward = index.value < pages.length - 1;
       if (e.x < width * 0.5 ? canBack : canForward) {
         // Le pli se forme À L'ENDROIT DU DOIGT, dans la direction possible.
-        dir.value = e.x < width * 0.5 && canBack ? -1 : 1;
+        const s: 1 | -1 = e.x < width * 0.5 && canBack ? -1 : 1;
+        if (s !== dir.value) runOnJS(setDirS)(s);
+        dir.value = s;
         const raw = 1 - e.x / width;
         fold.value = Math.max(0.05, Math.min(0.95, raw));
       }
@@ -98,30 +108,39 @@ export function PageTurn<T>({
           return;
         }
       }
-      fold.value = withSpring(0, { damping: 18, stiffness: 220 });
+      // Annulation : la page revient ET la direction repasse à « avant »
+      // (sinon un re-render après coup afficherait la page précédente).
+      fold.value = withSpring(0, { damping: 18, stiffness: 220 }, () => {
+        'worklet';
+        if (dir.value === -1) {
+          dir.value = 1;
+          runOnJS(setDirS)(1);
+        }
+      });
     });
 
   const curIdx = index.value;
   const current = pages[curIdx];
-  const turning = pages[dir.value === 1 ? curIdx : curIdx - 1]; // page qui plie
-  const revealed = pages[dir.value === 1 ? curIdx + 1 : curIdx]; // dessous/verso
-  const turnIdx = dir.value === 1 ? curIdx : curIdx - 1;
-  const revealIdx = dir.value === 1 ? curIdx + 1 : curIdx;
+  // La page qui plie est TOUJOURS la courante ; ce qui change c'est la page
+  // révélée (z0) et le verso du volet.
+  const revealed = pages[dirS === 1 ? curIdx + 1 : curIdx]; // dessous
+  const verso = pages[dirS === 1 ? curIdx + 1 : curIdx - 1]; // verso du volet
+  const revealIdx = dirS === 1 ? curIdx + 1 : curIdx;
+  const versoIdx = dirS === 1 ? curIdx + 1 : curIdx - 1;
 
   // z0 : la page révélée, PLEINE — le fond ne peut jamais être vide.
   const revealedStyle = useAnimatedStyle(() => ({
     opacity: fold.value > 0.01 ? 1 : 0,
   }));
 
-  // Volet (partie droite de la page qui plie) : translateX + rotateY.
+  // Volet (partie droite de la page courante) : translateX + rotateY.
   const flapStyle = useAnimatedStyle(() => {
     const flapX = width * (1 - fold.value); // bord gauche du volet = pli
-    const angle = -180 * fold.value;
     return {
       transform: [
         { translateX: flapX },
         { perspective: ROBOT },
-        { rotateY: `${angle}deg` },
+        { rotateY: `${-180 * fold.value}deg` },
       ],
     };
   });
@@ -146,28 +165,27 @@ export function PageTurn<T>({
           </Animated.View>
         )}
 
-        {/* z1 : la page qui plie — partie gauche fixe, pleine largeur */}
-        {turning !== undefined && (
-          <View style={styles.absolute}>{renderPage({ item: turning, index: turnIdx })}</View>
-        )}
+        {/* z1 : la page courante, pleine largeur (à gauche du pli, à plat) */}
+        <View style={styles.absolute}>{renderPage({ item: current, index: curIdx })}</View>
 
-        {/* z2 : le VELET — la partie droite de « turning », pivot au pli */}
-        {turning !== undefined && revealed !== undefined && (
+        {/* z2 : le VOLET — la partie droite de la courante, pivot au pli */}
+        {verso !== undefined && (
           <Animated.View
             style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center' }]}
           >
-            {/* Recto du volet : turning, aligné à droite */}
+            {/* Recto du volet : courante, aligné à droite */}
             <View style={[styles.absolute, { alignItems: 'flex-end' }]}>
-              <View style={{ width }}>{renderPage({ item: turning, index: turnIdx })}</View>
+              <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
             </View>
-            {/* Verso du volet : revealed, pré-rotaté 180° (visible > 90°) */}
+            {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
+                (visible quand le volet passe au-delà de 90°) */}
             <View
               style={[
                 styles.absolute,
                 { transformOrigin: 'left center', backfaceVisibility: 'hidden', transform: [{ rotateY: '180deg' }] },
               ]}
             >
-              <View style={{ width }}>{renderPage({ item: revealed, index: revealIdx })}</View>
+              <View style={{ width }}>{renderPage({ item: verso, index: versoIdx })}</View>
             </View>
             {/* Ombrage du pli */}
             <Animated.View style={[styles.shade, shadeStyle, { width: 28 }]} />

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
+import { handleCorsOPTIONS } from '../../lib/cors';
 
 function json(res: VercelResponse, status: number, body: unknown) {
   res.statusCode = status;
@@ -12,6 +13,7 @@ function json(res: VercelResponse, status: number, body: unknown) {
  * L'histoire n'apparaît plus dans la liste. Vérifie l'appartenance.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return handleCorsOPTIONS(req, res);
   if (req.method !== 'POST') {
     return json(res, 405, { error: { code: 'method_not_allowed', message: 'POST requis' } });
   }

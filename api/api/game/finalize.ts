@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
+import { handleCorsOPTIONS } from '../../lib/cors';
 import { getLLM, type LLMResult } from '../../lib/llm/provider';
 import {
   buildSystemPrompt,
@@ -33,6 +34,7 @@ import type { GameParams, StoryBible, StoryPlan } from '@fable/shared';
  * ({ok: true, skipped: true}).
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return handleCorsOPTIONS(req, res);
   if (req.method !== 'POST') {
     return res.status(405).json({ error: { code: 'method_not_allowed' } });
   }

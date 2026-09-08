@@ -1448,3 +1448,17 @@ FAIT :
        • PAGES BLANCHES : les pages de lecture passent en « papier blanc » (#FFFFFF : styles.page
          de [gameId].tsx + défaut du container PageTurn) sur le fond pierre de lécran — le pli
          révèle donc une page blanche (plus de pierre derrière le livre).
+• FIXS « SUPPRIMER » + PLI (retour utilisateur : « quand je confirme ça se supprime pas » + « c'est
+         toujours la même page qui apparaît ») :
+         SUPPRESSION : cause trouvée par mesure réelle — le preflight OPTIONS des écritures API
+         répondait 405 → tout POST web avec Authorization+Content-Type était BLOQUÉ par le
+         navigateur (l'échec était invisible : Alert.alert est ignoré par RN Web). Fix : helper
+         api/lib/cors.ts + pointeur OPTIONS (204 + en-têtes CORS) dans les 9 routes game + headers
+         CORS globaux dans vercel.json (/api/*) ; côté client : l'erreur de suppression s'affiche
+         désormais en window.confirm sur le web (fini le silence). Vérif : OPTIONS en ligne → 204.
+         PLI : réécriture de PageTurn — la direction est un état REACT (dirS) : la page qui plie
+         est TOUJOURS la courante (le verso = la page vers laquelle on va : suivante en avant,
+         précédente en retour ; z0 = page révélée pleine) ; l'ANNULATION d'un retour remet la
+         direction à « avant » (plus de page précédente affichée par erreur après un re-render,
+         cause du « toujours la même page ») ; reset propre au changement de chapitre.
+         TSC API 0 / MOBILE 0, tests 23/23.

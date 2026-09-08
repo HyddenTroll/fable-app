@@ -92,7 +92,13 @@ export default function HomeTabScreen() {
       // Si l'histoire supprimée était la partie en cours, on la retire du store.
       if (currentGame?.gameId === g.id) setCurrentGame(null);
     } catch (e) {
-      Alert.alert('Erreur', e instanceof Error ? e.message : 'Impossible de supprimer.');
+      const msg = e instanceof Error ? e.message : 'Impossible de supprimer.';
+      // RN Web ignore Alert.alert → confirmation native visible sur le web.
+      if (Platform.OS === 'web') {
+        window.confirm?.(`Impossible de supprimer : ${msg}`);
+        return;
+      }
+      Alert.alert('Erreur', msg);
     } finally {
       setBusyId(null);
     }

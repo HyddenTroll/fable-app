@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
+import { handleCorsOPTIONS } from '../../lib/cors';
 import { getLLM } from '../../lib/llm/provider';
 import { buildProloguePrompt, buildQuickBiblePrompt, buildSystemPrompt, buildInitialResume, ageLabel, NARRATIVE_VOICES } from '../../lib/prompts';
 import { BRIQUES, BRIQUES_PAR_GENRE, RYTHMES_PAR_GENRE, piocher } from '../../lib/narrative-elements';
@@ -34,6 +35,7 @@ function json(res: VercelResponse, status: number, body: unknown) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return handleCorsOPTIONS(req, res);
   if (req.method !== 'POST') {
     return json(res, 405, { error: { code: 'method_not_allowed', message: 'POST requis' } });
   }

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
+import { handleCorsOPTIONS } from '../../lib/cors';
 import { getLLM } from '../../lib/llm/provider';
 import { buildEnrichBiblePrompt, buildSystemPrompt, ageLabel } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
@@ -18,6 +19,7 @@ function json(res: VercelResponse, status: number, body: unknown) {
  * quand elle est prête, pour que les chapitres suivants en profitent.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return handleCorsOPTIONS(req, res);
   if (req.method !== 'POST') {
     return json(res, 405, { error: { code: 'method_not_allowed', message: 'POST requis' } });
   }

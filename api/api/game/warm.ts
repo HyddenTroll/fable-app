@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUserId, getDb } from '../../lib/auth';
+import { handleCorsOPTIONS } from '../../lib/cors';
 import { getLLM } from '../../lib/llm/provider';
 import { buildSystemPrompt, buildChapterMessages } from '../../lib/prompts';
 import { logLLMResult } from '../../lib/cost';
@@ -21,6 +22,7 @@ import type { GameParams, StoryBible } from '@fable/shared';
  * (msgs.stable ne dépend que de bible_text — vérifié dans prompts.ts).
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') return handleCorsOPTIONS(req, res);
   if (req.method !== 'POST') {
     return res.status(405).json({ error: { code: 'method_not_allowed' } });
   }
