@@ -1593,4 +1593,23 @@ FAIT :
       toute la fenêtre.
 • TEXTE : prologue de création nettoyé côté serveur (create.ts : cleanText) ;
       affichage du stream en lecture blindé (stripDeco sur StreamText) — aucun
-      caractère de dessin ne peut plus s'afficher même pendant l'écriture.
+      caractère de dessin ne peut plus s'afficher même pendant l'écriture.• REFONTE COMPLÈTE — NAVIGATION & ÉCRANS (2 specs normatives utilisateur : « écran
+      d'accueil redessiné » + « navigation et icônes »). FONDATIONS : CouvertureFrappee
+      (déterministe FNV-1a, bandes can/mea/den/arc/tri/vide, une bande bronze, densité par
+      genre, radius 0 sauf arcades-niche) + lib/dates (formatDateRelative, progression,
+      encresSur5).
+      4 AGENTS PARALLÈLES : Accueil (couverture 172 en objet principal, reprise, 2 boutons,
+      ligne autres histoires, état vide) · Bibliothèque (lignes nues + jauges, suppression
+      par balayage gauche + confirmation DialogueFable, étagère terminées + planche) ·
+      Images (frise dorique triglyphes/métopes, métopes vides visibles, filtre, mention IA
+      au fil lapis) · Profil (ex-libris PieceEncre 140, boutique, réglages thème/taille,
+      compte) + Barre d'onglets 4 entrées avec icônes SVG architecturées (fronton, dos,
+      niche, profil : inactif 1.6 gris / actif 2 obsidienne + filet 18×2) : lapis nulle
+      part.
+      CORRECTIONS D'INTÉGRATION : doublon de clé styles (library) ; polices factices du
+      _layout remplacées par @/theme ; CONFLIT DE ROUTE : app/library.tsx (ancien, à la
+      racine) écrasait (tabs)/library.tsx → supprimé ; .env placeholder local créé pour
+      les tests de rendu (remplacer par les vraies clés).
+      VÉRIFICATION headless (coquille 432×932, clés placeholder, sans session) : /age ok,
+      /library (Bibliothèque + erreur propre + 4 onglets), /images (frise + mention IA +
+      onglets), /profile (ex-libris + réglages + onglets) : AUCUNE erreur JS. TSC 0.
