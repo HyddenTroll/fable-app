@@ -19,6 +19,18 @@ import { colors, spacing, radii, fonts } from '@/theme';
 /** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
 const PAGE_CHARS = 1500;
 
+/** Filet de sécurité CLIENT : ne laisse AUCUN caractère de dessin s'afficher
+ *  (cadres ╔═╗, blocs █▀▄, formes, lignes décoratives), même si un chapitre
+ *  pré-existant en base est pollué. Complète le nettoyage serveur. */
+function stripDeco(t: string): string {
+  return t
+    .replace(/[\u2500-\u259F]/g, '')
+    .replace(/[\u25A0-\u25FF\u2B00-\u2BFF]/g, '')
+    .replace(/[-—_=~#]{4,}/g, ' ')
+    .replace(/^[—–\s]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
 /** Découpe un chapitre en PAGES (jamais de scroll : on tourne la page). */
 function splitIntoPages(text: string, maxChars = PAGE_CHARS): string[] {
   const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
@@ -98,7 +110,7 @@ export default function GameScreen() {
 
   // Pages du chapitre courant (mémoïsées) + remise à zéro quand le chapitre change
   const pages = useMemo(
-    () => splitIntoPages(current.text),
+    () => splitIntoPages(stripDeco(current.text)),
     [current.text, current.number],
   );
 

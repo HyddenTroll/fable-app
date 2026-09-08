@@ -1579,3 +1579,7 @@ FAIT :
       center vertical + horizontal, fond bureau #C9C6BF, overflow hidden.
       Vérifié headless : fenêtre 1280×1000 → coquille 432×932 centrée (y=34) ;
       fenêtre 700 de haut → pleine hauteur. Fenêtres basses inchangées.
+       • Filet de sécurité CLIENT contre les caractères de dessin (retour : les ╔═╗
+         « rentrent toujours dans p1/4 ») : stripDeco() dans [gameId].tsx appliqué AVANT
+         la pagination — aucun cadre ASCII/bloc/ligne décorative ne peut plus safficher,
+         même si un chapitre ancien en base est pollué. Complète cleanText serveur.
