@@ -57,6 +57,8 @@ export default function GameScreen() {
   const [pressedChoice, setPressedChoice] = useState<number | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
+  const [bodyW, setBodyW] = useState(0);
+  const [bodyH, setBodyH] = useState(0);
   const [dialogue, setDialogue] = useState<{
     kind: 'confirm' | 'erreur';
     title?: string;
@@ -229,7 +231,7 @@ export default function GameScreen() {
       // texte (ou les choix) déborde, il reste accessible — un minimum
       // de défilement, jamais de texte coupé.
       <ScrollView
-        style={[styles.page, { width: winWidth }]}
+        style={[styles.page, { width: bodyW }]}
         contentContainerStyle={styles.pageContent}
         showsVerticalScrollIndicator={false}
       >
@@ -326,13 +328,22 @@ export default function GameScreen() {
       ) : (
         // Pagination « livre » : la page suit le doigt (rotateY + snap),
         // avec scroll vertical minimal dans la page quand elle déborde.
-        <PageTurn
-          pages={pages}
-          width={winWidth}
-          renderPage={renderPage}
-          onPageChange={(i) => setPageIndex(i)}
-          chapterKey={current.number}
-        />
+        // La largeur est MESURÉE (pas winWidth) : sur le web, la fenêtre
+        // dépasse la coquille téléphone de 430 px.
+        <View style={styles.pagerBody} onLayout={(e) => {
+          setBodyW(e.nativeEvent.layout.width);
+          setBodyH(e.nativeEvent.layout.height);
+        }}>
+          {bodyW > 0 && bodyH > 0 && (
+            <PageTurn
+              pages={pages}
+              width={bodyW}
+              renderPage={renderPage}
+              onPageChange={(i) => setPageIndex(i)}
+              chapterKey={current.number}
+            />
+          )}
+        </View>
       )}
 
       {!isGenerating && pages.length > 1 && (
