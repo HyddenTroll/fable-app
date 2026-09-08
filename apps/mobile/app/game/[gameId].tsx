@@ -284,7 +284,7 @@ export default function GameScreen() {
                 <Oves />
                 <Text style={styles.choicesLabel}>{libelleChoix}</Text>
                 <ListeDeChoix
-                  choix={current.choices.map((c) => c.libelle)}
+                  choix={current.choices.map((c) => stripDeco(c.libelle))}
                   onChoisir={handleChoice}
                 />
                 <TouchableOpacity
@@ -372,6 +372,7 @@ export default function GameScreen() {
             <PageTurn
               pages={pages}
               width={bodyW}
+              height={bodyH}
               renderPage={renderPage}
               onPageChange={(i) => setPageIndex(i)}
               chapterKey={current.number}

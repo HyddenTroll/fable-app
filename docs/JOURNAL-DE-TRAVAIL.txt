@@ -1720,4 +1720,18 @@ FAIT :
         alias ajouté.
       — new-game.tsx : « Charpente du récit » → « Création de votre histoire
         en cours... » (1re étape de la barre de chargement).
-      TSC API 0 / MOBILE 0. poussé `8a2e631`
+      TSC API 0 / MOBILE 0. poussé `8a2e631`• SCROLL LECTURE RÉPARÉ + ╔═╗ DANS LES CHOIX (retour : « il manque le scroll quand
+      le texte descend trop, il faut absolument remonter »).
+      — ROOT CAUSE : dans le volet pivoté (transform 3D), le `flex: 1` du
+        ScrollView de page n'était pas résolu par RNW → la page s'étendait
+        à la hauteur du contenu → aucun défilement possible, texte « trop
+        bas » et coupé en bas d'écran.
+      — FIX : `PageTurn` accepte `height?: number` (px), appliqué aux
+        conteneurs recto/verso du volet ; `[gameId].tsx` passe `height={bodyH}`
+        (mesuré via onLayout). Hauteur explicite = scroll garanti même
+        transformé.
+      — VALIDÉ HEADLESS (Playwright, molette réelle) : page 1 à plat
+        scrollTop 300 px ✓, page 2 DANS le volet pivoté scrollTop 566 px ✓.
+      — ╔═╗ : stripDeco appliqué AUSSI aux libellés de choix (ils ne
+        traversaient pas le filtre — seule la page les nettoyait).
+      TSC 0. poussé `8a2e631`

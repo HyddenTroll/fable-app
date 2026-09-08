@@ -35,6 +35,10 @@ interface PageTurnProps<T = string> {
   /** Reset de l'animation quand le chapitre change. */
   chapterKey?: string | number;
   width: number;
+  /** Hauteur disponible en px : garantit le scroll vertical de la page
+   *  (le flex ne se résout pas dans un volet transformé en 3D sur RNW —
+   *  sans hauteur fixe, la page s'étend au contenu et le scroll meurt). */
+  height?: number;
   /** Fond derrière le pli (le « livre ») : papier blanc par défaut. */
   backgroundColor?: string;
 }
@@ -47,6 +51,7 @@ export function PageTurn<T>({
   onPageChange,
   chapterKey,
   width,
+  height,
   backgroundColor = '#FFFFFF',
 }: PageTurnProps<T>) {
   const index = useSharedValue(0);
@@ -200,7 +205,7 @@ export function PageTurn<T>({
                 CACHÉE : au-delà de 90°, seul le verso (la page suivante)
                 est visible. */}
             <Animated.View style={[styles.absolute, { backfaceVisibility: 'hidden' }, rectoStyle]}>
-              <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
+              <View style={{ width, height }}>{renderPage({ item: current, index: curIdx })}</View>
             </Animated.View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
                 (visible quand le volet passe au-delà de 90°) */}
@@ -215,7 +220,7 @@ export function PageTurn<T>({
                 versoStyle,
               ]}
             >
-              <View style={{ width }}>{renderPage({ item: verso, index: versoIdx })}</View>
+              <View style={{ width, height }}>{renderPage({ item: verso, index: versoIdx })}</View>
             </Animated.View>
             {/* Ombrage du pli */}
             <Animated.View style={[styles.shade, shadeStyle, { width: 28 }]} />
