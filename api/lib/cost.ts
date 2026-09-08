@@ -43,6 +43,7 @@ export async function logLLMResult(
   gameId: string | null,
   kind: PromptKind,
   result: LLMResult,
+  meta?: { ttftMs?: number; totalMs?: number },
 ): Promise<void> {
   // ALERTE TRONCATURE : le texte a été coupé au plafond — les marqueurs
   // [[CHOIX]]/[[TITRE]] (en fin de texte) sont perdus par construction.
@@ -63,4 +64,24 @@ export async function logLLMResult(
     stopReason: result.stopReason,
     latencyMs: result.latencyMs,
   });
+  if (meta?.ttftMs != null || meta?.totalMs != null) {
+    // Complète la ligne cost_logs avec la télémétrie de requête.
+    // try/catch : la télémétrie ne doit JAMAIS faire échouer le pipeline
+    // (colonnes absentes tant que la migration 0009 n'est pas passée).
+    try {
+      await db
+        .from('cost_logs')
+        .update({
+          ttft_ms: meta.ttftMs ?? null,
+          total_ms: meta.totalMs ?? null,
+        })
+        .eq('user_id', userId)
+        .eq('game_id', gameId ?? '')
+        .eq('kind', kind)
+        .order('created_at', { ascending: false })
+        .limit(1);
+    } catch {
+      console.warn('[cost] télémétrie non enregistrée (migration 0009 ?)', kind);
+    }
+  }
 }

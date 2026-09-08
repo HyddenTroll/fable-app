@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, ScrollView, useWindowDimensions, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
-import { streamChapter, reportGame, finalizeGame, ApiError, type HeroState } from '@/services/api';
+import { streamChapter, reportGame, finalizeGame, warmGame, ApiError, type HeroState } from '@/services/api';
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { colors, spacing, radii, fonts } from '@/theme';
@@ -51,9 +51,20 @@ export default function GameScreen() {
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const listRef = useRef<FlatList<string>>(null);
-  const streamScrollRef = useRef<ScrollView>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastChoiceRef = useRef<number | null>(null);
+
+  // AMORÇAGE DU CACHE pendant la lecture : le cache LLM a un TTL ~5 min
+  // et la fonction Vercel refroidit (~5 min aussi) — un lecteur qui met
+  // 5-7 min par chapitre a donc TOUJOURS un chaud/froid au clic suivant.
+  // Warm fire-and-forget toutes les 4 min, hors génération.
+  useEffect(() => {
+    if (!game || isGenerating) return;
+    const id = setInterval(() => {
+      warmGame(game.gameId).catch(() => {});
+    }, 240_000);
+    return () => clearInterval(id);
+  }, [game?.gameId, isGenerating]);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
@@ -286,19 +297,12 @@ export default function GameScreen() {
       {isGenerating ? (
         // Pendant la génération : le texte écrit en direct, défilement
         // AUTO (invisible), sans pagination - on pagine uniquement le
-        // texte final, une fois l'écriture terminée.
-        <ScrollView
-          ref={streamScrollRef}
-          style={styles.body}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => streamScrollRef.current?.scrollToEnd({ animated: true })}
-          contentContainerStyle={styles.streamContent}
-        >
-          <Text style={styles.chapterTitle}>
-            {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
-          </Text>
-          <Text style={styles.pageText}>{streamText || '…'}</Text>
-        </ScrollView>
+        // texte final, une fois l'écriture terminée. Composant memo :
+        // seuls le texte se re-rend à chaque chunk.
+        <StreamText
+          text={streamText}
+          chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+        />
       ) : (
         <FlatList
           ref={listRef}
@@ -319,6 +323,31 @@ export default function GameScreen() {
     </View>
   );
 }
+
+/** Texte en cours de génération — ISOLÉ (memo) : seul ce composant
+ *  re-rend à chaque chunk reçu (sinon l'écran entier, header + choix
+ *  compris, re-rendait ~1-3×/s pendant toute la génération). */
+const StreamText = memo(function StreamText({
+  text,
+  chapterLabel,
+}: {
+  text: string;
+  chapterLabel: string;
+}) {
+  const ref = useRef<ScrollView>(null);
+  return (
+    <ScrollView
+      ref={ref}
+      style={styles.body}
+      showsVerticalScrollIndicator={false}
+      onContentSizeChange={() => ref.current?.scrollToEnd({ animated: true })}
+      contentContainerStyle={styles.streamContent}
+    >
+      <Text style={styles.chapterTitle}>{chapterLabel}</Text>
+      <Text style={styles.pageText}>{text || '…'}</Text>
+    </ScrollView>
+  );
+});
 
 /** Affiche l'état structuré reçu du serveur (jamais modifié côté client).
  *  DÉFENSIF : les parties anciennes ont state = '{}' (migration 0004) —

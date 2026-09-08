@@ -88,6 +88,10 @@ export interface ChapterDone {
   state: HeroState | null;
   freeChaptersRemaining: number | null;
   costUsd: number;
+  /** Télémétrie serveur : T1 réel (début requête → 1er token diffusé). */
+  ttftMs?: number | null;
+  totalMs?: number | null;
+  tokensPerSec?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +117,24 @@ export async function finalizeGame(gameId: string): Promise<void> {
     // silencieux : le chapitre suivant attendra (poll borné) puis
     // continuera avec l'état précédent (repli dégradé assumé)
     console.warn('[finalize] échec silencieux', gameId, e);
+  }
+}
+
+/**
+ * AMORÇAGE DU CACHE pendant la lecture (fire-and-forget) : rejoue le
+ * préfixe stable (system + bible) — cache TTL 5 min maintenu chaud et
+ * fonction Vercel chaude entre deux chapitres (le cold start est le cas
+ * NOMINAL d'un lecteur lent).
+ */
+export async function warmGame(gameId: string): Promise<void> {
+  try {
+    await httpFetch(`${apiBase()}/api/game/warm`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ gameId }),
+    });
+  } catch {
+    // silencieux : un warm raté n'a pas de conséquence visible
   }
 }
 

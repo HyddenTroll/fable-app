@@ -17,7 +17,8 @@ export type PromptKind =
   | 'choices'
   | 'state'
   | 'plan'
-  | 'moderation';
+  | 'moderation'
+  | 'warm';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -91,6 +92,9 @@ const MODEL_BY_KIND: Record<PromptKind, { openai: string; anthropic: string }> =
   // modèle principal (coût ~0,0002 $/chapitre, n'apparaît PAS dans les
   // cost_logs pour rester dans la contrainte kind de la table).
   moderation: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
+  // Amorçage du cache : préfixe stable rejoué (max_tokens=1) pendant la
+  // lecture — cache TTL 5 min + fonction Vercel chaude entre deux chapitres.
+  warm: { openai: 'gpt-5.6-luna', anthropic: 'gpt-5.6-luna' },
 };
 
 export class LLM {

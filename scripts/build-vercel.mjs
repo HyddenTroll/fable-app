@@ -79,6 +79,12 @@ for (const rel of entries) {
         handler: 'index.js',
         launcherType: 'Nodejs',
         shouldAddHelpers: true,
+        // Région Paris : l'utilisateur est en France/UE (RTT ×5-10 vs
+        // us-east-1 par défaut, sur le flux SSE et chaque requête).
+        // maxDuration NON déclaré : le défaut du plan fonctionne déjà en
+        // prod (chapitres longs ≥ 2 min) ; un maxDuration déclaré trop haut
+        // serait REFUSÉ sur Hobby (limite 60 s) — vérifier le plan avant.
+        regions: ['cdg1'],
       },
       null,
       2,

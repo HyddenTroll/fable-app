@@ -50,6 +50,9 @@ function json(res: VercelResponse, status: number, body: unknown) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // TÉLÉMÉTRIE : T1 = reqStart -> premier token diffusé (ttft_ms).
+  const reqStart = Date.now();
+  let firstTokenAt = 0;
   if (req.method !== 'POST') {
     return json(res, 405, { error: { code: 'method_not_allowed', message: 'POST requis' } });
   }
@@ -233,44 +236,123 @@ ${nextNumber >= totalChapters
     let chapterResult: LLMResult = EMPTY_RESULT;
 
     if (modBlocking) {
-      const full = await llm.generate({
-        messages: chapterMessages,
-        kind: 'chapter',
-        maxTokens: 6000,
-      });
-      chapterResult = full;
-      chapterText = full.text;
-      const idx = findFirstMarker(chapterText);
-      if (idx >= 0) {
-        tail = chapterText.slice(idx);
-        chapterText = chapterText.slice(0, idx).trimEnd();
-      }
-      // Verdict bloquant : chapitre refusé -> ni diffusé, ni stocké.
-      try {
-        const mod = await llm.generate({
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: buildModerationPrompt({ chapterText, age }) },
-          ],
-          kind: 'moderation',
-          maxTokens: 10,
+      // MODÉRATION INCRÉMENTALE : le chapitre est généré en STREAMING,
+      // découpé en blocs de ~2 paragraphes, chaque bloc est VÉRIFIÉ
+      // (verdict bon marché) avant d'être diffusé en machine à écrire.
+      // T1 mineurs : ~20-30 s (premier bloc vérifié) au lieu de 60-120 s
+      // (chapitre complet généré avant le moindre affichage).
+      const VISIBLE_CHUNK = 48;
+      const VISIBLE_MS = 16;
+      const MIN_BLOCK = 700; // seuil avant premier verdict (~1-2 paragraphes)
+      let pending = '';
+      let streamTail = '';
+      let bodySent = false;
+      let refused = false;
+      const verify = async (block: string): Promise<boolean> => {
+        try {
+          const mod = await llm.generate({
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: buildModerationPrompt({ chapterText: block, age }) },
+            ],
+            kind: 'moderation',
+            maxTokens: 10,
+          });
+          return !mod.text.trim().toLowerCase().startsWith('oui');
+        } catch {
+          return true; // en cas de doute sur le verdict, on laisse passer
+        }
+      };
+      const play = async (block: string) => {
+        if (!firstTokenAt) firstTokenAt = Date.now();
+        for (let i = 0; i < block.length; i += VISIBLE_CHUNK) {
+          send('text', { delta: block.slice(i, i + VISIBLE_CHUNK) });
+          await new Promise((r) => setTimeout(r, VISIBLE_MS));
+        }
+      };
+      const flushPending = async (force: boolean) => {
+        if (refused) return;
+        let cut = -1;
+        if (force) {
+          cut = pending.length;
+        } else if (pending.length >= MIN_BLOCK) {
+          const lastSep = pending.lastIndexOf('\n\n');
+          if (lastSep > 0) cut = lastSep;
+        }
+        if (cut <= 0) return;
+        const bloc = pending.slice(0, cut);
+        pending = pending.slice(cut);
+        if (await verify(bloc)) {
+          await play(bloc);
+          chapterText += bloc;
+        } else {
+          refused = true;
+        }
+      };
+      chapterResult = await (async (): Promise<LLMResult> => {
+        const gen = llm.stream({
+          messages: chapterMessages,
+          kind: 'chapter',
+          maxTokens: 6000,
         });
-        moderationFlagged = mod.text.trim().toLowerCase().startsWith('oui');
-      } catch {
-        moderationFlagged = false;
+        let result: LLMResult = EMPTY_RESULT;
+        for (;;) {
+          const { value, done } = await gen.next();
+          if (done) {
+            result = (value ?? EMPTY_RESULT) as LLMResult;
+            break;
+          }
+          if (refused) {
+            // Le coût du stream est déjà engagé : on consomme le reste
+            // jusqu'au bout pour récupérer l'usage réel (le chapitre est
+            // refusé, mais le coût doit rester tracé), sans plus rien
+            // diffuser au client.
+            for (;;) {
+              const { value, done } = await gen.next();
+              if (done) {
+                result = (value ?? EMPTY_RESULT) as LLMResult;
+                break;
+              }
+            }
+            break;
+          }
+          const delta = value as string;
+          if (bodySent) {
+            tail += delta;
+            continue;
+          }
+          streamTail += delta;
+          const iTitre = streamTail.indexOf('[[TITRE]]');
+          const iChoix = streamTail.indexOf('[[CHOIX]]');
+          const idx = Math.min(iTitre >= 0 ? iTitre : Infinity, iChoix >= 0 ? iChoix : Infinity);
+          if (idx !== Infinity) {
+            pending += streamTail.slice(0, idx);
+            tail = streamTail.slice(idx);
+            bodySent = true;
+            await flushPending(true); // dernier bloc du corps
+            continue;
+          }
+          const safe = Math.max(streamTail.length - 10, 0);
+          pending += streamTail.slice(0, safe);
+          streamTail = streamTail.slice(safe);
+          await flushPending(false);
+        }
+        return result;
+      })();
+      // Reliquat éventuel (fin de stream sans marqueur détecté dans la fenêtre)
+      if (!refused && (pending || streamTail)) {
+        pending += streamTail;
+        streamTail = '';
+        await flushPending(true);
       }
-      if (moderationFlagged) {
+      if (refused) {
         console.warn('[chapter] MODÉRATION BLOQUANTE : chapitre refusé', gameId, 'ch', nextNumber);
+        moderationFlagged = true;
         send('error', { message: 'Ce passage a été refusé par la modération. Réessaie.' });
         res.end();
         return;
       }
-      // Machine à écrire rejouée (le lecteur n'a rien vu pendant l'attente).
-      const CHUNK = 48;
-      for (let i = 0; i < chapterText.length; i += CHUNK) {
-        send('text', { delta: chapterText.slice(i, i + CHUNK) });
-        await new Promise((r) => setTimeout(r, 16));
-      }
+      chapterText = chapterText.trimEnd();
     } else {
       chapterResult = await (async (): Promise<LLMResult> => {
         const gen = llm.stream({
@@ -301,6 +383,7 @@ ${nextNumber >= totalChapters
             const pre = streamTail.slice(0, idx);
             if (pre) {
               chapterText += pre;
+              if (!firstTokenAt) firstTokenAt = Date.now();
               send('text', { delta: pre });
             }
             tail = streamTail.slice(idx);
@@ -313,6 +396,7 @@ ${nextNumber >= totalChapters
           const diff = streamTail.slice(0, safe);
           if (diff) {
             chapterText += diff;
+            if (!firstTokenAt) firstTokenAt = Date.now();
             send('text', { delta: diff });
           }
           streamTail = streamTail.slice(safe);
@@ -409,8 +493,15 @@ ${nextNumber >= totalChapters
     if (gameUpdateError) throw new Error(gameUpdateError.message);
     if (quota.isPremium) await recordPremiumChapter(db, auth.userId);
 
-    // Coûts : texte + éventuel filet.
-    await logLLMResult(db, auth.userId, gameId, 'chapter', chapterResult);
+    // Coûts : texte + éventuel filet. Télémétrie : T1 (TTFT), total, vitesse.
+    const totalMs = Date.now() - reqStart;
+    const ttftMs = firstTokenAt ? firstTokenAt - reqStart : null;
+    const streamSec = Math.max((Date.now() - (firstTokenAt || reqStart)) / 1000, 0.001);
+    const tokensPerSec = firstTokenAt ? Math.round(chapterResult.usage.outputTokens / streamSec) : 0;
+    await logLLMResult(db, auth.userId, gameId, 'chapter', chapterResult, {
+      ttftMs: ttftMs ?? undefined,
+      totalMs,
+    });
     if (choicesResult !== EMPTY_RESULT) {
       await logLLMResult(db, auth.userId, gameId, 'choices', choicesResult);
     }
@@ -430,6 +521,10 @@ ${nextNumber >= totalChapters
       state: null,
       freeChaptersRemaining: quota.isPremium ? null : Math.max(0, 5 - (Number(game.free_chapters_used ?? 0) + 1)),
       costUsd: chapterResult.costUsd + (choicesResult === EMPTY_RESULT ? 0 : choicesResult.costUsd),
+      // Télémétrie de performance (T1 du point de vue client ≈ ttftMs).
+      ttftMs,
+      totalMs,
+      tokensPerSec,
     });
     res.end();
   } catch (e) {
