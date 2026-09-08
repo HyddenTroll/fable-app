@@ -1642,4 +1642,12 @@ FAIT :
       ou « Compte Fable — les couvertures illustrées viennent avec Fable+ »
       (lien vers /paywall). Pendant la création, l'étape « La couverture sèche »
       affiche un rappel pour les comptes gratuits (aucun appel génération émis).
-      La décision premium reste côté serveur (route cover → 402).
+      La décision premium reste côté serveur (route cover → 402).• COUVERTURE — VRAI BUG TROUVÉ : le store local isPremium restait false dans la
+      session (l'achat n'est resynchronisé qu'à l'achat) → new-game n'appelait pas
+      generateCover pour un compte pourtant Fable+ côté serveur. Fix : l'appel de
+      génération est INCONDITIONNEL côté client ; le serveur tranche (premium + quota,
+      402 sinon). Le message « Les couvertures illustrées viennent avec Fable+ »
+      s'appuie désormais sur getMe (serveur), pas sur le store.
+      RATTRAPAGE : sur l'accueil, quand un livre n'a pas d'illustration et que le
+      compte est premium, un lien discret « Illustrer la couverture » lance la
+      génération (le re-fetch au focus affiche l'image ~1 min plus tard).

@@ -10,7 +10,7 @@ import type { GameParams } from '@fable/shared';
 import {
   GENRES, HERO_TRAITS, NARRATIVE_STYLES, CHAPTER_LENGTHS, DIFFICULTIES,
 } from '@/data/mock';
-import { createGame, enrichBible, generateCover, ApiError } from '@/services/api';
+import { createGame, enrichBible, generateCover, getMe, ApiError } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { Stylobate } from '@/components/Stylobate';
@@ -54,6 +54,16 @@ export default function NewGameScreen() {
   const [maxChoices, setMaxChoices] = useState<GameParams['maxChoices']>(3);
   const [creating, setCreating] = useState(false);
   const [createStep, setCreateStep] = useState(0);
+  // Statut Fable+ lu côté serveur (le store local peut être périmé).
+  const [mePremium, setMePremium] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let actif = true;
+    getMe()
+      .then((m) => { if (actif) setMePremium(m.isPremium); })
+      .catch(() => { if (actif) setMePremium(false); });
+    return () => { actif = false; };
+  }, []);
   // Progression LISSE de la barre : le fetch de création est synchrone (aucun
   // événement intermédiaire) → la barre avance par paliers doux au fil des
   // étapes réelles, plus un tic-tac léger pendant l'attente.
@@ -122,12 +132,13 @@ export default function NewGameScreen() {
       // Petite respiration pour afficher la barre "Enrichissement" avant
       // de basculer sur l'écran de lecture.
       await new Promise((r) => setTimeout(r, 1200));
-      // La couverture IA part en arrière-plan (ne bloque pas la lecture) :
-      // réservée à Fable+ ; les autres reçoivent la couverture blanche au
-      // titre imprimé.
+      // La couverture IA part en arrière-plan (ne bloque pas la lecture). L'appel
+      // est INCONDITIONNEL côté client : c'est le serveur qui tranche le
+      // premium + le quota (402 sinon) — le statut local du store peut être
+      // périmé (achat non resynchronisé dans la session).
       setCreateStep(3);
       setBarP(0.92);
-      if (isPremium) generateCover(res.gameId).catch(() => {});
+      generateCover(res.gameId).catch(() => {});
       await new Promise((r) => setTimeout(r, 1100));
       setBarP(1);
       router.push(`/game/${res.gameId}`);
@@ -185,7 +196,7 @@ export default function NewGameScreen() {
               <Animated.View style={[styles.progressFill, fillStyle]} />
             </View>
             <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
-            {!isPremium && createStep === 3 && (
+            {mePremium === false && createStep === 3 && (
               <Text style={styles.creationFableHint}>
                 Les couvertures illustrées viennent avec Fable+.
               </Text>
