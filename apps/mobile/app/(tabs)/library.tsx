@@ -127,7 +127,7 @@ export default function LibraryScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.contenu}>
         <View style={styles.barreHaute}>
           <Text style={styles.titrePage}>Bibliothèque</Text>
-          <SoldeEncres solde={credits} denticules={5} />
+          <SoldeEncres solde={credits} />
         </View>
 
         {jeux === null && (

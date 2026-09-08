@@ -129,7 +129,7 @@ export default function ImagesScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.titre}>Images</Text>
-        <SoldeEncres solde={solde} denticules={5} />
+        <SoldeEncres solde={solde} />
       </View>
 
       <ScrollView style={styles.defilant} contentContainerStyle={styles.contenu}>

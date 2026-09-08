@@ -1658,3 +1658,23 @@ FAIT :
        • MODALES DANS LA COQUILLE : CSS global [role="dialog"] : maxWidth 430 +
          hauteur plafonnée (932) — la page de chargement ne sétale plus sur
          toute la fenêtre.
+• PROFIL & PARAMÈTRES REFONDUS (spec normative « écran de profil » + maquette).
+      PROFIL (2 agents parallèles) : ex-libris en place d'honneur (ExLibris : marque de
+      tailleur déterministe + monogramme grec du pseudo), pseudo + email + bouton
+      « Choisir/Changer de pseudo », stats cerclées de 2 filets (finis/chapitres/images,
+      LECTEUR·DEPUIS avec accord LECTRICE), MES ENCRES (pièce 44 + nombre bronze + « de
+      quoi illustrer N pages », Acheter bronze + Restaurer mes achats), bloc Fable+
+      (cadre bronze, 5 arcades, en-tête Didot bronze, 3 avantages à carré 4×4, pied
+      ACTIF/renouvellement ou bouton /paywall, Gérer l'abonnement), porte Paramètres,
+      version. PARAMÈTRES (app/settings.tsx) : Lecture (Segments thème/taille +
+      interrupteur doigt), Notifications (une seule), Mes données (export JSON, IA
+      consentement daté, stats usage OFF, confidentialité) + mention IA au fil lapis,
+      Aide (signalement/support/FAQ), Légal, Compte (email/Google/déconnexion),
+      SUPPRESSION DE COMPTE chiffrée (livres/images/encres réels, délai 30 jours,
+      factures 10 ans), version. Composants partagés : Interrupteur carré 38×20 140 ms,
+      Segments à bloc coulissant, LigneReglage, ExLibris. DENTICULES SUPPRIMÉES de
+      toute l'app (solde = pièce + nombre partout).
+      CORRECTIONS D'INTÉGRATION : colors.gris → gris2 (8 usages) ; ExLibris import Text.
+      Vérifié headless : /profile et /settings rendent leur structure complète, aucune
+      erreur JS. Reste à brancher plus tard : la suppression de compte serveur (V1 :
+      confirmation + déconnexion).

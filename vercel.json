@@ -3,6 +3,9 @@
   "outputDirectory": ".vercel/output",
   "installCommand": "npm install",
   "framework": null,
+  "functions": {
+    "api/api/game/cover.ts": { "maxDuration": 120 }
+  },
   "headers": [
     {
       "source": "/api/(.*)",

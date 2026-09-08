@@ -11,7 +11,7 @@ import { CouvertureLivre } from '@/components/CouvertureLivre';
 import { Logo } from '@/components/Logo';
 import { SoldeEncres } from '@/components/SoldeEncres';
 import { formatDateRelative, progression } from '@/lib/dates';
-import { listGames, readGame, generateCover, getMe } from '@/services/api';
+import { listGames, readGame } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { colors, fonts, spacing } from '@/theme';
 
@@ -42,31 +42,6 @@ export default function HomeScreen() {
   const [games, setGames] = useState<Histoire[] | null>(null);
   const [chapitreCourant, setChapitreCourant] = useState<number | null>(null);
   const [couvertureUrl, setCouvertureUrl] = useState<string | null>(null);
-  const [coverEnCours, setCoverEnCours] = useState(false);
-  // Statut Fable+ lu côté serveur (le store local peut être périmé).
-  const [mePremium, setMePremium] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let actif = true;
-    getMe()
-      .then((m) => { if (actif) setMePremium(m.isPremium); })
-      .catch(() => { if (actif) setMePremium(false); });
-    return () => { actif = false; };
-  }, []);
-
-  // Rattrapage : un livre créé sans illustration (bug du statut local) peut
-  // être illustré en un geste ; le re-fetch au focus affichera l'image.
-  const illustrerCouverture = async () => {
-    if (!livre || coverEnCours) return;
-    setCoverEnCours(true);
-    try {
-      await generateCover(livre.id);
-    } catch {
-      // échec (paywall, quota, clé) : on laisse le lien réessayer.
-    } finally {
-      setCoverEnCours(false);
-    }
-  };
 
   // Rafraîchit la liste à chaque retour sur l'accueil (histoire créée,
   // chapitre ajouté ou histoire supprimée ailleurs).
@@ -142,7 +117,7 @@ export default function HomeScreen() {
     <ScrollView style={styles.ecran} contentContainerStyle={styles.contenu}>
       <View style={styles.enTete}>
         <Logo size={54} />
-        <SoldeEncres solde={credits} denticules={5} />
+        <SoldeEncres solde={credits} />
       </View>
 
       {/* Chargement : le reste de l'écran se remplit, rien ne clignote. */}
@@ -174,18 +149,10 @@ export default function HomeScreen() {
                 ]}
               />
             </View>
-            {!couvertureUrl && mePremium && (
-              <TouchableOpacity
-                style={styles.illustrer}
-                onPress={illustrerCouverture}
-                disabled={coverEnCours}
-                accessibilityRole="button"
-                accessibilityLabel="Illustrer la couverture"
-              >
-                <Text style={styles.illustrerTexte}>
-                  {coverEnCours ? 'Couverture en préparation…' : 'Illustrer la couverture'}
-                </Text>
-              </TouchableOpacity>
+            {!couvertureUrl && (
+              <Text style={styles.pasEncore}>
+                La couverture arrive avec la création du livre.
+              </Text>
             )}
           </View>
 
@@ -310,11 +277,11 @@ const styles = StyleSheet.create({
   },
   pied: { marginTop: 'auto', gap: spacing.lg },
   filet: { height: 1, backgroundColor: colors.surfaceAlt }, // veine
-  illustrer: { marginTop: spacing.sm, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm },
-  illustrerTexte: {
+  pasEncore: {
+    marginTop: spacing.sm,
     color: colors.textSecondary,
     fontFamily: fonts.ia,
-    fontSize: 11,
+    fontSize: 10.5,
     textAlign: 'center',
   },
   piedLigne: {

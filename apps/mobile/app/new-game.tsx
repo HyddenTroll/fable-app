@@ -132,14 +132,13 @@ export default function NewGameScreen() {
       // Petite respiration pour afficher la barre "Enrichissement" avant
       // de basculer sur l'écran de lecture.
       await new Promise((r) => setTimeout(r, 1200));
-      // La couverture IA part en arrière-plan (ne bloque pas la lecture). L'appel
-      // est INCONDITIONNEL côté client : c'est le serveur qui tranche le
-      // premium + le quota (402 sinon) — le statut local du store peut être
-      // périmé (achat non resynchronisé dans la session).
+      // La couverture IA se génère ICI, AVANT la lecture : la barre « La couverture
+      // sèche » reste affichée pendant la génération (~1 min, maxDuration 120
+      // côté Vercel). Le serveur tranche le droit (Fable+ inclus, quota 5/mois,
+      // sinon 402 immédiat) : pas de blocage pour les comptes sans droit.
       setCreateStep(3);
       setBarP(0.92);
-      generateCover(res.gameId).catch(() => {});
-      await new Promise((r) => setTimeout(r, 1100));
+      await generateCover(res.gameId).catch(() => null);
       setBarP(1);
       router.push(`/game/${res.gameId}`);
     } catch (e) {
