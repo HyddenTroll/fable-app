@@ -153,12 +153,12 @@ export function PageTurn<T>({
 
   // Recto (la courante) : visible tant que le pli n'a pas dépassé 50 %.
   const rectoStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(fold.value < 0.5 ? 1 : 0, { duration: 110, easing: COURBE.doux }),
+    opacity: fold.value < 0.5 ? 1 : 0,
   }));
 
   // Verso (la page vers laquelle on va) : apparaît après mi-course.
   const versoStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(fold.value > 0.62 ? 1 : 0, { duration: 110, easing: COURBE.doux }),
+    opacity: fold.value > 0.5 ? 1 : 0,
   }));
 
   // Ombrage du pli : fondu sur le bord du volet qui soulève.

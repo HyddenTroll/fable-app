@@ -1521,3 +1521,9 @@ FAIT :
          Les deux causes du « les pages ne se tournent pas » : ① le callback de fin
          d'animation withSpring jamais exécuté sur le web (commit remplacé par délai JS) ;
          ② le retour toujours annulé.
+       • TRANSPARENCE du pli corrigée : les faces du volet passaient en fondu dopacité
+         (110 ms) à mi-course → le texte du dessous (page suivante) se mélangeait au recto.
+         Bascule désormais SÈCHE à 50 • TRANSPARENCE du pli corrigée : les faces du volet passaient en fondu d'opacité
+      (110 ms) à mi-course → le texte du dessous (page suivante) se mélangeait au recto.
+      Bascule désormais SÈCHE à 50 % : recto opaque jusqu'au basculement, verso opaque
+      juste après : aucune superposition de texte possible.
