@@ -1540,4 +1540,16 @@ FAIT :
       le côté (droit pour avancer, gauche pour revenir) et elle se rabat comme un
       vrai livre. Les fixs précédents restent : commit par délai JS, bascule
       recto/verso sèche, validation par sens. Test headless : avance 1, retour 0,
-      annulation sans effet.
+      annulation sans effet.• PAGE TURN : le MORS (la charnière de reliure). Après recherche : le mors est la
+      charnière centrale d'un livre — l'axe autour duquel la page pivote comme une
+      porte. L'utilisateur corrigeait : « ça se plie au milieu... tu devrais t'inspirer
+      d'un vrai livre » puis « renseigne-toi sur ce qu'est le mors ».
+      La version « pli à la prise » était rejetée (aucun mors) ; la version charnière
+      centrale coupait le texte en deux moitiés (« marque »).
+      STRUCTURE FINALE : le volet = LA PAGE ENTIÈRE (marginLeft -width/2, translateX
+      width/2) pivotée autour de l'axe central : un seul plan, le texte n'est jamais
+      scindé ; la page se soulève comme une porte autour du mors, la page suivante
+      apparaît dessous (revealed) ; ombre de mors : cannelure fine (2 px) au centre,
+      opacity 0.06 + 0.22×fold. Bascule recto/verso sèche + commit par délai JS
+      conservés. Geste : droite→gauche = suivante ; gauche→droite = revenir.
+      Test headless : 0 → 1 → 0 → 0 (avance, retour, annulation).

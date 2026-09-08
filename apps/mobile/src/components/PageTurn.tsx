@@ -139,14 +139,13 @@ export function PageTurn<T>({
     opacity: fold.value > 0.01 ? 1 : 0,
   }));
 
-  // Volet (partie droite de la page courante) : le pli se forme À LA POSITION
-  // DE LA PRISE (comme un vrai livre qu'on attrape par le côté), il ne
-  // traverse pas l'écran en son milieu.
+  // Volet : LA PAGE ENTIÈRE, pivotée AUTOUR DU MORS (la charnière de reliure,
+  // fixe au centre) comme une porte — le texte n'est jamais coupé en deux
+  // moitiés : c'est un seul plan qui s'incline et se rabat.
   const flapStyle = useAnimatedStyle(() => {
-    const flapX = width * (1 - fold.value); // bord gauche du volet = pli
     return {
       transform: [
-        { translateX: flapX },
+        { translateX: width * 0.5 },
         { perspective: ROBOT },
         { rotateY: `${-180 * fold.value}deg` },
       ],
@@ -166,6 +165,12 @@ export function PageTurn<T>({
   // Ombrage du pli : fondu sur le bord du volet qui soulève.
   const shadeStyle = useAnimatedStyle(() => ({
     opacity: 0.05 + 0.1 * fold.value,
+  }));
+
+  // OMBRE DU MORS : cannelure verticale au centre (la charnière de reliure).
+  // Presque invisible au repos, elle s'accentue quand la page pivote.
+  const morsStyle = useAnimatedStyle(() => ({
+    opacity: 0.06 + 0.22 * fold.value,
   }));
 
   if (pages.length === 0) return null;
@@ -191,10 +196,10 @@ export function PageTurn<T>({
           <Animated.View
             style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center' }]}
           >
-            {/* Recto du volet : courante, alignée à droite — sa face arrière
-                est CACHÉE : au-delà de 90°, seul le verso (la page suivante)
+            {/* Recto du volet : la page COURANTE en entier — sa face arrière est
+                CACHÉE : au-delà de 90°, seul le verso (la page suivante)
                 est visible. */}
-            <Animated.View style={[styles.absolute, { alignItems: 'flex-end', backfaceVisibility: 'hidden' }, rectoStyle]}>
+            <Animated.View style={[styles.absolute, { marginLeft: -width / 2, backfaceVisibility: 'hidden' }, rectoStyle]}>
               <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
             </Animated.View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
@@ -203,6 +208,7 @@ export function PageTurn<T>({
               style={[
                 styles.absolute,
                 {
+                  marginLeft: -width / 2,
                   transformOrigin: 'left center',
                   backfaceVisibility: 'hidden',
                   transform: [{ rotateY: '180deg' }],
@@ -216,6 +222,17 @@ export function PageTurn<T>({
             <Animated.View style={[styles.shade, shadeStyle, { width: 28 }]} />
           </Animated.View>
         )}
+
+        {/* Ombre du mors : la charnière de reliure, au centre, discrète au
+            repos, marquée quand la page pivote autour. */}
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.mors,
+            morsStyle,
+            { left: width / 2 - 1 },
+          ]}
+        />
       </View>
     </GestureDetector>
   );
@@ -235,6 +252,13 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
+    backgroundColor: '#101114',
+  },
+  mors: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 2,
     backgroundColor: '#101114',
   },
 });
