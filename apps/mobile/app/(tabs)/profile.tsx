@@ -32,7 +32,7 @@ export default function ProfileTabScreen() {
           <Text style={styles.cardValue}>{email}</Text>
           <View style={styles.statusRow}>
             <Text style={styles.badge}>{isPremium ? 'Fable+ actif' : 'Plan gratuit'}</Text>
-            <Text style={styles.badge}>✨ {credits} crédits</Text>
+            <Text style={styles.badge}>✨ {credits} encres</Text>
           </View>
         </View>
       ) : (

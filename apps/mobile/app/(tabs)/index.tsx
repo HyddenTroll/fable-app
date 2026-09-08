@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Platform,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
 import { Logo } from '@/components/Logo';
+import { DialogueFable, type DialogueAction } from '@/components/DialogueFable';
+import { ColonneJauge } from '@/components/ColonneJauge';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { listGames, deleteGame, readGame, type HeroState } from '@/services/api';
 import { colors, spacing, radii, fonts } from '@/theme';
@@ -20,6 +22,12 @@ interface GameItem {
   status: string;
 }
 
+/** Étiquette de la colonne : premier mot du titre, tronqué à 12 caractères. */
+const jaugeLabel = (title: string): string => {
+  const premierMot = title.trim().split(/\s+/)[0] || title;
+  return premierMot.length > 12 ? premierMot.slice(0, 12) : premierMot;
+};
+
 export default function HomeTabScreen() {
   const router = useRouter();
   const age = useAppStore((s) => s.age);
@@ -31,6 +39,12 @@ export default function HomeTabScreen() {
   const [games, setGames] = useState<GameItem[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [dialogue, setDialogue] = useState<{
+    kind: 'confirm' | 'erreur';
+    title?: string;
+    message: string;
+    actions: DialogueAction[];
+  } | null>(null);
 
   // Restaure la partie en cours depuis le serveur (rien n'est perdu)
   useRestoreGame();
@@ -80,7 +94,12 @@ export default function HomeTabScreen() {
       setHeroState(restoredState);
       router.push(`/game/${g.id}`);
     } catch (e) {
-      Alert.alert('Erreur', e instanceof Error ? e.message : "Impossible d'ouvrir l'histoire.");
+      setDialogue({
+        kind: 'erreur',
+        title: 'Impossible d\u2019ouvrir',
+        message: e instanceof Error ? e.message : "Impossible d'ouvrir l'histoire.",
+        actions: [{ label: 'Fermer', kind: 'secondary', onPress: () => setDialogue(null) }],
+      });
     }
   };
 
@@ -92,41 +111,43 @@ export default function HomeTabScreen() {
       // Si l'histoire supprimée était la partie en cours, on la retire du store.
       if (currentGame?.gameId === g.id) setCurrentGame(null);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Impossible de supprimer.';
-      // RN Web ignore Alert.alert → confirmation native visible sur le web.
-      if (Platform.OS === 'web') {
-        window.confirm?.(`Impossible de supprimer : ${msg}`);
-        return;
-      }
-      Alert.alert('Erreur', msg);
+      // Dans une appli mobile, on montre une modale designée (jamais de bruit
+      // système) : l'erreur dit ce qui s'est passé, sans s'excuser.
+      const raw = e instanceof Error ? e.message : '';
+      const msg = raw.replace(/^Impossible de supprimer\s*:?\s*/i, '') || "L'histoire n'a pas pu être supprimée.";
+      setDialogue({
+        kind: 'erreur',
+        title: 'Suppression impossible',
+        message: msg,
+        actions: [{ label: 'Fermer', kind: 'secondary', onPress: () => setDialogue(null) }],
+      });
     } finally {
       setBusyId(null);
     }
   };
 
   const remove = (g: GameItem) => {
-    // React Native Web ignore les boutons d'Alert.alert → confirmation
-    // native window.confirm sur le web, Alert ailleurs.
-    if (Platform.OS === 'web') {
-      const ok =
-        typeof window !== 'undefined' && typeof window.confirm === 'function'
-          ? window.confirm(`Supprimer « ${g.title} » et tous ses chapitres ?`)
-          : true;
-      if (ok) void doDelete(g);
-      return;
-    }
-    Alert.alert(
-      'Supprimer cette histoire ?',
-      `« ${g.title} » et tous ses chapitres ne seront plus visibles.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Supprimer', style: 'destructive', onPress: () => void doDelete(g) },
+    setDialogue({
+      kind: 'confirm',
+      title: 'Supprimer cette histoire ?',
+      message: `« ${g.title} » et tous ses chapitres ne seront plus visibles.`,
+      actions: [
+        { label: 'Annuler', kind: 'secondary', onPress: () => setDialogue(null) },
+        {
+          label: 'Supprimer',
+          kind: 'primary',
+          onPress: () => {
+            setDialogue(null);
+            void doDelete(g);
+          },
+        },
       ],
-    );
+    });
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Logo size={54} />
         <View style={styles.headerRight}>
@@ -144,7 +165,7 @@ export default function HomeTabScreen() {
       </View>
 
       {isAuthed ? (
-        <Text style={styles.greeting}>Bonjour {email.split('@')[0]}</Text>
+        <Text style={styles.greeting}>Mes histoires</Text>
       ) : (
         <Text style={styles.greeting}>Bienvenue sur Fable</Text>
       )}
@@ -163,7 +184,7 @@ export default function HomeTabScreen() {
         </TouchableOpacity>
       )}
 
-      <Button label="+ Nouvelle aventure" onPress={startNew} />
+      <Button label="Commencer une histoire" onPress={startNew} />
 
       <Text style={styles.sectionTitle}>Mes histoires</Text>
       {listError && <Text style={styles.listError}>{listError}</Text>}
@@ -176,25 +197,28 @@ export default function HomeTabScreen() {
       {isAuthed &&
         (games ?? []).map((g) => (
           <View key={g.id} style={styles.gameCard}>
-            <TouchableOpacity style={styles.gameInfos} onPress={() => open(g)}>
-              <Text style={styles.gameTitle}>{g.title}</Text>
-              <Text style={styles.gameMeta}>
-                {g.genre} · {g.chapterCount} chapitre{g.chapterCount > 1 ? 's' : ''}
-                {g.status === 'finished' ? ' · terminée' : ''}
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.gameActions}>
-              <TouchableOpacity style={styles.actionBtn} onPress={() => open(g)} accessibilityRole="button">
-                <Text style={styles.actionContinue}>Continuer</Text>
+            <ColonneJauge chapters={g.chapterCount} label={jaugeLabel(g.title)} />
+            <View style={styles.gameCardBody}>
+              <TouchableOpacity style={styles.gameInfos} onPress={() => open(g)}>
+                <Text style={styles.gameTitle}>{g.title}</Text>
+                <Text style={styles.gameMeta}>
+                  Chapitre {g.chapterCount} sur 24 · {g.createdAt}
+                  {g.status === 'finished' ? ' · terminée' : ''}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => remove(g)}
-                disabled={busyId === g.id}
-                accessibilityRole="button"
-              >
-                <Text style={styles.actionDelete}>{busyId === g.id ? '…' : 'Supprimer'}</Text>
-              </TouchableOpacity>
+              <View style={styles.gameActions}>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => open(g)} accessibilityRole="button">
+                  <Text style={styles.actionContinue}>Continuer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() => remove(g)}
+                  disabled={busyId === g.id}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.actionDelete}>{busyId === g.id ? '…' : 'Supprimer'}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         ))}
@@ -202,7 +226,23 @@ export default function HomeTabScreen() {
       <Text style={styles.hint}>
         {age ? `Tranche d'âge : ${age}` : 'Choisis ton âge pour commencer'}
       </Text>
-    </ScrollView>
+
+      {/* Mention IA — tout écran qui produit du contenu généré (AI Act art. 50) */}
+      <View style={styles.iaMention}>
+        <View style={styles.iaFil} />
+        <Text style={styles.iaMentionText}>Chaque histoire ici est écrite pour toi par une IA.</Text>
+      </View>
+      </ScrollView>
+
+      <DialogueFable
+        visible={!!dialogue}
+        title={dialogue?.title}
+        message={dialogue?.message ?? ''}
+        kind={dialogue?.kind ?? 'confirm'}
+        actions={dialogue?.actions ?? []}
+        onClose={() => setDialogue(null)}
+      />
+    </>
   );
 }
 
@@ -227,17 +267,23 @@ const styles = StyleSheet.create({
   loader: { marginVertical: spacing.lg },
   empty: { color: colors.textMuted, fontSize: 14, lineHeight: 21 },
   listError: { color: colors.danger, fontSize: 14 },
+  iaMention: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: spacing.xl, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.surfaceAlt },
+  iaFil: { width: 1, height: 10, backgroundColor: colors.primary, shadowColor: colors.shadow, shadowOpacity: 0.9, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
+  iaMentionText: { color: colors.textSecondary, fontSize: 11, lineHeight: 16, fontFamily: fonts.ia },
   gameCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.lg,
-    gap: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
+  gameCardBody: { flex: 1, gap: spacing.md },
   gameInfos: { gap: spacing.xs },
   gameTitle: { color: colors.text, fontSize: 16, fontWeight: '600', fontFamily: fonts.grec },
-  gameMeta: { color: colors.textSecondary, fontSize: 13 },
+  gameMeta: { color: colors.textSecondary, fontSize: 10.5 },
   gameActions: { flexDirection: 'row', gap: spacing.lg },
   actionBtn: { paddingVertical: spacing.sm },
   actionContinue: { color: colors.primary, fontWeight: '600', fontSize: 14 },

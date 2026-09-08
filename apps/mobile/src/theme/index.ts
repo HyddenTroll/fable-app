@@ -23,8 +23,13 @@ export const colors = {
   primary: '#2447D6', // --lapis
   primaryDark: '#ffffff', // texte sur bouton lapis (fond lapis -> blanc)
 
+  // Lecteur = le bronze (encres, collection) — jamais d'action système
+  bronze: '#8A6A3D',
+  gris2: '#3A3B40',
+
   // Divers
   danger: '#B4442E', // erreurs (brique)
+  alerte: '#B4442E',
   shadow: '#6B8CFF', // --lapis-halo (halo du fil)
 };
 
@@ -52,8 +57,9 @@ export const radii = {
 };
 
 export const typography = {
-  chapterTitle: { fontFamily: fonts.grec, fontSize: 24, lineHeight: 30 },
-  body: { fontFamily: fonts.ia, fontSize: 17, lineHeight: 27 },
+  chapterTitle: { fontFamily: fonts.grec, fontSize: 19, lineHeight: 24 },
+  // Corps du récit : 15px / 1.72 (interligne ~25.8), jamais moins de 1.7
+  body: { fontFamily: fonts.ia, fontSize: 15, lineHeight: 26 },
   label: { fontFamily: fonts.iaSemiBold, fontSize: 15 },
   small: { fontFamily: fonts.ia, fontSize: 13 },
 };

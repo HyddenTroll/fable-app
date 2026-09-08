@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
+import { Fronton } from '@/components/Fronton';
 import { colors, spacing, radii } from '@/theme';
 
 export default function EndScreen() {
@@ -29,7 +30,7 @@ export default function EndScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.fin}>FIN</Text>
+      <Fronton title={game.title} />
       <Text style={styles.endingType}>{game.endingType ?? 'La fin'}</Text>
 
       <View style={styles.stats}>
@@ -55,8 +56,7 @@ export default function EndScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, padding: spacing.xxl, justifyContent: 'center', gap: spacing.md },
-  fin: { color: colors.primary, fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
-  endingType: { color: colors.text, fontSize: 22, textAlign: 'center', marginTop: spacing.xs },
+  endingType: { color: colors.textSecondary, fontSize: 14, textAlign: 'center', marginTop: spacing.xs },
   stats: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,

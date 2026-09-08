@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, useWindowDimensions, Alert,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
@@ -8,6 +8,11 @@ import { streamChapter, reportGame, finalizeGame, warmGame, ApiError, type HeroS
 import type { MockChapter } from '@/data/mock';
 import { useRestoreGame } from '@/hooks/useRestoreGame';
 import { PageTurn } from '@/components/PageTurn';
+import { Meander } from '@/components/Meander';
+import { Oves } from '@/components/Oves';
+import { Chapiteau } from '@/components/Chapiteau';
+import { DialogueFable, type DialogueAction } from '@/components/DialogueFable';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import { colors, spacing, radii, fonts } from '@/theme';
 
 /** Taille approximative d'une page de livre (mobile) : ~200-230 mots. */
@@ -51,6 +56,12 @@ export default function GameScreen() {
   const [pressedChoice, setPressedChoice] = useState<number | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
+  const [dialogue, setDialogue] = useState<{
+    kind: 'confirm' | 'erreur';
+    title?: string;
+    message: string;
+    actions: DialogueAction[];
+  } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastChoiceRef = useRef<number | null>(null);
 
@@ -99,25 +110,39 @@ export default function GameScreen() {
   const continueNaturally = () => handleChoice(-1);
 
   const handleReport = () => {
-    Alert.alert(
-      'Signaler ce contenu ?',
-      'Ce chapitre te semble inapproprié ? Notre équipe le vérifiera.',
-      [
-        { text: 'Annuler', style: 'cancel' },
+    setDialogue({
+      kind: 'confirm',
+      title: 'Signaler ce contenu ?',
+      message: 'Ce chapitre te semble inapproprié ? Notre équipe le vérifiera.',
+      actions: [
+        { label: 'Annuler', kind: 'secondary', onPress: () => setDialogue(null) },
         {
-          text: 'Signaler',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await reportGame(game.gameId);
-              Alert.alert('Merci', 'Ton signalement a bien été envoyé.');
-            } catch {
-              Alert.alert('Erreur', 'Impossible d\'envoyer le signalement.');
-            }
+          label: 'Signaler',
+          kind: 'primary',
+          onPress: () => {
+            setDialogue(null);
+            void (async () => {
+              try {
+                await reportGame(game.gameId);
+                setDialogue({
+                  kind: 'confirm',
+                  title: 'Merci',
+                  message: 'Ton signalement a bien été envoyé.',
+                  actions: [{ label: 'Fermer', kind: 'primary', onPress: () => setDialogue(null) }],
+                });
+              } catch {
+                setDialogue({
+                  kind: 'erreur',
+                  title: 'Signalement impossible',
+                  message: "Impossible d'envoyer le signalement.",
+                  actions: [{ label: 'Fermer', kind: 'secondary', onPress: () => setDialogue(null) }],
+                });
+              }
+            })();
           },
         },
       ],
-    );
+    });
   };
 
   const handleChoice = (index: number) => {
@@ -179,7 +204,12 @@ export default function GameScreen() {
           }
         },
         onModeration: (info) => {
-          Alert.alert('Contenu signalé', info.message);
+          setDialogue({
+            kind: 'confirm',
+            title: 'La fin',
+            message: info.message,
+            actions: [{ label: 'Fermer', kind: 'primary', onPress: () => setDialogue(null) }],
+          });
         },
       },
       // Conséquence annoncée du choix (alimente le résumé du tour suivant)
@@ -202,6 +232,7 @@ export default function GameScreen() {
         contentContainerStyle={styles.pageContent}
         showsVerticalScrollIndicator={false}
       >
+        {index === 0 && <Chapiteau />}
         <Text style={styles.chapterTitle}>
           {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
           {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
@@ -213,6 +244,7 @@ export default function GameScreen() {
             {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
             {showChoices && current.choices.length > 0 && (
               <View style={styles.choices}>
+                <Oves />
                 <Text style={styles.choicesLabel}>Que fais-tu ?</Text>
                 {current.choices.map((c, i) => (
                   <TouchableOpacity
@@ -247,6 +279,10 @@ export default function GameScreen() {
                 </TouchableOpacity>
               </View>
             )}
+            <View style={styles.iaMention}>
+              <View style={styles.iaThread} />
+              <Text style={styles.iaMentionText}>La suite s'écrit à partir de ton choix.</Text>
+            </View>
           </>
         )}
       </ScrollView>
@@ -261,11 +297,6 @@ export default function GameScreen() {
           <Text style={styles.gameTitle}>{game.title}</Text>
         </View>
         <View style={styles.headerRight}>
-          <Text style={styles.chapterPos}>
-            {!isGenerating && pages.length > 1
-              ? `p. ${pageIndex + 1} / ${pages.length}`
-              : isGenerating ? 'L\'IA écrit…' : `${current.number === 0 ? 'Prologue' : `Ch. ${current.number}`}`}
-          </Text>
           <TouchableOpacity onPress={handleReport} accessibilityRole="button" accessibilityLabel="Signaler ce contenu">
             <Text style={styles.reportBtn}>⚠</Text>
           </TouchableOpacity>
@@ -274,7 +305,6 @@ export default function GameScreen() {
 
       {isGenerating && (
         <View style={styles.generatingRow}>
-          <ActivityIndicator color={colors.primary} />
           <Text style={styles.generatingText}>
             {progressMsg && !streamText ? progressMsg : 'L\u2019IA écrit la suite...'}
           </Text>
@@ -310,6 +340,22 @@ export default function GameScreen() {
           chapterKey={current.number}
         />
       )}
+
+      {!isGenerating && pages.length > 1 && (
+        <View style={styles.readerFooter}>
+          <Meander progress={pageIndex / Math.max(1, pages.length - 1)} height={12} />
+          <Text style={styles.folio}>p. {pageIndex + 1} / {pages.length}</Text>
+        </View>
+      )}
+
+      <DialogueFable
+        visible={!!dialogue}
+        title={dialogue?.title}
+        message={dialogue?.message ?? ''}
+        kind={dialogue?.kind ?? 'confirm'}
+        actions={dialogue?.actions ?? []}
+        onClose={() => setDialogue(null)}
+      />
     </View>
   );
 }
@@ -335,7 +381,32 @@ const StreamText = memo(function StreamText({
     >
       <Text style={styles.chapterTitle}>{chapterLabel}</Text>
       <Text style={styles.pageText}>{text || '…'}</Text>
+      <FilLapis />
     </ScrollView>
+  );
+});
+
+/** Le FIL QUI ÉCRIT : fil de lapis (halo) qui s'allonge puis repart,
+ *  remplace tout spinner pendant la génération. Décoratif. */
+const FilLapis = memo(function FilLapis() {
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    progress.value = withRepeat(
+      withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+      -1,
+      true,
+    );
+  }, [progress]);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: 0.25 + 0.75 * progress.value }],
+    opacity: 0.25 + 0.75 * progress.value,
+  }));
+  return (
+    <Animated.View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.threadBase, animatedStyle]}
+    />
   );
 });
 
@@ -406,8 +477,8 @@ const styles = StyleSheet.create({
   },
   pageContent: { paddingBottom: spacing.xxl },
   streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
-  chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, marginBottom: spacing.md },
-  pageText: { color: colors.textBody, fontSize: 17, lineHeight: 28 },
+  chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 19, lineHeight: 24, marginBottom: spacing.md },
+  pageText: { color: colors.text, fontFamily: fonts.ia, fontSize: 15, lineHeight: 26 },
   pageFooter: {
     color: colors.textMuted,
     fontSize: 12,
@@ -416,22 +487,62 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   generatingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
-  generatingText: { color: colors.textSecondary },
+  generatingText: { color: colors.textSecondary, fontSize: 12 },
   choices: { padding: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border, gap: 10, marginTop: spacing.lg },
-  choicesLabel: { color: colors.textSecondary, fontSize: 13, textTransform: 'uppercase' },
+  choicesLabel: { color: colors.textSecondary, fontSize: 11, fontFamily: fonts.ia, textTransform: 'uppercase' },
   choiceButton: {
     backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 48,
+    borderColor: colors.text,
+    borderRadius: 0,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    minHeight: 44,
     justifyContent: 'center',
   },
-  choicePressed: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
-  choiceText: { color: colors.text, fontSize: 15, lineHeight: 21 },
-  continueButton: { marginTop: spacing.xs, paddingVertical: spacing.md, alignItems: 'center' },
-  continueText: { color: colors.textMuted, fontSize: 14, textDecorationLine: 'underline' },
+  choicePressed: { backgroundColor: colors.surfaceAlt },
+  choiceText: { color: colors.text, fontSize: 12.5, lineHeight: 18 },
+  continueButton: {
+    marginTop: spacing.xs,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.border,
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  continueText: { color: colors.textSecondary, fontSize: 12.5 },
+  iaMention: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  iaThread: {
+    width: 1,
+    height: 10,
+    backgroundColor: colors.primary,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  iaMentionText: { color: colors.textSecondary, fontSize: 11, lineHeight: 16, fontFamily: fonts.ia },
+  readerFooter: { paddingVertical: 12 },
+  folio: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    fontFamily: fonts.ia,
+  },
+  threadBase: {
+    height: 2,
+    backgroundColor: colors.primary,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
+    alignSelf: 'flex-start',
+    width: '40%',
+    transformOrigin: 'left',
+    marginTop: spacing.md,
+  },
   meta: { color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
   errorBox: {
     backgroundColor: colors.surfaceAlt,

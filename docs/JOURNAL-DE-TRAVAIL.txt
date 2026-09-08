@@ -1461,4 +1461,27 @@ FAIT :
          précédente en retour ; z0 = page révélée pleine) ; l'ANNULATION d'un retour remet la
          direction à « avant » (plus de page précédente affichée par erreur après un re-render,
          cause du « toujours la même page ») ; reset propre au changement de chapitre.
-         TSC API 0 / MOBILE 0, tests 23/23.
+         TSC API 0 / MOBILE 0, tests 23/23.45. COQUILLE TÉLÉPHONE WEB + PASSES DA PARALLÈLES (demande : « une vue comme sur iPhone sur
+         Vercel » + « plusieurs agents ») :
+         • Coquille : app en colonne 430px centrée sur fond de bureau #C9C6BF — le +html
+           N'ÉTAIT PAS servi par l'export SPA (vérifié : lang="en" par défaut) → CSS injecté au
+           chargement du bundle dans _layout.tsx (vérifié en ligne : JS contient '430px').
+         • Spécifications DA complètes (2e spec : DA + VOCABULAIRE GRAPHIQUE GREC) appliquées
+           par 4 subagents en parallèle (fichiers disjoints, aucun commit avant ma vérif) :
+           ① lecture [gameId].tsx : modale DialogueFable rendue (confirmation/erreur/signalement),
+             Oves à la bascule récit→choix (le méandre est pris par la progression en pied),
+             mention IA « La suite s'écrit à partir de ton choix. » avec fil lapis, corps 15/26,
+             cartes de choix obsidienne radius 0 (press veine), champ libre pointillé, chapiteau
+             (SVG) sur la 1re page, folio « p. x/y » en pied sous le méandre-progression,
+             ActivityIndicator supprimé, FIL DE LAPIS animé dans StreamText (reanimated scaleX
+             + opacité, withRepeat) — aucun spinner ; ② new-game : Stylobate 3 marches (remplace
+             l'indicateur) + boutons Continuer/Tirer au sort ; end.tsx : Fronton avec le titre ;
+             ③ vocabulaire : crédits→ENCRES (paywall/shop/settings/profile), paliers = Le carnet/
+             Le coffret/L'atelier, bouton d'achat bronze plein, plus aucun 'crédit/jeton/token' ;
+             ④ accueil : ColonneJauge (fût cannelé rempli par le bas) sur chaque carte d'histoire.
+         • Nouveaux composants : Meander, DialogueFable, Chapiteau, Fronton, Stylobate, Oves,
+           ColonneJauge (react-native-svg 15.15.4 installé). Tokens ajoutés : bronze/gris2/alerte.
+         • TSC API 0 / MOBILE 0, tests 23/23, export web OK.
+         • RÉSERVE : la suppression web ne marchera PAS tant que la migration 0010 n'est pas
+           exécutée (CHECK games_status_check refuse 'deleted' → API 500) — à exécuter par
+           l'utilisateur dans le SQL Editor Supabase.

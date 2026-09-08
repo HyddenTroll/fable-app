@@ -40,7 +40,7 @@ export default function PaywallScreen() {
 
       <Button label="Pas maintenant" variant="secondary" onPress={later} />
 
-      <Text style={styles.legal}>Annulable à tout moment. Les images restent payables en crédits.</Text>
+      <Text style={styles.legal}>Annulable à tout moment. Les images restent payables en encres.</Text>
     </ScrollView>
   );
 }

@@ -11,12 +11,26 @@ import {
 import { createGame, enrichBible, ApiError } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { Button } from '@/components/Button';
+import { Stylobate } from '@/components/Stylobate';
 import { colors, spacing, radii, fonts } from '@/theme';
 
 type Step = 'genre' | 'hero' | 'params';
 
 /** Étapes visibles de la création, pour la barre de progression. */
 const CREATE_STEPS = ['Charpente du récit', 'Prologue', 'Enrichissement du monde'];
+
+/** Sous-titres d'étape (11.5px, gris) sous le titre en Didot. */
+const STEP_SUBTITLES: Record<Step, string> = {
+  genre: 'La charpente de ton récit',
+  hero: "Celui qui vivra l'aventure",
+  params: 'La cadence et la voix de ton récit',
+};
+
+/** Noms proposés par le tirage au sort du héros (aucune liste n'existait). */
+const RANDOM_HERO_NAMES = ['Liam', 'Elena', 'Sacha', 'Iris', 'Noam', 'Aylin', 'Théo', 'Mila'];
+
+const pickRandom = <T,>(items: readonly T[]): T =>
+  items[Math.floor(Math.random() * items.length)];
 
 export default function NewGameScreen() {
   const router = useRouter();
@@ -106,6 +120,31 @@ export default function NewGameScreen() {
 
   const canContinue = step === 'hero' ? heroName.trim().length > 0 : true;
 
+  /** « Tirer au sort pour moi » : tire les options de l'étape puis avance (ou lance). */
+  const randomizeAndAdvance = () => {
+    if (step === 'genre') {
+      const g = pickRandom(GENRES);
+      setGenreCode(g.code);
+      if (g.subGenres.length > 0) {
+        const choice = pickRandom([null, ...g.subGenres]);
+        setSubGenre(choice ? choice.code : null);
+      } else {
+        setSubGenre(null);
+      }
+      setStep('hero');
+    } else if (step === 'hero') {
+      if (heroName.trim().length === 0) setHeroName(pickRandom(RANDOM_HERO_NAMES));
+      if (!heroTrait) setHeroTrait(pickRandom(HERO_TRAITS));
+      setStep('params');
+    } else {
+      setDifficulty(pickRandom(DIFFICULTIES).code as GameParams['difficulty']);
+      setChapterLength(pickRandom(CHAPTER_LENGTHS).code as GameParams['chapterLength']);
+      setStyle(pickRandom(NARRATIVE_STYLES).code as GameParams['style']);
+      setMaxChoices(pickRandom([2, 3, 4]) as GameParams['maxChoices']);
+      startGame();
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
 
@@ -119,10 +158,14 @@ export default function NewGameScreen() {
         </View>
       )}
 
-      <Text style={styles.stepTitle}>
-        {step === 'genre' ? '1. Choisis ton univers' :
-         step === 'hero' ? '2. Ton héros' : '3. Personnalisation'}
-      </Text>
+      <View style={styles.header}>
+        <Stylobate step={step === 'genre' ? 1 : step === 'hero' ? 2 : 3} />
+        <Text style={styles.stepTitle}>
+          {step === 'genre' ? 'Choisis ton univers' :
+           step === 'hero' ? 'Ton héros' : 'Personnalisation'}
+        </Text>
+        <Text style={styles.stepSubtitle}>{STEP_SUBTITLES[step]}</Text>
+      </View>
 
       {step === 'genre' && (
         <FlatList
@@ -268,6 +311,13 @@ export default function NewGameScreen() {
           />
         )}
       </View>
+      <Button
+        label="Tirer au sort pour moi"
+        variant="secondary"
+        onPress={randomizeAndAdvance}
+        disabled={creating}
+        style={styles.randomButton}
+      />
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
@@ -299,7 +349,9 @@ const styles = StyleSheet.create({
   creationStep: { color: colors.textSecondary, fontSize: 13 },
   listContent: { gap: spacing.md },
   formContent: { gap: spacing.xs },
-  stepTitle: { color: colors.primary, fontFamily: fonts.grec, fontSize: 20, marginBottom: spacing.lg },
+  header: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg },
+  stepTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 22, textAlign: 'center' },
+  stepSubtitle: { color: colors.textSecondary, fontSize: 11.5, textAlign: 'center' },
   genreBlock: { marginBottom: spacing.xs },
   genreCard: {
     backgroundColor: colors.surface,
@@ -344,5 +396,6 @@ const styles = StyleSheet.create({
   },
   navRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xxl },
   flexButton: { flex: 1 },
+  randomButton: { marginTop: spacing.md },
   error: { color: colors.danger, marginTop: spacing.md, textAlign: 'center' },
 });
