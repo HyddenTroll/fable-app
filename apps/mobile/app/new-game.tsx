@@ -185,6 +185,11 @@ export default function NewGameScreen() {
               <Animated.View style={[styles.progressFill, fillStyle]} />
             </View>
             <Text style={styles.creationStep}>{CREATE_STEPS[Math.min(createStep, CREATE_STEPS.length - 1)]}</Text>
+            {!isPremium && createStep === 3 && (
+              <Text style={styles.creationFableHint}>
+                Les couvertures illustrées viennent avec Fable+.
+              </Text>
+            )}
           </View>
         </Modal>
       )}
@@ -427,6 +432,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   creationStep: { color: colors.textSecondary, fontSize: 13 },
+  creationFableHint: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontFamily: fonts.ia,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
+  },
   listContent: { gap: spacing.md },
   formContent: { gap: spacing.xs },
   header: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg },

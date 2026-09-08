@@ -1636,4 +1636,10 @@ FAIT :
       (Didot, livre nu avant sa jaquette) — la couverture frappée géométrique est
       déconnectée de l'affichage (le composant CouvertureLivre : image IA sinon blanc+titre).
       Reste à vérifier sur la console OpenAI : la facturation réelle des paliers,
-      le quota de références et l'accès gpt-image-2 (organisation vérifiée).
+      le quota de références et l'accès gpt-image-2 (organisation vérifiée).• STATUT FABLE+ VISIBLE (question : « est-ce que mon compte a Fable+ ? ») :
+      route /api/me (getQuota : isPremium + quotas), getMe() côté client ; l'écran
+      Profil affiche en direct « Fable+ actif — couvertures illustrées incluses »
+      ou « Compte Fable — les couvertures illustrées viennent avec Fable+ »
+      (lien vers /paywall). Pendant la création, l'étape « La couverture sèche »
+      affiche un rappel pour les comptes gratuits (aucun appel génération émis).
+      La décision premium reste côté serveur (route cover → 402).

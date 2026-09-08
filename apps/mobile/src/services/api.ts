@@ -14,7 +14,7 @@ import { fetch as expoFetch } from 'expo/fetch';
 const isWeb = Platform.OS === 'web';
 const httpFetch = isWeb ? globalThis.fetch.bind(globalThis) : expoFetch;
 
-function apiBase(): string {
+export function apiBase(): string {
   return process.env.EXPO_PUBLIC_API_URL ?? 'https://fable-app-three.vercel.app';
 }
 
@@ -205,6 +205,27 @@ export async function generateCover(gameId: string): Promise<string> {
   const data = await res.json();
   if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur couverture', data.error?.code, data.paywall);
   return String(data.coverImageUrl ?? '');
+}
+
+/** Statut du compte (Fable+ ?, quotas) — lu côté serveur, jamais local. */
+export async function getMe(): Promise<{
+  isPremium: boolean;
+  premiumLimit: number;
+  premiumUsedThisMonth: number;
+  freeUsed: number;
+}> {
+  const res = await httpFetch(`${apiBase()}/api/me`, {
+    method: 'GET',
+    headers: await authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new ApiError(res.status, data.error?.message ?? 'Erreur profil', data.error?.code);
+  return {
+    isPremium: Boolean(data.isPremium),
+    premiumLimit: Number(data.premiumLimit ?? 0),
+    premiumUsedThisMonth: Number(data.premiumUsedThisMonth ?? 0),
+    freeUsed: Number(data.freeUsed ?? 0),
+  };
 }
 
 /** Supprime une histoire (soft delete serveur). */

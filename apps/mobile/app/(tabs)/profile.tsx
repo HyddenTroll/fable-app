@@ -3,13 +3,14 @@
  * Un seul endroit où la pièce d'encre s'explique. Réglages strictement
  * limités au thème et à la taille du texte. Aucun emoji, radius 0.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/state/store';
 import { signOut } from '@/services/auth';
+import { getMe } from '@/services/api';
 import { SoldeEncres } from '@/components/SoldeEncres';
 import { PieceEncre } from '@/components/PieceEncre';
 import { Button } from '@/components/Button';
@@ -37,6 +38,17 @@ export default function ProfileScreen() {
 
   const [theme, setTheme] = useState<ThemeChoix>('systeme');
   const [taille, setTaille] = useState<TailleChoix>('M');
+  // Statut Fable+ lu côté serveur (jamais le store local, la sync d'achat
+  // peut être en cours). null = pas encore chargé.
+  const [meFable, setMeFable] = useState<{ isPremium: boolean } | null>(null);
+
+  useEffect(() => {
+    let actif = true;
+    getMe()
+      .then((m) => { if (actif) setMeFable({ isPremium: m.isPremium }); })
+      .catch(() => { if (actif) setMeFable({ isPremium: false }); });
+    return () => { actif = false; };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -87,6 +99,23 @@ export default function ProfileScreen() {
           <Text style={styles.boutiqueSolde}>{credits} encres</Text>
           <Text style={styles.boutiqueLien}>Accéder à la boutique</Text>
         </TouchableOpacity>
+
+        {/* Statut Fable+ : affiché en direct depuis le serveur (jamais le
+            store local : un retour d'achat peut être en cours de sync). */}
+        {meFable !== null && (
+          <TouchableOpacity
+            style={styles.fableBloc}
+            onPress={() => router.push('/paywall')}
+            accessibilityRole="button"
+            accessibilityLabel={meFable.isPremium ? 'Fable+ actif' : 'Découvrir Fable+'}
+          >
+            {meFable.isPremium ? (
+              <Text style={styles.fableActif}>Fable+ actif — couvertures illustrées incluses</Text>
+            ) : (
+              <Text style={styles.fableInactif}>Compte Fable — les couvertures illustrées viennent avec Fable+</Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Réglages : thème et taille de texte, rien d'autre */}
         <Text style={styles.section}>Réglages</Text>
@@ -192,6 +221,12 @@ const styles = StyleSheet.create({
     borderTopColor: colors.surfaceAlt,
     gap: spacing.xs,
   },
+  fableBloc: {
+    paddingVertical: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  fableActif: { color: colors.text, fontSize: 12, fontFamily: fonts.iaMedium },
+  fableInactif: { color: colors.textSecondary, fontSize: 12, fontFamily: fonts.ia },
   boutiqueSolde: { color: colors.bronze, fontFamily: fonts.grec, fontSize: 30 },
   boutiqueLien: { color: colors.textSecondary, fontFamily: fonts.ia, fontSize: 12 },
   section: {
