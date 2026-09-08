@@ -1526,4 +1526,11 @@ FAIT :
          Bascule désormais SÈCHE à 50 • TRANSPARENCE du pli corrigée : les faces du volet passaient en fondu d'opacité
       (110 ms) à mi-course → le texte du dessous (page suivante) se mélangeait au recto.
       Bascule désormais SÈCHE à 50 % : recto opaque jusqu'au basculement, verso opaque
-      juste après : aucune superposition de texte possible.
+      juste après : aucune superposition de texte possible.• PAGE = LIVRE OUVERT AU CENTRE : la charnière du pli est désormais FIXE au
+      milieu de l'écran (translateX = width/2 constant), comme un livre posé.
+      Le doigt n'ouvre plus le pli à sa position : il déplie le rabat de la
+      moitié droite autour de la reliure. Geste : droite → gauche = page
+      suivante ; gauche → droite (le livre se referme) = revenir. Contenu du
+      volet aligné par marginLeft -width/2. Test headless (branchement réel) :
+      avance 0→1, retour 1→0, annulation sans effet. Les seuils de validation
+      restent 45 % (avant : pli déployé ; retour : pli refermé).

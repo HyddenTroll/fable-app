@@ -91,12 +91,12 @@ export function PageTurn<T>({
         const s: 1 | -1 = e.x < width * 0.5 && canBack ? -1 : 1;
         if (s !== dir.value) runOnJS(setDirS)(s);
         dir.value = s;
-        const raw = 1 - e.x / width;
+        const raw = 1 - e.x / (width * 0.5);
         fold.value = Math.max(0.05, Math.min(0.95, raw));
       }
     })
     .onUpdate((e) => {
-      const raw = 1 - e.x / width;
+      const raw = 1 - e.x / (width * 0.5);
       fold.value = Math.max(0.02, Math.min(0.98, raw));
     })
     .onEnd(() => {
@@ -139,12 +139,12 @@ export function PageTurn<T>({
     opacity: fold.value > 0.01 ? 1 : 0,
   }));
 
-  // Volet (partie droite de la page courante) : translateX + rotateY.
+  // Volet : la moitié droite de la page, pivotée AUTOUR DE LA CHARNIÈRE AU
+  // CENTRE (livre ouvert) — le doigt ne déplace pas le pli, il l'ouvre.
   const flapStyle = useAnimatedStyle(() => {
-    const flapX = width * (1 - fold.value); // bord gauche du volet = pli
     return {
       transform: [
-        { translateX: flapX },
+        { translateX: width * 0.5 },
         { perspective: ROBOT },
         { rotateY: `${-180 * fold.value}deg` },
       ],
@@ -189,11 +189,12 @@ export function PageTurn<T>({
           <Animated.View
             style={[styles.absolute, flapStyle, { overflow: 'hidden', transformOrigin: 'left center' }]}
           >
-            {/* Recto du volet : courante, aligné à droite — sa face arrière
-                est CACHÉE : au-delà de 90°, seul le verso (la page suivante)
-                est visible (transparent sinon : la page courante resterait
-                affichée en miroir pendant le pli). */}
-            <Animated.View style={[styles.absolute, { alignItems: 'flex-end', backfaceVisibility: 'hidden' }, rectoStyle]}>
+            {/* Recto du volet : courante, alignée de façon que la partie
+                droite [W/2..W] tombe dans la moitié gauche du volet (qui est
+                posé sur [0..W/2] à l'écran après translateX). La face
+                arrière est CACHÉE : au-delà de 90°, seul le verso est
+                visible. */}
+            <Animated.View style={[styles.absolute, { marginLeft: -width / 2, backfaceVisibility: 'hidden' }, rectoStyle]}>
               <View style={{ width }}>{renderPage({ item: current, index: curIdx })}</View>
             </Animated.View>
             {/* Verso du volet : la page vers laquelle on va, pré-rotatée 180°
@@ -202,6 +203,7 @@ export function PageTurn<T>({
               style={[
                 styles.absolute,
                 {
+                  marginLeft: -width / 2,
                   transformOrigin: 'left center',
                   backfaceVisibility: 'hidden',
                   transform: [{ rotateY: '180deg' }],
