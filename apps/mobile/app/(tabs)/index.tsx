@@ -15,7 +15,7 @@ import { listGames, readGame, generateCover, getMe } from '@/services/api';
 import { useAppStore } from '@/state/store';
 import { colors, fonts, spacing } from '@/theme';
 
-const COUVERTURE = 172;
+const COUVERTURE = 210;
 const JAUGE_LARGEUR = 150;
 const JAUGE_HAUTEUR = 2;
 const BOUTON_HAUTEUR = 46;
@@ -62,6 +62,8 @@ export default function HomeScreen() {
     try {
       await generateCover(livre.id);
     } catch {
+      // échec (paywall, quota, clé) : on laisse le lien réessayer.
+    } finally {
       setCoverEnCours(false);
     }
   };
@@ -74,7 +76,23 @@ export default function HomeScreen() {
       listGames()
         .then((liste) => {
           if (!actif) return;
-          setGames([...liste].sort(parRecence));
+          const triee = [...liste].sort(parRecence);
+          setGames(triee);
+          // La couverture peut avoir été générée en arrière-plan pendant
+          // l'absence (création, retour d'un autre onglet) : on la relit à
+          // CHAQUE focus — c'est ce qui manquait (l'image restait en
+          // « préparation » même une fois prête).
+          const premier = triee[0];
+          if (premier) {
+            readGame(premier.id)
+              .then(({ chapters }) => {
+                if (!actif) return;
+                setChapitreCourant(Math.max(1, Math.min(chapters.length || 1, premier.chapterCount)));
+                const couverture = chapters[0]?.coverImageUrl ?? null;
+                if (couverture) setCouvertureUrl(couverture);
+              })
+              .catch(() => {});
+          }
         })
         .catch(() => {
           if (actif) setGames([]);

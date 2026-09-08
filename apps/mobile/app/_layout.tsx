@@ -38,6 +38,16 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
           background: #E4E2DC;
           overflow-x: hidden;
         }
+        /* ── Les MODALES (création, dialogues) vivent dans un portal hors de
+           #root : elles doivent rester dans la COQUILLE téléphone, pas
+           s'étaler sur toute la fenêtre. */
+        [role="dialog"] {
+          max-width: 430px !important;
+          width: 100% !important;
+          height: min(100dvh, 932px) !important;
+          max-height: 100dvh !important;
+          margin: 0 auto !important;
+        }
   `;
   document.head.appendChild(style);
 }

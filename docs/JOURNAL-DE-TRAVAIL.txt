@@ -1651,3 +1651,10 @@ FAIT :
       RATTRAPAGE : sur l'accueil, quand un livre n'a pas d'illustration et que le
       compte est premium, un lien discret « Illustrer la couverture » lance la
       génération (le re-fetch au focus affiche l'image ~1 min plus tard).
+       • ACCUEIL : la couverture relue à CHAQUE focus (fin du « couverture en
+         préparation » figé : le readGame nétait relancé que sur changement de
+         livre) ; le lien « Illustrer » remet son état à zéro même en cas de
+         succès ; couverture de laccueil agrandie (172 → 210).
+       • MODALES DANS LA COQUILLE : CSS global [role="dialog"] : maxWidth 430 +
+         hauteur plafonnée (932) — la page de chargement ne sétale plus sur
+         toute la fenêtre.
