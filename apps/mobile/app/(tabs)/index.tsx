@@ -22,10 +22,11 @@ interface GameItem {
   status: string;
 }
 
-/** Étiquette de la colonne : premier mot du titre, tronqué à 12 caractères. */
+/** Étiquette de la colonne : le titre du livre, tronqué à 14 caractères. */
 const jaugeLabel = (title: string): string => {
-  const premierMot = title.trim().split(/\s+/)[0] || title;
-  return premierMot.length > 12 ? premierMot.slice(0, 12) : premierMot;
+  const t = (title ?? '').trim();
+  if (!t) return '…';
+  return t.length > 14 ? `${t.slice(0, 14)}…` : t;
 };
 
 export default function HomeTabScreen() {
@@ -111,14 +112,11 @@ export default function HomeTabScreen() {
       // Si l'histoire supprimée était la partie en cours, on la retire du store.
       if (currentGame?.gameId === g.id) setCurrentGame(null);
     } catch (e) {
-      // Dans une appli mobile, on montre une modale designée (jamais de bruit
-      // système) : l'erreur dit ce qui s'est passé, sans s'excuser.
-      const raw = e instanceof Error ? e.message : '';
-      const msg = raw.replace(/^Impossible de supprimer\s*:?\s*/i, '') || "L'histoire n'a pas pu être supprimée.";
+      // Les erreurs ne s'excusent pas : elles disent ce qui s'est passé.
       setDialogue({
         kind: 'erreur',
         title: 'Suppression impossible',
-        message: msg,
+        message: "L'histoire n'a pas pu être supprimée.",
         actions: [{ label: 'Fermer', kind: 'secondary', onPress: () => setDialogue(null) }],
       });
     } finally {

@@ -41,13 +41,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const { error: updateError } = await db
-    .from('games')
-    .update({ status: 'deleted' })
-    .eq('id', gameId);
+      .from('games')
+      .update({ status: 'deleted' })
+      .eq('id', gameId);
 
-  if (updateError) {
-    return json(res, 500, { error: { code: 'db_error', message: 'Impossible de supprimer l\'histoire' } });
-  }
+    if (updateError) {
+      // Log pour diagnostic (le plus fréquent : contrainte games_status_check
+      // qui n'accepte pas 'deleted' tant que la migration 0010 n'est pas exécutée).
+      console.error('delete.ts update failed:', updateError);
+      return json(res, 500, { error: { code: 'db_error', message: 'Impossible de supprimer l\'histoire' } });
+    }
 
   return json(res, 200, { ok: true });
 }
