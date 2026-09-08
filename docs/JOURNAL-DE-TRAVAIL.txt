@@ -1398,3 +1398,24 @@ FAIT :
          ÉCRAN (jamais de trou) ; ombrage du pli (Animated.View) ; snap > 45 % → rabat via withSpring
          + commit, sinon retour ; aucune animation de layout (que des transforms) = 60 fps.
          TSC 0/0, export web OK.
+
+       • RÉÉCRITURE « CURL CYLINDRIQUE » (l’utilisateur fournit un prototype canvas HTML :
+         enroulement du papier sur un cylindre, reflet sin(θ), verso retombé, pli incliné selon la
+         hauteur du doigt) → porté dans lapp en react-native-skia 2.6.2, implémentation DÉCLARATIVE :
+         les pages restent du React natif (renderPage) capturé en SkImage via makeImageFromView
+         (aucun SkParagraph manuel, le rendu de page existant est conservé) ; le rouleau = dégradé
+         répliquant léclairement du cylindre (pas de 64 rects/frame ni de pont React) ; géométrie
+         (pli xt, verso v=maxt(0,d−πR), largeur rouleau, clip demi-plan incliné, rotation autour du
+         pli) en useDerivedValue = thread UI, zéro re-render pendant le drag ; snap 42 • RÉÉCRITURE « CURL CYLINDRIQUE » (l'utilisateur fournit un prototype canvas HTML :
+         enroulement du papier sur un cylindre, reflet sin(θ), verso retombé, pli incliné selon la
+         hauteur du doigt) → porté dans l'app en react-native-skia 2.6.2, implémentation DÉCLARATIVE :
+         les pages restent du React natif (renderPage) capturé en SkImage via makeImageFromView
+         (aucun SkParagraph manuel, le rendu de page existant est conservé) ; le rouleau = dégradé
+         répliquant l'éclairement du cylindre (pas de 64 rects/frame ni de pont React) ; géométrie
+         (pli xt, verso v=max(0,d−πR), largeur rouleau, clip demi-plan incliné, rotation autour du
+         pli) en useDerivedValue = thread UI, zéro re-render pendant le drag ; snap 42 % / 700 px/s,
+         withTiming 280 ms ease-out ; retour = feuille entièrement enroulée (pas de saut) ; overlay
+         « tail » (état + choix) par-dessus la dernière page, s'efface dès que le pli bouge ;
+         index = prop contrôlée (reset au changement de chapitre côté écran) ; scroll vertical
+         retiré (les pages tiennent — le canvas coupe le texte au pli).
+         TSC 0/0, expo export web OK (WASM Skia).
