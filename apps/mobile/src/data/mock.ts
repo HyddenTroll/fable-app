@@ -12,9 +12,12 @@ export const GENRES: Genre[] = [
     description: 'Magie, créatures mythiques, quêtes épiques.',
     popular: true,
     subGenres: [
-      { code: 'high', label: 'High fantasy', description: 'Mondes imaginaires épiques' },
-      { code: 'dark', label: 'Dark fantasy', description: 'Morale sombre, violence' },
-      { code: 'urban', label: 'Urban fantasy', description: 'Magie dans un monde moderne' },
+      { code: 'high', label: 'High fantasy', description: 'Mondes imaginaires, épopées de grande ampleur' },
+      { code: 'dark', label: 'Dark fantasy', description: 'Morale sombre, violence, mythologie noire' },
+      { code: 'urban', label: 'Urban fantasy', description: 'Magie injectée dans un monde moderne' },
+      { code: 'low', label: 'Low fantasy', description: 'Une seule touche de magie, le reste réel' },
+      { code: 'portal', label: 'Portal fantasy', description: 'Un passage vers un autre monde' },
+      { code: 'grimdark', label: 'Grimdark', description: 'Un monde impitoyable, des héros cabossés' },
     ],
   },
   {
@@ -22,9 +25,13 @@ export const GENRES: Genre[] = [
     label: 'Science-fiction',
     description: 'Futur, technologie, voyages spatiaux.',
     subGenres: [
-      { code: 'space_opera', label: 'Space opera', description: 'Épopées intergalactiques' },
+      { code: 'space_opera', label: 'Space opera', description: 'Épopées intergalactiques, grands destins' },
       { code: 'cyberpunk', label: 'Cyberpunk', description: 'Mégalopoles high tech / low life' },
       { code: 'post_apo', label: 'Post-apocalyptique', description: 'Survie après l’effondrement' },
+      { code: 'hard_sf', label: 'Hard SF', description: 'Science rigoureuse, physique réelle' },
+      { code: 'dystopie', label: 'Dystopie', description: 'Un futur sous contrôle' },
+      { code: 'first_contact', label: 'Premier contact', description: 'La rencontre avec l’autre' },
+      { code: 'solarpunk', label: 'Solarpunk', description: 'Un futur crédible, vivable, sobre' },
     ],
   },
   {
@@ -34,6 +41,10 @@ export const GENRES: Genre[] = [
     subGenres: [
       { code: 'whodunit', label: 'Enquête', description: 'Qui a commis le crime ?' },
       { code: 'psy', label: 'Thriller psychologique', description: 'Les méandres de l’esprit' },
+      { code: 'neo_noir', label: 'Néo-noir', description: 'Ville, amoralité, lumière crue' },
+      { code: 'espionnage', label: 'Espionnage', description: 'Réseaux, trahisons, fausses identités' },
+      { code: 'juridique', label: 'Judiciaire', description: 'La justice comme terrain de jeu' },
+      { code: 'huis_clos', label: 'Huis clos', description: 'Une enquête sans sortie' },
     ],
   },
   {
@@ -41,8 +52,12 @@ export const GENRES: Genre[] = [
     label: 'Horreur',
     description: 'Peur, atmosphère, surnaturel.',
     subGenres: [
-      { code: 'gothique', label: 'Gothique', description: 'Manoirs et secrets de famille' },
+      { code: 'paranormal', label: 'Paranormal', description: 'Esprits, possessions, signes' },
+      { code: 'psy_horreur', label: 'Psychologique', description: 'La peur vient de l’intérieur' },
+      { code: 'survival', label: 'Survie', description: 'Traqué, seul, sans ressource' },
       { code: 'cosmique', label: 'Cosmique', description: 'Horreur indicible et ancienne', adultOnly: true },
+      { code: 'slasher', label: 'Slasher', description: 'Une menace qui poursuit' },
+      { code: 'body', label: 'Body horror', description: 'Le corps qui trahit' },
     ],
   },
   {
@@ -52,6 +67,9 @@ export const GENRES: Genre[] = [
     subGenres: [
       { code: 'medieval', label: 'Médiéval', description: 'Châteaux, chevaliers, complots' },
       { code: 'renaissance', label: 'Renaissance', description: 'Intrigues et arts italiens' },
+      { code: 'antiquite', label: 'Antiquité', description: 'Empires, temples, limes' },
+      { code: 'xxe', label: 'XXe siècle', description: 'Guerres, révolutions, mémoire' },
+      { code: 'lumieres', label: 'XVIIIe-XIXe siècle', description: 'Salons, révolutions, machines' },
     ],
   },
   {
@@ -61,6 +79,9 @@ export const GENRES: Genre[] = [
     subGenres: [
       { code: 'contemporaine', label: 'Contemporaine', description: 'Amour aujourd’hui' },
       { code: 'historique', label: 'Historique', description: 'Amour dans le passé' },
+      { code: 'slow_burn', label: 'Slow burn', description: 'L’amour qui prend son temps' },
+      { code: 'enemies_lovers', label: 'Enemies-to-lovers', description: 'De rivaux à amants' },
+      { code: 'second_chance', label: 'Second chance', description: 'Se retrouver après la rupture' },
       { code: 'dark_romance', label: 'Dark romance', description: 'Amour et danger', adultOnly: true },
     ],
   },
@@ -74,6 +95,34 @@ export const HERO_TRAITS = [
   'sarcastique',
   'loyal',
   'solitaire',
+  'curieux',
+  'têtu',
+  'impulsif',
+  'cynique',
+  'naïf',
+  'méticuleux',
+  'charmeur',
+  'protecteur',
+  'rêveur',
+  'franc',
+  'méfiant',
+  'doux',
+  'ambitieux',
+  'insouciant',
+  'discret',
+  'généreux',
+  'obstiné',
+  'optimiste',
+  'anxieux',
+  'débrouillard',
+  'sensible',
+  'joueur',
+  'autoritaire',
+  'pacifiste',
+  'bavard',
+  'réservé',
+  'orgueilleux',
+  'ironique',
 ] as const;
 
 export const NARRATIVE_STYLES: { code: NarrativeStyle; label: string }[] = [
@@ -83,6 +132,14 @@ export const NARRATIVE_STYLES: { code: NarrativeStyle; label: string }[] = [
   { code: 'lyrique', label: 'Lyrique' },
   { code: 'cinematographique', label: 'Cinématographique' },
   { code: 'sobre', label: 'Sobre' },
+  { code: 'incisif', label: 'Incisif' },
+  { code: 'atmospherique', label: 'Atmosphérique' },
+  { code: 'epistolaire', label: 'Épistolaire' },
+  { code: 'onirique', label: 'Onirique' },
+  { code: 'oral', label: 'Oral' },
+  { code: 'epure', label: 'Épuré' },
+  { code: 'poetique', label: 'Poétique' },
+  { code: 'vif', label: 'Vif' },
 ];
 
 export const CHAPTER_LENGTHS: { code: ChapterLength; label: string; words: number }[] = [
@@ -91,10 +148,11 @@ export const CHAPTER_LENGTHS: { code: ChapterLength; label: string; words: numbe
   { code: 'long', label: 'Long (~5000 mots)', words: 5000 },
 ];
 
+/** La difficulté règle le VOCABULAIRE, pas le défi : les noms le disent. */
 export const DIFFICULTIES = [
-  { code: 'facile', label: 'Facile' },
-  { code: 'moyenne', label: 'Moyenne' },
-  { code: 'difficile', label: 'Difficile' },
+  { code: 'facile', label: 'Vocabulaire essentiel', hint: 'Mots simples et directs, phrases courtes' },
+  { code: 'moyenne', label: 'Vocabulaire courant', hint: 'Le français de tous les jours, précis' },
+  { code: 'difficile', label: 'Vocabulaire riche', hint: 'Mots rares et choisis, phrases amples' },
 ];
 
 export const AGE_GROUPS_MOCK = [

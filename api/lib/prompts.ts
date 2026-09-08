@@ -400,6 +400,7 @@ export function buildQuickBiblePrompt(
   age: AgeGroup,
   opts?: {
     heroName?: string;
+    heroGender?: 'homme' | 'femme';
     heroTrait?: string;
     voix?: { nom: string; consigne: string };
     briques?: { label: string; valeur: string }[];
@@ -408,7 +409,7 @@ export function buildQuickBiblePrompt(
     rappelAntiDoublon?: string;
   }
 ): string {
-  const { heroName, heroTrait, voix, briques, variety, titresConnus, rappelAntiDoublon } = opts ?? {};
+  const { heroName, heroGender, heroTrait, voix, briques, variety, titresConnus, rappelAntiDoublon } = opts ?? {};
   const variationSeed = Math.floor(Math.random() * 999_999);
   const briquesBlock = briques?.length
     ? `ÉLÉMENTS IMPOSÉS PAR LA DIRECTION (le roman DOIT les intégrer naturellement) :\n${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}\n`
@@ -449,6 +450,7 @@ Le titre doit refléter le GENRE (${params.genre}) : un titre d'horreur et un ti
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
 PUBLIC : ${ageLabel(age)}
 ${heroName ? `NOM DU HÉROS : ${heroName}` : ''}
+${heroGender ? `SEXE DU HÉROS : ${heroGender}` : ''}
 ${heroTrait ? `TRAIT DU HÉROS : ${heroTrait}` : ''}
 
 ${briquesBlock}${loisBlock}
@@ -596,17 +598,35 @@ Réponds en UN SEUL JSON complet (tous les champs du schéma d'une bible complè
 export function consigneNarrateur(
   narrateur: 'tu' | 'je' | 'il' | undefined,
   heroNom?: string,
+  heroGender?: 'homme' | 'femme',
 ): string {
   if (narrateur === 'je') {
     return 'NARRATION À LA 1re PERSONNE ("je") : le héros raconte lui-même, dès la première phrase, comme dans tout le reste du roman. Jamais de "tu" ni de "il/elle" pour désigner le héros. Les autres personnages sont désignés par leur nom.';
   }
   if (narrateur === 'il') {
     const nom = (heroNom ?? '').trim();
-    const elle = /e$/.test(nom.toLowerCase()) && !/é$|è$|ê$/.test(nom.toLowerCase());
+    // Le sexe CHOISI prime ; sinon déduit du prénom (e final sans é/è).
+    const elle =
+      heroGender === 'femme'
+        ? true
+        : heroGender === 'homme'
+          ? false
+          : /e$/.test(nom.toLowerCase()) && !/é$|è$|ê$/.test(nom.toLowerCase());
     const p = elle ? 'elle' : 'il';
     return `NARRATION À LA 3e PERSONNE : le héros${nom ? ` ${nom}` : ''} est désigné par son prénom et par "${p}", dès la première phrase, comme dans tout le reste du roman. Jamais de "tu" ni de "je" pour désigner le héros.`;
   }
   return 'NARRATION À LA 2e PERSONNE ("tu") : le lecteur EST le héros, dès la première phrase, comme dans tout le reste du roman. Jamais de "il/elle" pour désigner le héros, jamais de passage à la 3e personne.';
+}
+
+/** La difficulté règle le VOCABULAIRE : la consigne le dit au modèle. */
+export function regleDifficulte(difficulty: string | undefined): string {
+  if (difficulty === 'facile') {
+    return 'VOCABULAIRE SIMPLE : phrases courtes, mots du quotidien, aucune expression rare ni jargon. Un enfant de 10 ans comprend tout sans dictionnaire.';
+  }
+  if (difficulty === 'difficile') {
+    return 'VOCABULAIRE RICHE : vocabulaire étendu, mots rares et précis, expressions amples et maîtrisées. Le lecteur découvre des mots, jamais au détriment du sens.';
+  }
+  return 'VOCABULAIRE COURANT : un français naturel, juste et précis, sans jargon ni mots rares gratuits.';
 }
 
 export function buildProloguePrompt(bible: StoryBible, params: GameParams, age: AgeGroup): string {
@@ -622,7 +642,8 @@ ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narrati
 
 Le prologue doit :
 - INSTALLER la vie ordinaire du héros : sa routine, son travail, les gens qui l'entourent, ses manies, ce qu'il désire et ce qu'il redoute. On doit entrer dans son monde et s'attacher à lui AVANT toute bascule.
-- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${regleDifficulte(params.difficulty)}
 - Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
 - L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
 - Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
@@ -698,7 +719,8 @@ Règles d'écriture :
 - Les MOTIFS récurrents (dans la bible) peuvent revenir, changés de sens.
 - VOIX INTÉRIEURE : au moins une fois par chapitre, montre la pensée du héros qui CONTREDIT son geste ou sa parole (il se ment à lui-même, s'observe, se juge) — c'est ce qui donne de la profondeur au personnage.
 - ${ageLimit(age)}
-- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${regleDifficulte(params.difficulty)}
 
 ${ANTI_AI_SLOP}
 
@@ -779,7 +801,8 @@ Règles d'écriture :
 - Le héros agit selon son trait mais le joueur garde le contrôle via les choix.
 - Conséquences visibles des choix précédents : les blessures, objets et personnages de l'état du héros doivent rester cohérents.
 - ${ageLimit(age)}
-- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName)}
+- ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${regleDifficulte(params.difficulty)}
 
 VOIX NARRATIVE (obligatoire - écris ce chapitre DANS CE REGISTRE, pas dans un autre ; respecte le rythme de phrase, la densité descriptive, la place du dialogue et de l'introspection) :
 ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narration/dialogue.'}

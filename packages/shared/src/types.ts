@@ -72,7 +72,15 @@ export type NarrativeStyle =
   | 'humoristique'
   | 'lyrique'
   | 'cinematographique'
-  | 'sobre';
+  | 'sobre'
+  | 'incisif'
+  | 'atmospherique'
+  | 'epistolaire'
+  | 'onirique'
+  | 'oral'
+  | 'epure'
+  | 'poetique'
+  | 'vif';
 
 export type HeroTrait =
   | 'courageux'
@@ -81,7 +89,35 @@ export type HeroTrait =
   | 'audacieux'
   | 'sarcastique'
   | 'loyal'
-  | 'solitaire';
+  | 'solitaire'
+  | 'curieux'
+  | 'têtu'
+  | 'impulsif'
+  | 'cynique'
+  | 'naïf'
+  | 'méticuleux'
+  | 'charmeur'
+  | 'protecteur'
+  | 'rêveur'
+  | 'franc'
+  | 'méfiant'
+  | 'doux'
+  | 'ambitieux'
+  | 'insouciant'
+  | 'discret'
+  | 'généreux'
+  | 'obstiné'
+  | 'optimiste'
+  | 'anxieux'
+  | 'débrouillard'
+  | 'sensible'
+  | 'joueur'
+  | 'autoritaire'
+  | 'pacifiste'
+  | 'bavard'
+  | 'réservé'
+  | 'orgueilleux'
+  | 'ironique';
 
 export interface GameParams {
   genre: GenreCode;
@@ -90,6 +126,8 @@ export interface GameParams {
   chapterLength: ChapterLength;
   style: NarrativeStyle;
   maxChoices: 2 | 3 | 4;
+  /** Sexe du héros : l'IA s'y adapte (pronom, physique, relations). */
+  heroGender?: 'homme' | 'femme';
   /** Personne narrative du roman : laissée au tirage serveur si absente. */
   narrateur?: 'tu' | 'je' | 'il';
   /** Profil de rythme pioché à la création (48 profils informés par

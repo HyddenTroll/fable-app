@@ -25,6 +25,7 @@ interface CreateBody {
   style: string;
   maxChoices: number;
     narrateur?: 'tu' | 'je' | 'il';
+    heroGender?: 'homme' | 'femme';
     age: AgeGroup;
   heroName?: string;
   heroTrait?: string;
@@ -69,9 +70,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       difficulty: body.difficulty as GameParams['difficulty'],
       chapterLength: body.chapterLength as GameParams['chapterLength'],
       style: body.style as GameParams['style'],
-      maxChoices,
-      narrateur,
-      rythme: undefined, // rempli après le tirage ci-dessous
+            maxChoices,
+            narrateur,
+            heroGender: body.heroGender,
+            rythme: undefined, // rempli après le tirage ci-dessous
     };
 
   // Profil de rythme pioché dans les 8 du genre choisi (étude best-sellers)
@@ -129,8 +131,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const llm = getLLM();
     const makePrompt = (rappel?: string) =>
       buildQuickBiblePrompt(params, body.age ?? 'adult', {
-        heroName: body.heroName,
-        heroTrait: body.heroTrait,
+              heroName: body.heroName,
+              heroGender: body.heroGender,
+              heroTrait: body.heroTrait,
         voix,
         briques,
         variety,

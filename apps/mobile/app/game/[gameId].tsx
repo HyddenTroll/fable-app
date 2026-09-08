@@ -64,11 +64,19 @@ export default function GameScreen() {
   const voix = useAppStore((s) => s.gameParams?.narrateur ?? 'tu');
   const heroNom = useAppStore((s) => s.currentGame?.heroName);
   const libelleChoix =
-    voix === 'je'
-      ? 'Que fais-je ?'
-      : voix === 'il'
-        ? `Que fait-${/e$/.test((heroNom ?? '').toLowerCase()) && !/é$|è$/.test((heroNom ?? '').toLowerCase()) ? 'elle' : 'il'} ?`
-        : 'Que fais-tu ?';
+      voix === 'je'
+        ? 'Que fais-je ?'
+        : voix === 'il'
+          ? /* Sexe CHOISI au prime ; sinon déduit du prénom (e final sans é/è). */
+            `Que fait-${pronomHero()} ?`
+          : 'Que fais-tu ?';
+    function pronomHero(): string {
+      const g = useAppStore.getState().gameParams?.heroGender;
+      if (g === 'femme') return 'elle';
+      if (g === 'homme') return 'il';
+      const nom = (useAppStore.getState().currentGame?.heroName ?? '').trim().toLowerCase();
+      return /e$/.test(nom) && !/é$|è$|ê$/.test(nom) ? 'elle' : 'il';
+    }
 
   // Restauration serveur (réessaie si la partie a changé)
   useRestoreGame();

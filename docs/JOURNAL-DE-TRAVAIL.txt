@@ -1687,4 +1687,22 @@ FAIT :
       du prénom (/e$/ sans é/è) ; non-intrusion généralisée (tu ressens / je ressens /
       il ressent interdits également) ; « PERSONNE NARRATIVE UNIQUE » remplace la règle
       figée en « tu ». Libellés du joueur adaptés : Que fais-tu ? / Que fais-je ? /
-      Que fait-il·elle ?. Les livres existants (params sans narrateur) restent au « tu ».
+      Que fait-il·elle ?. Les livres existants (params sans narrateur) restent au « tu ».• REFONTE PARAMÈTRES DE CRÉATION (retour : « les sous-thèmes c'est nul » +
+      « la difficulté doit gérer le vocabulaire » + sexe du héros + styles élargis).
+      — SOUS-GENRES réels par thème (6-7 chacun, classification littéraire) :
+        fantasy (high/dark/urban/low/portal/grimdark), SF (space opera/cyberpunk/
+        post-apo/hard SF/dystopie/premier contact/solarpunk), policier (enquête/
+        psy/néo-noir/espionnage/judiciaire/huis clos), horreur (PARANORMAL en tête,
+        + psy/survie/cosmique/slasher/body horror — gothique retiré), historique
+        (médiéval/renaissance/antiquité/XXe/lumières), romance (contemporaine/
+        historique/slow burn/enemies-to-lovers/second chance/dark romance).
+      — HÉROS : 35 adjectifs (+28), ♂/♀ à côté du nom (SVG ♂♀, 48×46) : l'IA
+        s'adapte (SEXE DU HÉROS dans la bible, pronom il/elle PRIME sur la
+        détection par prénom, libellé « Que fait-elle/il ? » en lecture).
+      — DIFFICULTÉ = VOCABULAIRE : renommée « Vocabulaire essentiel / courant /
+        riche » + hint sous les chips ; consigne regleDifficulte() injectée au
+        prologue et aux chapitres (phrases courtes/mots du quotidien ↔ mots rares).
+      — STYLE NARRATIF : 8 nouveaux (incisif, atmosphérique, épistolaire, onirique,
+        oral, épuré, poétique, vif) → 14 ; « Tirer au sort pour moi » devient
+        « Laisser l'IA décider ».
+      TSC API 0 / MOBILE 0. poussé `7b1f4f6`

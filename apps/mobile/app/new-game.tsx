@@ -47,6 +47,8 @@ export default function NewGameScreen() {
   const [genreCode, setGenreCode] = useState<string>('fantasy');
   const [subGenre, setSubGenre] = useState<string | null>(null);
   const [heroName, setHeroName] = useState('');
+  // Sexe du héros : 'homme' | 'femme' | null (null = déduit du prénom).
+  const [heroGender, setHeroGender] = useState<'homme' | 'femme' | null>(null);
   const [heroTrait, setHeroTrait] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<GameParams['difficulty']>('moyenne');
   const [chapterLength, setChapterLength] = useState<GameParams['chapterLength']>('moyen');
@@ -105,6 +107,7 @@ export default function NewGameScreen() {
         narrateur: params.narrateur,
         age: age ?? 'adult',
         heroName: heroName || undefined,
+        heroGender: heroGender ?? undefined,
         heroTrait: heroTrait ?? undefined,
       });
       setCreateStep(1);
@@ -159,7 +162,7 @@ export default function NewGameScreen() {
 
   const canContinue = step === 'hero' ? heroName.trim().length > 0 : true;
 
-  /** « Tirer au sort pour moi » : tire les options de l'étape puis avance (ou lance). */
+  /** « Laisser l'IA décider » : tire les options de l'étape puis avance (ou lance). */
   const randomizeAndAdvance = () => {
     if (step === 'genre') {
       const g = pickRandom(GENRES);
@@ -258,13 +261,36 @@ export default function NewGameScreen() {
       {step === 'hero' && (
         <View style={styles.formContent}>
           <Text style={styles.label}>Nom du héros</Text>
-          <TextInput
-            style={styles.input}
-            value={heroName}
-            onChangeText={setHeroName}
-            placeholder="Entre un nom..."
-            placeholderTextColor={colors.textMuted}
-          />
+          <View style={styles.heroRow}>
+            <TextInput
+              style={[styles.input, styles.heroInput]}
+              value={heroName}
+              onChangeText={setHeroName}
+              placeholder="Entre un nom..."
+              placeholderTextColor={colors.textMuted}
+            />
+            {/* Sexe : l'IA s'y adapte (pronom, physique, relations). Non
+                renseigné = déduit du prénom par le serveur. */}
+            <View style={styles.sexeChoix}>
+              {([
+                { v: 'homme' as const, s: '♂' },
+                { v: 'femme' as const, s: '♀' },
+              ]).map((o) => (
+                <TouchableOpacity
+                  key={o.v}
+                  style={[styles.sexeBtn, heroGender === o.v && styles.selectedChip]}
+                  onPress={() => setHeroGender(heroGender === o.v ? null : o.v)}
+                  accessibilityRole="button"
+                  accessibilityLabel={o.v === 'homme' ? 'Héros masculin' : 'Héroïne féminine'}
+                  accessibilityState={{ selected: heroGender === o.v }}
+                >
+                  <Text style={[styles.sexeSymbole, heroGender === o.v && styles.sexeSymboleOn]}>
+                    {o.s}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
           <Text style={styles.label}>Trait de personnalité (optionnel)</Text>
           <View style={styles.chipsRow}>
             {HERO_TRAITS.map((t) => (
@@ -282,7 +308,7 @@ export default function NewGameScreen() {
 
       {step === 'params' && (
         <View style={styles.formContent}>
-          <Text style={styles.label}>Difficulté</Text>
+          <Text style={styles.label}>Difficulté — le vocabulaire utilisé</Text>
           <View style={styles.chipsRow}>
             {DIFFICULTIES.map((d) => (
               <TouchableOpacity
@@ -294,6 +320,9 @@ export default function NewGameScreen() {
               </TouchableOpacity>
             ))}
           </View>
+          <Text style={styles.difficulteHint}>
+            {DIFFICULTIES.find((d) => d.code === difficulty)?.hint ?? ''}
+          </Text>
 
           <Text style={styles.label}>Longueur des chapitres</Text>
           <View style={styles.chipsRow}>
@@ -380,7 +409,7 @@ export default function NewGameScreen() {
         )}
       </View>
       <Button
-        label="Tirer au sort pour moi"
+        label="Laisser l'IA décider"
         variant="secondary"
         onPress={randomizeAndAdvance}
         disabled={creating}
@@ -498,6 +527,25 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   selectedChip: { borderColor: colors.primary, backgroundColor: colors.chipSelected },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  heroInput: { flex: 1 },
+  sexeChoix: { flexDirection: 'row', gap: spacing.xs },
+  sexeBtn: {
+    width: 48,
+    height: 46,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sexeSymbole: { fontSize: 18, color: colors.textSecondary },
+  sexeSymboleOn: { color: colors.text },
+  difficulteHint: {
+    color: colors.textSecondary,
+    fontFamily: fonts.ia,
+    fontSize: 11,
+    marginTop: spacing.xs,
+  },
   subGenreText: { color: colors.textBody },
   label: { color: colors.text, fontSize: 15, marginTop: spacing.sm },
   input: {
