@@ -45,7 +45,7 @@ export function PageTurn<T>({
   onPageChange,
   chapterKey,
   width,
-  backgroundColor = '#E4E2DC',
+  backgroundColor = '#FFFFFF',
 }: PageTurnProps<T>) {
   const index = useSharedValue(0);
   const dir = useSharedValue(1); // 1 = avant ; -1 = retour

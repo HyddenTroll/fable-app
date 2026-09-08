@@ -401,6 +401,8 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     padding: spacing.xl,
+    // Pages « papier blanc » (le livre) sur le fond pierre de l'écran.
+    backgroundColor: '#FFFFFF',
   },
   pageContent: { paddingBottom: spacing.xxl },
   streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },

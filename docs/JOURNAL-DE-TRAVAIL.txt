@@ -1445,3 +1445,6 @@ FAIT :
          Skia à l'import, capture foreignObject, bundle +3 Mo. Leçon : le « curl cylindrique
          parfait » ne vaut pas une lecture qui casse — le pli vues animées suffit (60 fps,
          2 dépendances déjà présentes). TSC API 0 / MOBILE 0, tests 23/23, bundle web 2,5 Mo.
+       • PAGES BLANCHES : les pages de lecture passent en « papier blanc » (#FFFFFF : styles.page
+         de [gameId].tsx + défaut du container PageTurn) sur le fond pierre de lécran — le pli
+         révèle donc une page blanche (plus de pierre derrière le livre).
