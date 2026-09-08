@@ -1533,4 +1533,11 @@ FAIT :
       suivante ; gauche → droite (le livre se referme) = revenir. Contenu du
       volet aligné par marginLeft -width/2. Test headless (branchement réel) :
       avance 0→1, retour 1→0, annulation sans effet. Les seuils de validation
-      restent 45 % (avant : pli déployé ; retour : pli refermé).
+      restent 45 % (avant : pli déployé ; retour : pli refermé).• PAGE TURN : retour au PLI À LA PRISE (l'utilisateur : « ça se plie au milieu
+      alors que tu devrais t'inspirer d'un vrai livre, ça fonctionne sur le côté »).
+      La charnière fixe au centre créait une cassure visible (« marque » au milieu).
+      Le pli se reforme maintenant À LA POSITION DU DOIGT : on attrape la page par
+      le côté (droit pour avancer, gauche pour revenir) et elle se rabat comme un
+      vrai livre. Les fixs précédents restent : commit par délai JS, bascule
+      recto/verso sèche, validation par sens. Test headless : avance 1, retour 0,
+      annulation sans effet.
