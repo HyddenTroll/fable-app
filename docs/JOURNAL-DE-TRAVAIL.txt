@@ -1826,4 +1826,27 @@ FAIT :
         ce mode de panne.
       — TESTS : 16 cas → 45/45 ✔ (9 nouveaux : format libre, numéroté
         sans pipe, intro ignorée, + 6 fixtures de la revue précédente).
-      TSC API 0 / MOBILE 0. poussé `5f1bb70`
+      TSC API 0 / MOBILE 0. poussé `5f1bb70`• CONTRAT DE GENRE + PAGINATION DU STREAM (revue structurelle + retours UX) :
+      — CONTRAT DE GENRE né dans la CHARPENTE : bloc « CONTRAT DE GENRE — À
+        REMPLIR AVANT TOUT LE RESTE » (promesse / sceneObligatoire /
+        presentDesLePrologue / clichesAEviter[3]) + règle ROMANCE (le couple
+        DÈS le prologue, rencontre en page 1, tension = moteur, test du
+        résumé sans les amoureux) ; champ au JSON de sortie ; l'enrichissement
+        complète, ne crée plus.
+      — PROLOGUE : « PREUVE DU GENRE AVANT LA FIN DE LA PREMIÈRE PAGE »
+        (romance = rencontre, policier = mystère, horreur = malaise,
+        fantasy = merveille, SF = vertige, historique = époque).
+      — CHAPITRE (volatile) : bloc « CE QUE CE LIVRE DOIT LIVRER » en tête
+        des règles d'écriture (Genre / Promesse au lecteur / Le moteur du
+        livre issue de sceneObligatoire) — hors du JSON, lu à chaque chapitre.
+      — PAGINATION DU STREAM : StreamText remplacé par StreamChapitre — le
+        texte EN COURS de génération se PAGINE COMME LE LIVRE (pages pleines
+        qui se figent, dernière page en cours qui se remplit + FilQuiEcrit).
+        Fini le « un seul gros texte » défilant : on tourne des pages comme
+        au prologue. Le pagerBody est mesuré en permanence (stream ET
+        lecture partagent la même zone).
+      — BARRE DE PROGRESSION : validée EN PROD (Playwright sur
+        fable-app-three.vercel.app, requête /create retardée 8 s) :
+        13,3 % → 24,6 % → 35,9 % pendant l'attente ✓ (elle bouge ; un cache
+        navigateur a probablement trompé l'observation).
+      TSC API 0 / MOBILE 0. poussé `a7c9e12`

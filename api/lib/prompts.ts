@@ -469,6 +469,19 @@ ${postureDe(params.narrateur) === 'CONDUITE'
 `}
 
 ${briquesBlock}${loisBlock}
+CONTRAT DE GENRE — À REMPLIR AVANT TOUT LE RESTE
+Le genre est ${params.genre}${params.subGenre ? ` (${params.subGenre})` : ''}. Il n'est pas une couleur d'ambiance : c'est une PROMESSE faite au lecteur. Avant d'écrire quoi que ce soit d'autre, réponds :
+  "contratGenre": {
+    "promesse": "ce que le lecteur vient chercher et que tu DOIS livrer",
+    "sceneObligatoire": "la scène sans laquelle il se sentira trompé",
+    "presentDesLePrologue": "ce qui, dès la première page, prouve au lecteur qu'il lit bien du ${params.genre}",
+    "clichesAEviter": [3]
+  }
+${params.genre === 'romance'
+    ? `⚠ POUR UNE ROMANCE : les deux personnes du couple existent DÈS LE PROLOGUE, elles se rencontrent ou se retrouvent avant la fin de la première page, et la tension entre elles est le moteur du livre — pas un décor, pas une sous-intrigue. La question dramatique porte sur LE LIEN, jamais sur une énigme extérieure. Si ton résumé peut être raconté sans mentionner les deux amoureux, tu n'as pas écrit une romance.
+
+`
+    : ''}
 VOIX NARRATIVE IMPOSÉE : "${voix?.nom ?? 'Réalisme classique'}" (${voix?.consigne ?? 'prose classique équilibrée'}). "tonStyle" décrira cette voix en 2 phrases.
 
 ${varietyBlock}${auteurBlock}${gabaritBlock}${antiClicheBlock}${memoireBlock}${antiDoublonBlock}
@@ -480,6 +493,7 @@ Réponds en UN SEUL JSON (≤ 900 mots) :
   "genre": "${params.genre}", "sousGenre": "${params.subGenre ?? ''}",
   "logline": "...", "questionDramatique": "...", "theme": "...", "these": "...",
   "resumeGeneral": "synopsis 80-120 mots, fin révélée",
+  "contratGenre": {"promesse": "...", "sceneObligatoire": "...", "presentDesLePrologue": "...", "clichesAEviter": ["...", "...", "..."]},
   "structure": {"squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
   "heros": {"nom": "{prenom}", "genre": "feminin|masculin|neutre", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "traitOptionnel": "...", "traitsPhysiques": "physique mémorable (conduite ; vide en incarnation)", "repliqueType": "une réplique signature (conduite)", "manies": "2 manies (conduite)"},
   "antagoniste": {"nom": "...", "motivation": "...", "logique": "...", "plan": "..."},
@@ -589,7 +603,7 @@ ${JSON.stringify(quickBible, null, 2)}
 ${loisBlock}
 Section 4 CONFLITS : {"externe", "interne", "philosophique"} (les trois culminent au climax).
 "enjeuxParActe" : ce que le héros perd s'il échoue, acte par acte (ça monte) + "horloge" (échéance) + "coutVictoire" (ce que la réussite exige de sacrifier).
-"contratGenre" : {"promesse", "sceneObligatoire", "clichesAEviter", "clichesAAssumer"} du genre.
+"contratGenre" : conserve ce qui existe (promesse, sceneObligatoire, presentDesLePrologue, clichesAEviter) et rends chaque champ CONCRET (exemples du genre et de CE livre).
 "promesseExperience" : une phrase.
 "personnages" : réseau de 3-6 secondaires (allié, mentor, faux allié, rival, miroir...) avec {"nom","role","detail","revele","miniArc","voix"} — "voix" = didascalie vocale : registre, longueur de réplique, tics de langage, ce que le personnage ne dit jamais. Chaque personnage parle DIFFÉREMMENT.
 "monde" : enrichis {"regles" (permet/interdit/coûte), "lieuxCles" (3-5 lieux + fonction dramatique), "societe", "cicatrices", "textures"}.
@@ -691,6 +705,7 @@ Le prologue doit :
 - ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
 - ${blocPosture(params.narrateur)}
 - ${regleDifficulte(params.difficulty)}
+- PREUVE DU GENRE AVANT LA FIN DE LA PREMIÈRE PAGE : le lecteur a choisi ${params.genre} — il doit savoir dès l'ouverture qu'il l'a obtenu. Pour une romance : la rencontre, la retrouvaille, ou la présence manquante de l'autre. Pour un policier ou un thriller : la menace ou le mystère. Pour de l'horreur : le malaise. Pour une fantasy : la merveille ou le déracinement. Pour de la science-fiction : le vertige de l'inconnu. Pour de l'historique : l'époque qui respire dès la première phrase.
 - ACCROCHE OBLIGATOIRE DANS LES 150 PREMIERS MOTS : une question sans réponse, une absence, un refus, un nom qu'on prononce mal, une habitude qui a une raison qu'on ne dit pas. Ce n'est NI un danger, NI un mystère spectaculaire — c'est une chose que le lecteur veut élucider. Sans elle, le lecteur abandonne avant la bascule.
 - AU MOINS DEUX GRAINES discrètes, dont une dans le premier tiers : des détails qui ne prendront sens qu'après coup, jamais nommés comme étranges.
 - La menace, elle, reste absente : pas d'horreur, pas de danger explicite. Une accroche n'est pas une menace.
@@ -829,6 +844,20 @@ export function buildChapterMessages(opts: {
           .map((p) => `- ${p.nom} : ${p.voix}`)
           .join('\n')}\n`
       : `VOIX DES PERSONNAGES : chaque personnage a SA voix — vocabulaire, longueur de réplique, syntaxe, ce qu'il tait. Deux personnages ne parlent JAMAIS pareil : si on ne peut pas deviner qui parle sans le nom, réécris.\n`;
+  // CE QUE CE LIVRE DOIT LIVRER : le contrat de genre, né dans la charpente
+  // (contratGenre.promesse), rappelé en clair en tête des règles d'écriture —
+  // pas seulement enfoui dans le JSON de la bible.
+  const contrat = (bible as { contratGenre?: { promesse?: string; sceneObligatoire?: string } })
+    .contratGenre;
+  const livrableBlock = contrat?.promesse
+    ? `CE QUE CE LIVRE DOIT LIVRER — vérifie-le avant d'écrire une ligne
+Genre : ${params.genre}
+Promesse au lecteur : ${contrat.promesse}
+Le moteur du livre : ${contrat.sceneObligatoire ?? contrat.promesse}
+Ce chapitre doit y contribuer. Un chapitre techniquement réussi qui ne fait pas avancer cette promesse est un chapitre raté.
+
+`
+    : '';
   const stable = `BIBLE DU ROMAN (référence fixe) :\n${bibleBlock}`;
   const volatile = `${auteurBlock}${voixBlock}\n${state ? `ÉTAT DU HÉROS (référence fixe, à respecter) :\n${state}\n` : ''}${plan ? `GRANDES LIGNES DU PLAN (où l'histoire va - à respecter, la route peut s'adapter mais pas le cap) :\n${plan}\n` : 'PLAN : la bible contient le plan directeur (cap, actes, scènes clés). Suis-le.'}\n${rythme ? `RYTHME DU ROMAN (structure du récit - à respecter absolument, c'est la respiration du livre) :\n${rythme}\n` : ''}
 ${facts ? `FAITS IMMUABLES DU ROMAN (la source de vérité - ne jamais les contredire, ils ne changent que si le texte montre explicitement un événement qui les brise) :
@@ -845,10 +874,8 @@ ${playerChoice
 INFO CHAPITRE : Chapitre ${chapterNumber}/${totalChapters}. Position narrative : ${act}. ${phase}.
 PUBLIC : ${ageLabel(age)} | STYLE : ${params.style} | DIFFICULTÉ : ${params.difficulty}
 ${rule ? `RÈGLE SPÉCIALE : ${rule}` : ''}
-${pilotage ? `${pilotage}
-` : ''}
-
-Règles d'écriture :
+${pilotage ? `${pilotage}\n` : ''}
+${livrableBlock}Règles d'écriture :
 - Le chapitre doit avoir un début qui relance, un développement (2-4 scènes complètes), une fin variée (clôture / suspense doux / CLIFFHANGER).
 - Progression de l'arc : on avance vers les scènes clés du plan et vers le climax de l'acte. Le chapitre doit FAIRE AVANCER le cap, pas seulement prolonger la série.
 - Le héros agit selon son trait mais le joueur garde le contrôle via les choix.

@@ -360,25 +360,23 @@ export default function GameScreen() {
         </View>
       )}
 
-      {isGenerating ? (
-        // Pendant la génération : le texte écrit en direct, défilement
-        // AUTO (invisible), sans pagination - on pagine uniquement le
-        // texte final, une fois l'écriture terminée. Composant memo :
-        // seuls le texte se re-rend à chaque chunk.
-        <StreamText
-          text={stripDeco(streamText)}
-          chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
-        />
-      ) : (
-        // Pagination « livre » : la page suit le doigt (rotateY + snap),
-        // avec scroll vertical minimal dans la page quand elle déborde.
-        // La largeur est MESURÉE (pas winWidth) : sur le web, la fenêtre
-        // dépasse la coquille téléphone de 430 px.
-        <View style={styles.pagerBody} onLayout={(e) => {
-          setBodyW(e.nativeEvent.layout.width);
-          setBodyH(e.nativeEvent.layout.height);
-        }}>
-          {bodyW > 0 && bodyH > 0 && (
+      {/* La génération et la lecture vivent DANS LE LIVRE : le pagerBody est
+          mesuré en permanence. Pendant le stream, le texte se PAGINE en
+          direct (les pages pleines se figent, la dernière se remplit) ; à
+          la fin, le PageTurn normal reprend. */}
+      <View style={styles.pagerBody} onLayout={(e) => {
+        setBodyW(e.nativeEvent.layout.width);
+        setBodyH(e.nativeEvent.layout.height);
+      }}>
+        {bodyW > 0 && bodyH > 0 && (
+          isGenerating ? (
+            <StreamChapitre
+              text={streamText}
+              chapterLabel={current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
+              width={bodyW}
+              height={bodyH}
+            />
+          ) : (
             <PageTurn
               pages={pages}
               width={bodyW}
@@ -387,9 +385,9 @@ export default function GameScreen() {
               onPageChange={(i) => setPageIndex(i)}
               chapterKey={current.number}
             />
-          )}
-        </View>
-      )}
+          )
+        )}
+      </View>
 
       {!isGenerating && pages.length > 1 && (
         <View style={styles.readerFooter}>
@@ -413,26 +411,43 @@ export default function GameScreen() {
 /** Texte en cours de génération — ISOLÉ (memo) : seul ce composant
  *  re-rend à chaque chunk reçu (sinon l'écran entier, header + choix
  *  compris, re-rendait ~1-3×/s pendant toute la génération). */
-const StreamText = memo(function StreamText({
+/**
+ * Pendant la génération : le texte se PAGINE COMME LE LIVRE — les pages
+ * complètes se figent, la dernière se remplit au fil des chunks. Fini le
+ * « un seul gros texte » qui défile : on tourne des pages comme au prologue.
+ * La page en cours d'écriture garde son scroll vertical (elle n'est pas
+ * finie) et le fil d'encre.
+ */
+const StreamChapitre = memo(function StreamChapitre({
   text,
   chapterLabel,
+  width,
+  height,
 }: {
   text: string;
   chapterLabel: string;
+  width: number;
+  height: number;
 }) {
-  const ref = useRef<ScrollView>(null);
+  const pages = useMemo(() => splitIntoPages(stripDeco(text)), [text]);
   return (
-    <ScrollView
-      ref={ref}
-      style={styles.body}
-      showsVerticalScrollIndicator={false}
-      onContentSizeChange={() => ref.current?.scrollToEnd({ animated: true })}
-      contentContainerStyle={styles.streamContent}
-    >
-      <Text style={styles.chapterTitle}>{chapterLabel}</Text>
-      <Text style={styles.pageText}>{text || '…'}</Text>
-      <FilQuiEcrit actif />
-    </ScrollView>
+    <PageTurn
+      pages={pages}
+      width={width}
+      height={height}
+      renderPage={({ item, index }) => (
+        <ScrollView
+          style={[styles.page, { width }]}
+          contentContainerStyle={styles.pageContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {index === 0 && <Text style={styles.chapterTitle}>{chapterLabel}</Text>}
+          <Text style={styles.pageText}>{item}</Text>
+          {index === pages.length - 1 && <FilQuiEcrit actif />}
+        </ScrollView>
+      )}
+      chapterKey="stream"
+    />
   );
 });
 
