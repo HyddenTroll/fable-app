@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, TextInput, FlatList, Modal,
 } from 'react-native';
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { COURBE } from '@/theme/motion';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { GameParams } from '@fable/shared';
@@ -72,8 +71,17 @@ export default function NewGameScreen() {
   // événement intermédiaire) → la barre avance par paliers doux au fil des
   // étapes réelles, plus un tic-tac léger pendant l'attente.
   const [barP, setBarP] = useState(0);
+  // SharedValue pilotée par barP : withTiming s'applique SUR LA VALEUR, jamais
+  // dans un template string (il y retournait [object Object] → barre figée).
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    progress.value = withTiming(barP, {
+      duration: 620,
+      easing: Easing.bezier(0.22, 0.61, 0.36, 1),
+    });
+  }, [barP, progress]);
   const fillStyle = useAnimatedStyle(() => ({
-    width: `${withTiming(barP * 100, { duration: 520, easing: COURBE.sortie })}%`,
+    width: `${progress.value * 100}%`,
   }));
   const [error, setError] = useState<string | null>(null);
 

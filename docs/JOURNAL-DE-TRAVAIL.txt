@@ -1762,4 +1762,19 @@ FAIT :
         création, fallback détection pour livres antérieurs.
       — Copie : aucune occurrence « c'est toi le héros » en mobile (DA
         « Chaque choix écrit la suite » conservée).
-      TSC API 0 / MOBILE 0. poussé `3c9f0d2`
+      TSC API 0 / MOBILE 0. poussé `3c9f0d2`• BARRE DE PROGRESSION CRÉATION RÉPARÉE (retour : « la barre n'augmente pas
+      visuellement »).
+      — ROOT CAUSE : `width: \`${withTiming(barP * 100, {...})}%\`` : withTiming
+        appelé DANS un template string (hors contexte animé) → il retourne un
+        objet → style `width: "[object Object]%"` → barre figée à 0.
+      — FIX : `progress = useSharedValue(0)` pilotée par `barP` via useEffect
+        (`progress.value = withTiming(barP, {duration: 620, easing:
+        Easing.bezier(0.22, 0.61, 0.36, 1)})`) ; `useAnimatedStyle` lit
+        `progress.value * 100 + '%'`. Import Easing ajouté, COURBE retiré
+        (inutilisé).
+      — VALIDÉ HEADLESS : parcours création complet (3 étapes), requête
+        /create interceptée et retardée 8 s (401) : barre 13,3 % → 22,8 % →
+        32,2 % pendant l'attente (tic-tac + paliers) ✓.
+      — Export web local : nécessite `.env` placeholder (le boot THROWS si
+        EXPO_PUBLIC_SUPABASE_URL vide) — .env recréé en local, PAS commité.
+      TSC 0. poussé `5a0c3f7`
