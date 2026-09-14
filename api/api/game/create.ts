@@ -57,12 +57,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? (Number(body.maxChoices) as GameParams['maxChoices'])
       : 2;
 
-    // Personne narrative : le choix du lecteur si fourni, sinon TIRAGE serveur
-    // (variété : un livre au « tu », le suivant au « je » ou à la 3e personne).
-    const narrateur =
-      body.narrateur === 'je' || body.narrateur === 'il' || body.narrateur === 'tu'
-        ? body.narrateur
-        : (['tu', 'je', 'il'] as const)[Math.floor(Math.random() * 3)];
+    // Personne narrative : le choix du lecteur si fourni, sinon TIRAGE serveur.
+        // POSTURE : conduite par défaut (2 chances sur 3 — le personnage existe
+        // sans le lecteur, prose plus tenable sur 24 chapitres) ; incarnation (« tu »)
+        // reste une option tirée 1 fois sur 3.
+        const narrateur =
+          body.narrateur === 'je' || body.narrateur === 'il' || body.narrateur === 'tu'
+            ? body.narrateur
+            : Math.random() < 2 / 3
+              ? (['je', 'il'] as const)[Math.floor(Math.random() * 2)]
+              : 'tu';
 
     const params: GameParams = {
       genre: body.genre as GameParams['genre'],
@@ -159,7 +163,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           },
         ],
         kind: 'story_bible',
-        maxTokens: 1800,
+                maxTokens: 2800,
       });
       bible = gen.json;
       bibleResult = gen.result;

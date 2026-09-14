@@ -54,6 +54,7 @@ export function useRestoreGame() {
             title: data.game.title,
             genreLabel: data.game.genre,
             heroName: data.game.heroName || 'Le Héros',
+            formulationChoix: data.game.formulationChoix ?? undefined,
             chapters,
             currentIndex: chapters.length - 1,
             resume: data.game.resume ?? '',

@@ -178,6 +178,8 @@ export interface MockGameState {
   title: string;
   genreLabel: string;
   heroName: string;
+  /** Phrase exacte au-dessus des boutons (serveur, figée à la création). */
+  formulationChoix?: string;
   chapters: MockChapter[];
   currentIndex: number;
   resume: string;

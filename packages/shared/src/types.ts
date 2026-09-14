@@ -145,6 +145,15 @@ export interface StoryBible {
   titre: string;
   genre: string;
   sousGenre?: string;
+  /** Posture de lecture : incarnation (le lecteur EST le héros, 2e personne)
+   *  ou conduite (le lecteur décide pour un personnage nommé, 1re/3e). */
+  posture?: 'incarnation' | 'conduite';
+  pov?: string;
+  tempsDuRecit?: string;
+  /** Phrase EXACTE affichée par l'interface au-dessus des boutons (figée à la
+   *  création — l'interface ne la devine plus). */
+  formulationChoix?: string;
+  formeLibelles?: string;
   questionDramatique: string;
   theme: string;
   resumeGeneral: string;

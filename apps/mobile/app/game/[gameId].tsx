@@ -61,15 +61,19 @@ export default function GameScreen() {
   const updateCurrentGame = useAppStore((s) => s.updateCurrentGame);
 
   // Personne narrative du livre : adapte les libellés du joueur.
-  const voix = useAppStore((s) => s.gameParams?.narrateur ?? 'tu');
-  const heroNom = useAppStore((s) => s.currentGame?.heroName);
-  const libelleChoix =
-      voix === 'je'
+  const formulation = useAppStore((s) => s.currentGame?.formulationChoix);
+    const voix = useAppStore((s) => s.gameParams?.narrateur ?? 'tu');
+    const heroNom = useAppStore((s) => s.currentGame?.heroName);
+    /* formulationChoix (figée à la création) PRIME : l'interface ne devine
+       plus rien. Fallback pour les livres créés avant la posture. */
+    const libelleChoix =
+      formulation ??
+      (voix === 'je'
         ? 'Que fais-je ?'
         : voix === 'il'
           ? /* Sexe CHOISI au prime ; sinon déduit du prénom (e final sans é/è). */
             `Que fait-${pronomHero()} ?`
-          : 'Que fais-tu ?';
+          : 'Que fais-tu ?');
     function pronomHero(): string {
       const g = useAppStore.getState().gameParams?.heroGender;
       if (g === 'femme') return 'elle';

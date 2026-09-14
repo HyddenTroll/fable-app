@@ -53,6 +53,8 @@ export interface ApiGame {
   chapterCount: number;
   resume: string;
   params: unknown;
+  /** Phrase exacte affichée au-dessus des boutons (figée à la création). */
+  formulationChoix?: string | null;
 }
 
 export interface ApiChapter {

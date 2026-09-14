@@ -36,9 +36,12 @@ const PROSE_RULES = [
   'Dynamique de scène : les actions montent vers un point de bascule, puis respirent. Varie le tempo À L\'INTÉRIEUR de la scène ; une scène entière au même rythme est plate.',
   'Fais des descriptions concrètes et singulières (un détail précis vaut mieux qu\'un adjectif vague).',
   'Respecte strictement le point de vue : on ne voit que ce que le héros voit, sent et pense.',
-  'RÈGLE DE NON-INTRUSION : la narration décrit ce que le héros PERÇOIT, FAIT et DIT — rien de plus, quelle que soit la personne narrative. Interdits : les formulations d\'introspection directe (« tu ressens », « je ressens », « il ressent », « tu sais », « il comprend », « je me souviens »). TOUT fait intérieur (souvenir, habitude, opinion, émotion) doit soit être établi dans la bible, soit découler d\'un choix du lecteur — sinon, il n\'existe pas. Les émotions passent par le corps et les gestes, jamais par une voix off psychologique.',
+  'RÈGLE DE NON-INTRUSION — s\'applique UNIQUEMENT en posture INCARNATION (narration à la 2e personne) : la narration décrit ce que le héros PERÇOIT, FAIT et DIT. Interdits : « tu ressens », « tu sais », « tu comprends », « tu te souviens ». Tout fait intérieur doit être établi dans la bible ou découler d\'un choix du lecteur. Les émotions passent par le corps et les gestes.',
+  'EN POSTURE CONDUITE (1re ou 3e personne, héros nommé) : l\'intériorité est AUTORISÉE et attendue — c\'est ce qui fait la troisième personne limitée. Mais elle reste RARE et PRÉCISE : au plus une notation intérieure par scène, jamais deux paragraphes d\'affilée, jamais pour expliquer ce que le geste vient de montrer. Le corps reste le premier moyen ; la pensée est le second, pas le contraire.',
   'Chaque chapitre = 2 à 4 scènes complètes, chacune avec son début, son développement et sa fin.',
   'Soigne les transitions entre scènes : pas de coupures brutales sans respiration.',
+  'LA CHUTE APHORISTIQUE EST RATIONNÉE : au plus UN paragraphe sur TROIS se termine par une formule générale, une sentence ou une vérité sur le monde (« les administrations préfèrent les mots qui ne laissent pas de cadavres », « certaines questions avaient fini par se couvrir de poussière »). Les autres se terminent sur un FAIT, un geste, une réplique ou un objet. Trois chutes du même moule d\'affilée transforment une belle prose en métronome.',
+  'La longueur demandée prime sur l\'invitation à développer. Si tu dois choisir, coupe une scène entière plutôt que de raccourcir toutes les scènes : mieux vaut trois scènes complètes que cinq esquissées.',
 ].join('\n');
 
 /**
@@ -266,7 +269,7 @@ ${briques.map((b) => `- ${b.label} : ${b.valeur}`).join('\n')}
 ${loisGenre}
 `
     : '';
-  return `Tu es un grand romancier. Crée la "bible" d'un roman interactif (livre dont le lecteur est le héros).
+  return `Tu es un grand romancier. Crée la "bible" d'un roman interactif dont le lecteur oriente le destin.
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
 PUBLIC : ${ageLabel(age)}
@@ -445,13 +448,25 @@ Le titre doit refléter le GENRE (${params.genre}) : un titre d'horreur et un ti
 `
       : '';
   const antiDoublonBlock = rappelAntiDoublon ? `\n${rappelAntiDoublon}\n` : '';
-  return `Tu es un romancier. Établis EN QUELQUES SECONDES la charpente d'un roman interactif (livre dont le lecteur est le héros). RÉPONDS TRÈS VITE : sois dense, chaque champ est UNE phrase courte, listes à 3 items max. Pas de remplissage.
+  return `Tu es un romancier. Établis EN QUELQUES SECONDES la charpente d'un roman interactif dont le lecteur oriente le destin. Sois dense : chaque champ est UNE phrase courte, listes à 3 items max. Pas de remplissage.
 
 GENRE : ${params.genre}${params.subGenre ? ` - ${params.subGenre}` : ''}
 PUBLIC : ${ageLabel(age)}
-${heroName ? `NOM DU HÉROS : ${heroName}` : ''}
-${heroGender ? `SEXE DU HÉROS : ${heroGender}` : ''}
+${heroName || heroGender
+    ? `HÉROS IMPOSÉ PAR LE LECTEUR
+- Prénom : ${heroName || 'non précisé'}
+- Genre : ${heroGender === 'homme' ? 'masculin' : heroGender === 'femme' ? 'féminin' : 'non précisé'}
+⚠ IMPOSÉ. Accords, pronoms et regards des autres personnages s'y conforment du premier au dernier mot. Si « non précisé », construis un héros dont le genre n'est jamais marqué grammaticalement.
+`
+    : ''}
 ${heroTrait ? `TRAIT DU HÉROS : ${heroTrait}` : ''}
+NARRATION IMPOSÉE : ${params.narrateur === 'je' ? '1re personne' : params.narrateur === 'il' ? '3e personne' : '2e personne'} · temps du récit : passé
+${blocPosture(params.narrateur)}
+${postureDe(params.narrateur) === 'CONDUITE'
+    ? `FICHE HÉROS (conduite) : remplis-la pleinement — le personnage existe SANS le lecteur : traits physiques mémorables, réplique-type, manies, contradictions.
+`
+    : `FICHE HÉROS (incarnation) : garde-la MINIMALE — pas de portrait physique détaillé, pas de psychologie trop nommée (un trait suffit) : le lecteur doit pouvoir s'y projeter.
+`}
 
 ${briquesBlock}${loisBlock}
 VOIX NARRATIVE IMPOSÉE : "${voix?.nom ?? 'Réalisme classique'}" (${voix?.consigne ?? 'prose classique équilibrée'}). "tonStyle" décrira cette voix en 2 phrases.
@@ -459,17 +474,22 @@ VOIX NARRATIVE IMPOSÉE : "${voix?.nom ?? 'Réalisme classique'}" (${voix?.consi
 ${varietyBlock}${auteurBlock}${gabaritBlock}${antiClicheBlock}${memoireBlock}${antiDoublonBlock}
 INDICE DE CRÉATION : ${variationSeed} - variation originale, anti-cliché.
 
-Réponds en UN SEUL JSON (COURT, ≤ 350 mots) :
+Réponds en UN SEUL JSON (≤ 900 mots) :
 {
   "titre": "...",
   "genre": "${params.genre}", "sousGenre": "${params.subGenre ?? ''}",
   "logline": "...", "questionDramatique": "...", "theme": "...", "these": "...",
   "resumeGeneral": "synopsis 80-120 mots, fin révélée",
   "structure": {"squelette": {"ouverture": "...", "incidentDeclencheur": "...", "engagement": "...", "pointMedian": "...", "toutEstPerdu": "...", "climax": "...", "denouement": "..."}},
-  "heros": {"nom": "...", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "traitOptionnel": "..."},
+  "heros": {"nom": "{prenom}", "genre": "feminin|masculin|neutre", "desir": "...", "besoinInconscient": "...", "peur": "...", "faille": "...", "blessure": "...", "mensonge": "...", "verite": "...", "traitOptionnel": "...", "traitsPhysiques": "physique mémorable (conduite ; vide en incarnation)", "repliqueType": "une réplique signature (conduite)", "manies": "2 manies (conduite)"},
   "antagoniste": {"nom": "...", "motivation": "...", "logique": "...", "plan": "..."},
   "monde": {"description": "...", "regles": "..."},
   "tonStyle": "2 phrases : rythme de phrase, densité descriptive, place du dialogue",
+  "posture": "incarnation|conduite",
+  "pov": "3e personne",
+  "tempsDuRecit": "passé",
+  "formulationChoix": "Que fait-elle ? (la phrase EXACTE que l'interface affichera au-dessus des boutons, calculée selon la posture et le genre du héros : « Que fais-tu ? » / « Que fais-je ? » / « Que fait-il ? » / « Que fait-elle ? »)",
+  "formeLibelles": "infinitif",
   "planDirecteur": {"destination": "le cap, une phrase", "noyauImmuable": [3 vérités], "actes": [{"acte":1,"objectif":"...","scenesCles":[2-3],"tournant":"..."}, {"acte":2,...}, {"acte":3,...}], "pointMedian": "...", "sousIntrigue": "...", "fins": [3 fins avec condition]}
 }`;
 }
@@ -594,6 +614,23 @@ Réponds en UN SEUL JSON complet (tous les champs du schéma d'une bible complè
 }`;
 }
 
+/** POSTURE DE LECTURE : incarnation (le lecteur EST le héros) vs conduite
+ *  (le lecteur décide pour un personnage nommé). Dérivée de la personne
+ *  narrative : « tu » = incarnation ; « je »/« il » = conduite. */
+function postureDe(narrateur: 'tu' | 'je' | 'il' | undefined): 'INCARNATION' | 'CONDUITE' {
+  return narrateur === 'tu' || narrateur === undefined ? 'INCARNATION' : 'CONDUITE';
+}
+
+/** Bloc POSTURE DE LECTURE IMPOSÉE — commande la personne narrative, la
+ *  caractérisation du héros et la formulation des choix. */
+export function blocPosture(narrateur: 'tu' | 'je' | 'il' | undefined): string {
+  const p = postureDe(narrateur);
+  return `POSTURE DE LECTURE IMPOSÉE : ${p}
+· INCARNATION — le lecteur EST le héros. Narration à la 2e personne. Le héros est peu décrit physiquement, peu nommé dans sa psychologie : le lecteur s'y projette. Les choix sont SES actes.
+· CONDUITE — le lecteur DÉCIDE POUR un personnage qui existe sans lui. Narration à la 3e personne, héros pleinement caractérisé : nom, corps, manies, contradictions. Les choix sont des orientations, pas des ordres.
+⚠ La posture commande la personne narrative, la caractérisation du héros et la formulation des choix. Ne la mélange jamais.`;
+}
+
 /** Consigne de personne narrative — jamais laissée implicite dans un prompt. */
 export function consigneNarrateur(
   narrateur: 'tu' | 'je' | 'il' | undefined,
@@ -630,6 +667,15 @@ export function regleDifficulte(difficulty: string | undefined): string {
 }
 
 export function buildProloguePrompt(bible: StoryBible, params: GameParams, age: AgeGroup): string {
+  // Angle d'attaque de la première phrase : tiré au sort (variété serveur).
+  const ANGLES_ATTAQUE = [
+    'un objet précis (un détail tenu en main, posé, déplacé)',
+    'une sensation immédiate (une fraîcheur, un bruit, une odeur)',
+    'une réplique (un dialogue qui commence au milieu)',
+    'un détail décalé (quelque chose qui cloche, sans explication)',
+    'un mouvement (un geste en train de se faire, une course, un travail)',
+  ];
+  const angleAttaque = ANGLES_ATTAQUE[Math.floor(Math.random() * ANGLES_ATTAQUE.length)];
   return `Tu es un grand romancier. Écris le PROLOGUE de ce roman.
 
 BIBLE DU ROMAN :
@@ -643,11 +689,17 @@ ${bible.tonStyle ?? 'Prose classique, descriptions précises, équilibre narrati
 Le prologue doit :
 - INSTALLER la vie ordinaire du héros : sa routine, son travail, les gens qui l'entourent, ses manies, ce qu'il désire et ce qu'il redoute. On doit entrer dans son monde et s'attacher à lui AVANT toute bascule.
 - ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${blocPosture(params.narrateur)}
 - ${regleDifficulte(params.difficulty)}
-- Contenir AU PLUS une graine discrète (un détail étrange qui ne prendra sens qu'après coup) - jamais d'horreur, de danger ou de mystère explicite.
+- ACCROCHE OBLIGATOIRE DANS LES 150 PREMIERS MOTS : une question sans réponse, une absence, un refus, un nom qu'on prononce mal, une habitude qui a une raison qu'on ne dit pas. Ce n'est NI un danger, NI un mystère spectaculaire — c'est une chose que le lecteur veut élucider. Sans elle, le lecteur abandonne avant la bascule.
+- AU MOINS DEUX GRAINES discrètes, dont une dans le premier tiers : des détails qui ne prendront sens qu'après coup, jamais nommés comme étranges.
+- La menace, elle, reste absente : pas d'horreur, pas de danger explicite. Une accroche n'est pas une menace.
+- OUVERTURE : applique l'ANGLE D'ATTAQUE imposé — ${angleAttaque}.
+  INTERDIT : commencer par un réveil, un lever, une description météo, ou l'imparfait d'habitude (« X se levait avant les autres », « chaque matin, elle… »). La première phrase est au temps du récit et montre UN moment précis, pas une routine. La routine s'installe ensuite, par le détail.
 - L'accroche vient de l'écriture et du personnage (sa voix, son humanité, son désir), pas d'un événement spectaculaire. On lit la page 2 parce qu'on veut rester avec lui.
 - Faire sentir, de manière subliminale, que quelque chose pourrait dérailler - sans jamais le nommer.
-- SE TERMINER PAR 2-3 CHOIX HUMAINS (OBLIGATOIRE) : ce que le héros pourrait faire maintenant, en cohérence avec son monde et avec la trame du roman. Des choix de vie ordinaires et engageants (répondre à une invitation, suivre une intuition, accepter un service, partir, se renseigner) - pas des choix d'aventure spectaculaires. Le lecteur doit pouvoir choisir dès le prologue.
+- LES CHOIX N'EXISTENT QUE DANS LE CHAMP JSON "choix". Ils ne sont JAMAIS écrits, listés, annoncés ni résumés dans la prose. Le texte s'arrête SUR LE MOMENT — un geste suspendu, une question posée, un seuil — et se tait. C'est l'interface qui énumère les options.
+INTERDIT dans le dernier paragraphe : « Elle pouvait… Elle pouvait aussi… Ou bien… », « Trois possibilités s'offraient à elle », « Il lui restait à choisir entre ». Si ta dernière page explique au lecteur ce qu'il peut faire, tu as écrit les boutons deux fois.
 - ${ageLimit(age)}
 
 ${PROSE_RULES}
@@ -720,6 +772,7 @@ Règles d'écriture :
 - VOIX INTÉRIEURE : au moins une fois par chapitre, montre la pensée du héros qui CONTREDIT son geste ou sa parole (il se ment à lui-même, s'observe, se juge) — c'est ce qui donne de la profondeur au personnage.
 - ${ageLimit(age)}
 - ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${blocPosture(params.narrateur)}
 - ${regleDifficulte(params.difficulty)}
 
 ${ANTI_AI_SLOP}
@@ -802,6 +855,7 @@ Règles d'écriture :
 - Conséquences visibles des choix précédents : les blessures, objets et personnages de l'état du héros doivent rester cohérents.
 - ${ageLimit(age)}
 - ${consigneNarrateur(params.narrateur, (bible as { heroName?: string }).heroName, params.heroGender)}
+- ${blocPosture(params.narrateur)}
 - ${regleDifficulte(params.difficulty)}
 
 VOIX NARRATIVE (obligatoire - écris ce chapitre DANS CE REGISTRE, pas dans un autre ; respecte le rythme de phrase, la densité descriptive, la place du dialogue et de l'introspection) :
@@ -828,6 +882,8 @@ RÈGLES STRICTES :
 - Les marqueurs [[TITRE]] et [[CHOIX]] n'apparaissent QU'UNE SEULE fois, tout à la fin, JAMAIS dans la prose du chapitre.
 - N'utilise JAMAIS les caractères [[ ni | hors des marqueurs (ni dans la prose, ni dans un dialogue, ni dans un titre) : ils sont RÉSERVÉS à la structure de fin. Si ta prose a besoin d'un trait vertical, écris-le autrement.
 - Les choix sont HUMAINS, dans la trame, RÉELLEMENT différents, et TENEZ COMPTE DE L'ÉTAT DU HÉROS (blessures, objets, PNJ présents) : ce qu'il pourrait vraiment faire dans SA situation actuelle - pas des options génériques.
+- AUCUNE option ne peut être le maintien du statu quo (« continuer comme prévu », « ne rien faire ») : s'abstenir, écouter, attendre ou se taire ne sont des choix QUE s'ils coûtent quelque chose ou changent une relation. AU MOINS UNE option doit aggraver la situation du héros ou lui faire payer un prix.
+- Chaque option engage une VALEUR différente (sécurité, loyauté, curiosité, orgueil, honnêteté), pas seulement une direction.
 - Chaque conséquence est écrite au futur simple et décrit la situation qui en découle.
 - Si l'autorisation de fin est OUI (l'histoire se termine à ce chapitre) : écris la CONCLUSION — réponds à la question dramatique, fais écho à l'ouverture, laisse une dernière image — et N'AJOUTE AUCUN marqueur [[CHOIX]].`;
   return { system, stable, volatile };
@@ -928,7 +984,9 @@ ${finAutorisee === false
     : 'AUTORISATION DE FIN : OUI - tu peux conclure (zéro choix) si l\'histoire touche vraiment à sa fin.'}
 
 Les choix doivent être HUMAINS et dans la TRAME :
-- HUMANISÉS : comme ce que le lecteur penserait ou dirait vraiment dans cette situation. Varie les registres - prudence, audace, empathie, refus, introspection, tentative maladroite. Tous les choix ne sont pas des actions : écouter, attendre, poser une question, s'abstenir sont de vrais choix.
+- HUMANISÉS : ce que le lecteur penserait ou dirait vraiment. Varie les registres - prudence, audace, empathie, refus, maladresse. S'abstenir, écouter, attendre ou se taire SONT de vrais choix, MAIS uniquement s'ils COÛTENT quelque chose ou changent une relation. « Ne rien faire et continuer comme prévu » n'est pas un choix : c'est l'absence de choix.
+  RÈGLE ABSOLUE : aucune option ne peut être le maintien du statu quo, et AU MOINS UNE des options doit aggraver la situation du héros ou lui faire payer un prix.
+- Chaque option engage une VALEUR différente (sécurité, loyauté, curiosité, orgueil, honnêteté), pas seulement une direction.
 - ÉVOCATEURS mais COURTS : chaque libellé fait de 4 à 9 mots maximum - une action + un enjeu en quelques mots ("Décacheter la lettre" plutôt que "Ouvrir l'enveloppe en papier kraft qui vient d'arriver par la poste"). Jamais de phrase développée, jamais de détail long, jamais de sous-texte entre parenthèses. Un libellé trop long est une faute d'interface.
 - DANS LA TRAME : chaque choix mène vers une suite qui reste dans l'histoire prévue (les fins possibles et la direction du plan directeur). Aucun choix ne sort du cadre du roman ni ne contredit le personnage, le ton ou ce qui s'est passé.
 - RÉELLEMENT DIFFÉRENTS : chaque choix engage une suite différente et visible - pas de fausses options qui mènent au même endroit.
@@ -964,7 +1022,7 @@ Réponds UNIQUEMENT avec le nouveau résumé, en texte brut, sans préambule ni 
 
 /** Préfixe système STABLE mis en cache entre les appels d'un même roman. */
 export function buildSystemPrompt(): string {
-  return `Tu es Fable, un système d'écriture de romans interactifs "livre dont vous êtes le héros" en français. Ta mission est la qualité littéraire : cohérence, profondeur, émotion. Tu respectes toujours le format demandé. ${ANTI_AI_SLOP}`;
+  return `Tu es Fable, un système d'écriture de romans interactifs dont le lecteur oriente le destin, en français. Ta mission est la qualité littéraire : cohérence, profondeur, émotion. Tu respectes toujours le format demandé. ${ANTI_AI_SLOP}`;
 }
 
 /** Prompt d'état structuré : le modèle renvoie des DELTAS, le code applique. */

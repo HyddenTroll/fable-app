@@ -1734,4 +1734,32 @@ FAIT :
         scrollTop 300 px ✓, page 2 DANS le volet pivoté scrollTop 566 px ✓.
       — ╔═╗ : stripDeco appliqué AUSSI aux libellés de choix (ils ne
         traversaient pas le filtre — seule la page les nettoyait).
-      TSC 0. poussé `8a2e631`
+      TSC 0. poussé `8a2e631`• POSTURE DE LECTURE (revue prompts utilisateur — deux produits narratifs) :
+      INCARNATION (le lecteur EST le héros, 2e personne, héros peu décrit)
+      vs CONDUITE (le lecteur décide pour un personnage nommé, 1re/3e,
+      pleinement caractérisé). CONDUITE = défaut (tirage auto 2/3), incarnation
+      optionnelle (1/3) — create.ts.
+      — PROSE_RULES : RÈGLE DE NON-INTRUSION scindée (incarnation : interdits
+        « tu ressens/sais/comprends » ; conduite : intériorité AUTORISÉE,
+        rare et précise, max 1 notation/scène).
+      — Nouveau bloc `blocPosture(narrateur)` + postureDe() : injecté dans la
+        charpente (avec FICHE HÉROS conduite=pleine / incarnation=minimale),
+        prologue et les 2 prompts de chapitre.
+      — Charpente : « livre dont le lecteur est le héros » → « roman interactif
+        dont le lecteur oriente le destin » (aussi prompt système + bible) ;
+        RÉPONDS TRÈS VITE supprimé ; JSON ≤ 350 → ≤ 900 mots ; maxTokens
+        charpente 1800 → 2800 ; JSON : + posture, pov, tempsDuRecit,
+        formulationChoix, formeLibelles "infinitif", heros {genre,
+        traitsPhysiques, repliqueType, manies} (conduite).
+      — 6 correctifs qualité : choix hors de la prose (JSON uniquement),
+        accroche ≤ 150 mots (ANGLE D'ATTAQUE tiré au sort : objet/sensation/
+        réplique/détail décalé/mouvement, réveil & imparfait d'habitude
+        interdits, ≥ 2 graines), choix sans statu quo (≥ 1 option qui coûte,
+        valeur différente par option), chute aphoristique rationnée (1/3),
+        longueur prime sur l'invitation à développer.
+      — Client : formulationChoix (serveur read.ts → ApiGame → MockGameState →
+        [gameId].tsx) : l'interface n'affiche plus que la phrase figée à la
+        création, fallback détection pour livres antérieurs.
+      — Copie : aucune occurrence « c'est toi le héros » en mobile (DA
+        « Chaque choix écrit la suite » conservée).
+      TSC API 0 / MOBILE 0. poussé `3c9f0d2`

@@ -75,6 +75,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       chapterCount: game.chapter_count,
       resume: game.resume,
       params: game.params,
+      // Posture de lecture : la phrase EXACTE au-dessus des boutons
+      // (figée à la création, l'interface ne la devine plus).
+      formulationChoix: (game.bible as { formulationChoix?: string } | null)?.formulationChoix ?? null,
       // État structuré du héros (blessures/inventaire/PNJ) : indispensable
       // pour reprendre une partie sans perdre les conséquences visibles.
       state: game.state ?? null,
