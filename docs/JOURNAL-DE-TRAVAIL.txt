@@ -1777,4 +1777,34 @@ FAIT :
         32,2 % pendant l'attente (tic-tac + paliers) ✓.
       — Export web local : nécessite `.env` placeholder (le boot THROWS si
         EXPO_PUBLIC_SUPABASE_URL vide) — .env recréé en local, PAS commité.
-      TSC 0. poussé `5a0c3f7`
+      TSC 0. poussé `5a0c3f7`• PIPELINE GÉNÉRATION — CORRECTIFS DE REVUE (marqueurs visibles, troncature,
+      choix pauvres, rivières blanches, texte non paginé) :
+      — PARSEUR (lib/chapter-markers.ts) réécrit : localisation par les
+        DERNIÈRES occurrences (un [[TITRE]]/[[CHOIX]] orphelin ne trompe
+        plus le scan) ; titre pris jusqu'à la fin de ligne puis nettoyé
+        ([[...]] et | tronqués) — « La date de demain[[CHOIX]] » rend
+        « La date de demain » ; prose + titre stripés de TOUTE chaîne de
+        structure ; bloc choix = premier après le titre, coupé au marqueur
+        suivant ; estTronquee() détecte les fins de phrase inachevées
+        (« e. », fin sans .!?»…).
+      — STREAM (chapter.ts) : la structure de fin ne se déclenche que sur
+        [[CHOIX]] ou [[TITRE]]| (un [[TITRE]] sans pipe dans la prose ne
+        coupe plus le corps) ; prose tronquée (estTronquee) = génération
+        ÉCHOUÉE : [CHAPITRE TRONQUÉ] loggé avec stop_reason, erreur
+        envoyée au client (bouton Réessayer), pas d'insert en base ;
+        stripMarkers final du texte stocké ; titre verrouillé (jamais de
+        marqueur).
+      — CHOIX : filtrage serveur à la réception (≤ 9 mots / ≤ 48 chars) ;
+        retry si < 3 choix (fin non autorisée), prompts de choix et de
+        chapitre + retry : « trois choix par défaut, verbes non synonymes,
+        postures différentes, longueur stricte sans virgule (l'enjeu dans
+        la conséquence), exemples » (règles statu quo/valeur déjà en place).
+      — CLIENT (game/[gameId].tsx) : stripDeco retire aussi les [[...]] ;
+        cleanTitre pour les titres affichés ; pageText JUSTIFIÉ → fer à
+        gauche (rivières blanches) ; StreamText vit DANS LE LIVRE (fond
+        blanc + marge de reliure = même mise en page que les pages, fin du
+        choc défilement gris → pages blanches).
+      — DIAGNOSTIC : stop_reason DÉJÀ loggé dans cost_logs + alerte
+        [TRONCATURE] (cost.ts) — vérifié, renforcé par [CHAPITRE TRONQUÉ].
+      — TESTS : 14 cas (8 existants + 6 fixtures de revue) : 38/38 ✔.
+      TSC API 0 / MOBILE 0. poussé `9d4a1c6`

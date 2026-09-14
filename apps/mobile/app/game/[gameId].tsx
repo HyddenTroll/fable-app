@@ -28,7 +28,13 @@ function stripDeco(t: string): string {
     .replace(/[\u25A0-\u25FF\u2B00-\u2BFF]/g, '')
     .replace(/[-—_=~#]{4,}/g, ' ')
     .replace(/^[—–\s]+$/gm, '')
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\[\[[^\]]*\]\]/g, '');
+}
+
+/** Titre de chapitre : jamais de marqueur de structure, jamais de « | ». */
+function cleanTitre(t: string): string {
+  return stripDeco(t).split(/[[|]/)[0].trim();
 }
 
 /** Découpe un chapitre en PAGES (jamais de scroll : on tourne la page). */
@@ -274,14 +280,14 @@ export default function GameScreen() {
             <Chapiteau />
             <Text style={styles.chapterTitle}>
               {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`}
-              {current.title && current.title !== 'Prologue' ? ` · ${current.title}` : ''}
+              {current.title && current.title !== 'Prologue' ? ` · ${cleanTitre(current.title)}` : ''}
             </Text>
           </>
         )}
         <Text style={styles.pageText}>{item}</Text>
         {isLast && (
           <>
-            <Text style={styles.pageFooter}>— {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}`} —</Text>
+            <Text style={styles.pageFooter}>— {current.number === 0 ? 'Prologue' : `Chapitre ${current.number}${current.title && current.title !== 'Prologue' ? ` · ${cleanTitre(current.title)}` : ''}`} —</Text>
             {statePreview && !isGenerating && <View style={styles.stateBox}>{statePreview}</View>}
             {showChoices && current.choices.length > 0 && (
               <View style={styles.choices}>
@@ -501,9 +507,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   pageContent: { paddingBottom: spacing.xxl },
-  streamContent: { padding: spacing.xl, paddingBottom: spacing.xxl },
+  // Le texte en cours d'écriture vit DANS LE LIVRE (fond blanc, marge de
+  // reliure) — même mise en page que les pages, pas un défilement gris.
+  streamContent: {
+    backgroundColor: '#FFFFFF',
+    padding: spacing.xl,
+    paddingLeft: spacing.xl + 8,
+    paddingRight: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
   chapterTitle: { color: colors.text, fontFamily: fonts.grec, fontSize: 19, lineHeight: 24, marginBottom: spacing.lg, marginTop: spacing.md },
-  pageText: { color: colors.text, fontFamily: fonts.ia, fontSize: 15, lineHeight: 26, textAlign: 'justify' },
+  pageText: { color: colors.text, fontFamily: fonts.ia, fontSize: 15, lineHeight: 26, textAlign: 'left' },
   pageFooter: {
     color: colors.textMuted,
     fontSize: 12,

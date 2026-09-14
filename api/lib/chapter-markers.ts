@@ -3,12 +3,15 @@
  * Le modèle écrit : corps → [[TITRE]]|titre → [[CHOIX]] puis des lignes
  * "n|libellé|conséquence". Le serveur streame le corps et parse la queue.
  *
- * Robustesse attendue (tests dans scripts/test-marqueurs.mjs) :
- * - un « | » dans un libellé de choix ne casse pas le parse (on split
- *   sur le PREMIER et le DERNIER |, format "n|libelle|consequence")
- * - marqueur absent / mal orthographié → choix vides (filet serveur)
- * - « [[ » en incise dans la prose → ignoré tant que le vrai marqueur
- *   n'est pas trouvé
+ * ORDRE DE TRAITEMENT (spec correctifs FABLE) :
+ *   a. texte brut complet ;
+ *   b. LOCALISATION par les DERNIÈRES occurrences de la structure de fin
+ *      (un [[TITRE]]/[[CHOIX]] orphelin dans la prose ne trompe pas le scan) ;
+ *   c. DÉCOUPE en trois blocs : prose · titre · choix ;
+ *   d. titre = ce qui suit « [[TITRE]]| » JUSQU'À la fin de ligne — jamais
+ *      jusqu'au marqueur suivant — puis nettoyé des [[...]] résiduels ;
+ *   e. prose nettoyée de toute chaîne de structure résiduelle ;
+ *   f. garde-fous : titre vide → repli ; prose inachevée → troncature.
  */
 
 export const TITRE_MARKER = '[[TITRE]]';
@@ -22,9 +25,13 @@ export interface ChapterChoices {
 export interface ChapterMeta {
   title?: string;
   choices: ChapterChoices[];
-  /** Index (dans tail) où le corps s'arrête et où commence la structure. */
+  /** Index (dans le texte) où la prose s'arrête et où commence la structure. */
   bodyEnd: number;
+  /** Prose coupée en fin de génération (phrase manifestement inachevée). */
+  tronquee: boolean;
 }
+
+const ANY_MARKER = /\[\[[^\]]*\]\]/g;
 
 /**
  * Trouve la position du PREMIER marqueur de structure dans un texte.
@@ -37,6 +44,105 @@ export function findFirstMarker(text: string): number {
   if (iTitre < 0) return iChoix;
   if (iChoix < 0) return iTitre;
   return Math.min(iTitre, iChoix);
+}
+
+/** Retire TOUTE chaîne de structure [[...]] résiduelle d'un texte. */
+export function stripMarkers(text: string): string {
+  return text.replace(ANY_MARKER, '');
+}
+
+/**
+ * Prose coupée en fin de génération : dernier caractère non ponctué
+ * fort, ou dernier fragment de 1-2 lettres (« e. », « il. ») — une
+ * phrase manifestement inachevée. Traiter la génération comme ÉCHOUÉE.
+ */
+export function estTronquee(prose: string): boolean {
+  const fin = prose.trimEnd();
+  if (!fin) return false;
+  if (!/[.!?»…]$/.test(fin)) return true;
+  const m = /([A-Za-zÀ-ÿ'’\-]{1,})\.?$/.exec(fin);
+  const dernierMot = m ? m[1].replace(/\.$/, '').trim() : '';
+  return dernierMot.length <= 2;
+}
+
+/**
+ * Parse la structure de fin (titre + choix) d'un texte de chapitre.
+ * La prose (avant la structure) est également nettoyée des marqueurs
+ * résiduels.
+ */
+export function parseChapterMarkers(text: string): ChapterMeta {
+  // b) LOCALISATION : les DERNIÈRES occurrences de la structure de fin.
+  let idxChoix = text.lastIndexOf(CHOIX_MARKER);
+  if (idxChoix < 0) {
+    // Rattrapage souple : marqueur mal orthographié ([[CHoiX]], [[ CHOIX ])...).
+    const loose = /\[\[\s*CHOIX\s*\]\]/gi;
+    let m: RegExpExecArray | null;
+    let last = -1;
+    while ((m = loose.exec(text))) last = m.index;
+    idxChoix = last;
+  }
+  const idxTitre =
+    idxChoix >= 0
+      ? text.lastIndexOf(TITRE_MARKER, idxChoix)
+      : text.lastIndexOf(TITRE_MARKER);
+
+  // c) DÉCOUPE : la prose s'arrête au premier marqueur valide.
+  const bodyEnd =
+    idxTitre >= 0 || idxChoix >= 0
+      ? idxTitre >= 0 && idxChoix >= 0
+        ? Math.min(idxTitre, idxChoix)
+        : Math.max(idxTitre, idxChoix)
+      : -1;
+  const prose = bodyEnd >= 0 ? text.slice(0, bodyEnd) : text;
+
+  // d) TITRE : jusqu'à la FIN DE LIGNE (jamais jusqu'au marqueur suivant),
+  //    puis nettoyé des [[...]] ; tronqué au premier [[ | si résidu.
+  let title: string | undefined;
+  if (idxTitre >= 0) {
+    const after = text.slice(idxTitre + TITRE_MARKER.length);
+    const eol = after.search(/\n/);
+    const rawTitle = (eol >= 0 ? after.slice(0, eol) : after)
+      .replace(/^\s*\|?\s*/, '')
+      .trim();
+    const cleaned = stripMarkers(rawTitle).split(/[[|]/)[0].trim();
+    title = cleaned || undefined;
+  }
+
+  // e) CHOIX : PREMIER bloc [[CHOIX]] après le titre, coupé au marqueur
+  //    de structure suivant (un second bloc [[CHOIX]] est un artefact).
+  const choices: ChapterChoices[] = [];
+  const startBloque =
+    (idxTitre >= 0 ? text.indexOf(CHOIX_MARKER, idxTitre) : text.indexOf(CHOIX_MARKER)) >= 0
+      ? (idxTitre >= 0 ? text.indexOf(CHOIX_MARKER, idxTitre) : text.indexOf(CHOIX_MARKER))
+      : idxChoix;
+  if (startBloque >= 0) {
+    const from = text.indexOf(']]', startBloque) + 2;
+    const nextBracket = text.indexOf('[[', from);
+    const block = nextBracket >= 0 ? text.slice(from, nextBracket) : text.slice(from);
+    collectChoices(block, choices);
+  }
+
+  const tronquee = estTronquee(stripMarkers(prose));
+
+  return { title, choices, bodyEnd, tronquee };
+}
+
+function collectChoices(block: string, out: ChapterChoices[]): void {
+  for (const line of block.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || !/^\d+\s*[|.]/.test(trimmed)) continue;
+    // retire l'index initial "1|" ou "1."
+    const rest = trimmed.replace(/^\d+\s*[|.]\s*/, '');
+    // Format "n|libellé|conséquence" : on ne coupe QUE sur le DERNIER |
+    // (le libellé peut légitimement contenir une barre, ex. « Fuir | ou
+    // rester ? »), la conséquence étant toujours le dernier segment.
+    const last = rest.lastIndexOf('|');
+    if (last === -1) {
+      out.push({ libelle: rest.trim(), consequenceResumee: '' });
+      continue;
+    }
+    out.push({ libelle: rest.slice(0, last).trim(), consequenceResumee: rest.slice(last + 1).trim() });
+  }
 }
 
 /**
@@ -72,54 +178,4 @@ export function cleanIntertitles(
       return true;
     })
     .join('\n');
-}
-
-/**
- * Parse la queue (à partir du premier marqueur) en titre + choix.
- * - Ligne de choix : "^\s*\d+\| libellé | conséquence $" — on ne coupe
- *   PAS sur le premier |  (un libellé peut en contenir) mais sur le
- *   PREMIER et le DERNIER | de la ligne.
- * - Si un marqueur est mal orthographié ([[CHoiX]], [[CHOIX]] sans
- *   nouvelle ligne...), on tente un rattrapage souple ; à défaut,
- *   choix vides.
- */
-export function parseChapterMarkers(tail: string): ChapterMeta {
-  const bodyEnd = findFirstMarker(tail);
-  // -1 (aucun marqueur exact) : on parse tout le texte au cas d'un
-  // marqueur mal orthographié (rattrapage souple).
-  const head = bodyEnd >= 0 ? tail.slice(bodyEnd) : tail;
-  const titleMatch = /\[\[TITRE\]\]\s*\|([^\n]+)/.exec(head);
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
-  const choices: ChapterChoices[] = [];
-
-  // Format strict puis rattrapage souple.
-  const strict = /\[\[CHOIX\]\]([\s\S]*)$/.exec(head);
-  if (strict) {
-    collectChoices(strict[1], choices);
-  } else {
-    // Rattrapage : lignes "1|libelle|consequence" qui suivent un [[CHOIX
-    // orthographié de près ([[CHOIX ]], [[ChoiX]], [[CHOIX]]...).
-    const loose = /\[\[\s*CHOIX\s*\]\]([\s\S]*)$/i.exec(head);
-    if (loose) collectChoices(loose[1], choices);
-  }
-
-  return { title, choices, bodyEnd };
-}
-
-function collectChoices(block: string, out: ChapterChoices[]): void {
-  for (const line of block.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed || !/^\d+\s*[|.]/.test(trimmed)) continue;
-    // retire l'index initial "1|" ou "1."
-    const rest = trimmed.replace(/^\d+\s*[|.]\s*/, '');
-    // Format "n|libellé|conséquence" : on ne coupe QUE sur le DERNIER |
-    // (le libellé peut légitimement contenir une barre, ex. « Fuir | ou
-    // rester ? »), la conséquence étant toujours le dernier segment.
-    const last = rest.lastIndexOf('|');
-    if (last === -1) {
-      out.push({ libelle: rest.trim(), consequenceResumee: '' });
-      continue;
-    }
-    out.push({ libelle: rest.slice(0, last).trim(), consequenceResumee: rest.slice(last + 1).trim() });
-  }
 }

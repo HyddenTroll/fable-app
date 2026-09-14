@@ -17,7 +17,7 @@ import { logLLMResult } from '../../lib/cost';
 import { getQuota, canGenerateChapter, recordPremiumChapter } from '../../lib/quota';
 import { emptyState, serializeState, type HeroState } from '../../lib/state';
 import { cleanText } from '../../lib/text';
-import { findFirstMarker, parseChapterMarkers, cleanIntertitles } from '../../lib/chapter-markers';
+import { findFirstMarker, parseChapterMarkers, cleanIntertitles, stripMarkers } from '../../lib/chapter-markers';
 import type { AgeGroup, StoryBible, StoryChoice, StoryPlan, GameParams } from '@fable/shared';
 
 /**
@@ -325,16 +325,18 @@ ${nextNumber >= totalChapters
             continue;
           }
           streamTail += delta;
-          const iTitre = streamTail.indexOf('[[TITRE]]');
-          const iChoix = streamTail.indexOf('[[CHOIX]]');
-          const idx = Math.min(iTitre >= 0 ? iTitre : Infinity, iChoix >= 0 ? iChoix : Infinity);
-          if (idx !== Infinity) {
-            pending += streamTail.slice(0, idx);
-            tail = streamTail.slice(idx);
-            bodySent = true;
-            await flushPending(true); // dernier bloc du corps
-            continue;
-          }
+                    // Structure de fin : [[CHOIX]] toujours ; [[TITRE]] seulement s'il
+                    // est SUIVI de « | » (un « [[TITRE]] » orphelin dans la prose —
+                    // sans pipe — ne doit PAS couper le corps).
+                    const mStruct = /\[\[CHOIX\]\]|\[\[TITRE\]\]\s*\|/.exec(streamTail);
+                    const idx = mStruct ? mStruct.index : Infinity;
+                    if (idx !== Infinity) {
+                      pending += streamTail.slice(0, idx);
+                      tail = streamTail.slice(idx);
+                      bodySent = true;
+                      await flushPending(true); // dernier bloc du corps
+                      continue;
+                    }
           const safe = Math.max(streamTail.length - 10, 0);
           pending += streamTail.slice(0, safe);
           streamTail = streamTail.slice(safe);
@@ -378,21 +380,23 @@ ${nextNumber >= totalChapters
             continue;
           }
           streamTail += delta;
-          const iTitre = streamTail.indexOf('[[TITRE]]');
-          const iChoix = streamTail.indexOf('[[CHOIX]]');
-          const idx = Math.min(iTitre >= 0 ? iTitre : Infinity, iChoix >= 0 ? iChoix : Infinity);
-          if (idx !== Infinity) {
-            // Le corps se termine ici : envoie la partie avant le marqueur.
-            const pre = streamTail.slice(0, idx);
-            if (pre) {
-              chapterText += pre;
-              if (!firstTokenAt) firstTokenAt = Date.now();
-              send('text', { delta: pre });
-            }
-            tail = streamTail.slice(idx);
-            bodySent = true;
-            continue;
-          }
+                    // Structure de fin : [[CHOIX]] toujours ; [[TITRE]] seulement s'il
+                    // est SUIVI de « | » (un « [[TITRE]] » orphelin dans la prose —
+                    // sans pipe — ne doit PAS couper le corps).
+                    const mStruct = /\[\[CHOIX\]\]|\[\[TITRE\]\]\s*\|/.exec(streamTail);
+                    const idx = mStruct ? mStruct.index : Infinity;
+                    if (idx !== Infinity) {
+                      // Le corps se termine ici : envoie la partie avant le marqueur.
+                      const pre = streamTail.slice(0, idx);
+                      if (pre) {
+                        chapterText += pre;
+                        if (!firstTokenAt) firstTokenAt = Date.now();
+                        send('text', { delta: pre });
+                      }
+                      tail = streamTail.slice(idx);
+                      bodySent = true;
+                      continue;
+                    }
           // Fenêtre de sécurité (10 chars) pour ne pas couper un marqueur
           // entre deux deltas ; le reste est diffusé immédiatement.
           const safe = Math.max(streamTail.length - 10, 0);
@@ -414,18 +418,42 @@ ${nextNumber >= totalChapters
     let choices: StoryChoice[] = [];
     let title = `Chapitre ${nextNumber}`;
     const meta = parseChapterMarkers(tail);
-    if (meta.title) title = meta.title;
-    choices = meta.choices;
+        if (meta.title) title = meta.title;
+        choices = meta.choices;
+        // Garde-fou titre : jamais de marqueur de structure dans le titre stocké.
+        if (title !== `Chapitre ${nextNumber}`) {
+          const propre = stripMarkers(title).split(/[[|]/)[0].trim();
+          title = propre || `Chapitre ${nextNumber}`;
+        }
 
-    // ANTI-INTERTITRES : le modèle répète parfois le titre en clair dans
-    // le corps pour séparer ses sections — on les retire du texte diffusé
-    // et stocké (le titre n'existe qu'en tête de chapitre).
-    chapterText = cleanIntertitles(chapterText, title, nextNumber);
+        // TRONCATURE : prose coupée (phrase inachevée comme « e. ») → la
+        // génération est ÉCHOUÉE : on ne stocke PAS, on fait réessayer le
+        // client (le retry régénère le chapitre complet en streaming).
+        if (meta.tronquee) {
+          console.warn(
+            `[CHAPITRE TRONQUÉ] game ${gameId} ch ${nextNumber} — prose inachevée (max_tokens ou arrêt précoce), stop_reason=${chapterResult.stopReason}`,
+          );
+          send('error', { message: 'La génération a été interrompue (texte coupé). Réessaie.' });
+          res.end();
+          return;
+        }
 
-    // Filet (rare) : zéro choix alors que la fin n'est PAS autorisée ->
-    // rattrapage explicite, puis deux choix forcés en dernière extrémité.
-    let choicesResult = EMPTY_RESULT;
-    if (choices.length === 0 && !finAutorisee) {
+        // ANTI-INTERTITRES + plus JAMAIS de marqueur de structure résiduel.
+        chapterText = stripMarkers(cleanIntertitles(chapterText, title, nextNumber));
+
+        // Filet : moins de 3 choix (ou libellés trop longs) alors que la fin
+        // n'est PAS autorisée → rattrapage explicite, puis deux choix forcés
+        // en dernière extrémité. Un libellé > 9 mots / 48 caractères est une
+        // faute d'interface : il ne doit jamais atteindre l'écran.
+        const choixValides = choices.filter(
+          (c) =>
+            c.libelle &&
+            c.libelle.trim().length > 0 &&
+            c.libelle.trim().split(/\s+/).length <= 9 &&
+            c.libelle.length <= 48,
+        );
+        let choicesResult = EMPTY_RESULT;
+        if (choixValides.length < 3 && !finAutorisee) {
       try {
         const retryGen = await llm.generateJson<{ choix?: StoryChoice[] }>({
           messages: [
@@ -435,15 +463,21 @@ ${nextNumber >= totalChapters
               content:
                 `Tu es le rédacteur en chef. L'écrivain du chapitre ${nextNumber} a oublié les choix. ` +
                 `L'historie continue (fin interdite avant ${SEUIL_FIN_POURCENT} %). ` +
-                `Propose ${2 <= params.maxChoices ? `de 2 à ${params.maxChoices}` : '2'} choix courts (4-9 mots, action + enjeu, 10 mots max) ` +
-                `ainsi que leur conséquence en une phrase. JSON : {"choix": [{"libelle": "...", "consequenceResumee": "..."}]}`,
+                `Propose 3 choix courts (4-9 mots, action + enjeu, JAMAIS de virgule ni de complément — l'enjeu va dans la conséquence) aux postures DIFFÉRENTES (verbes non synonymes), ` +
+                                `ainsi que leur conséquence en une phrase. JSON : {"choix": [{"libelle": "...", "consequenceResumee": "..."}]}`,
             },
           ],
           kind: 'choices',
           maxTokens: 500,
         });
-        choices = retryGen.json.choix ?? [];
-        choicesResult = retryGen.result;
+        choices = (retryGen.json.choix ?? []).filter(
+                  (c) =>
+                    c.libelle &&
+                    c.libelle.trim().length > 0 &&
+                    c.libelle.trim().split(/\s+/).length <= 9 &&
+                    c.libelle.length <= 48,
+                );
+                choicesResult = retryGen.result;
       } catch {
         // ignore - fallback ci-dessous
       }
