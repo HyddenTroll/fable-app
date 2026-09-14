@@ -171,5 +171,25 @@ console.log('14) FIXTURE REVUE : DEUX blocs [[CHOIX]] dans le même texte');
   check('libellé sans marqueur', m.choices[0]?.libelle === 'Forcer la porte', `got: ${m.choices[0]?.libelle}`);
 }
 
+console.log('15) FIXTURE REVUE : bloc [[CHOIX]] en FORMAT LIBRE (lignes sans pipe)');
+{
+  const tail = "[[CHOIX]]\nS'abriter sous le porche\nSuivre le bruit\nAttendre encore";
+  const m = parseChapterMarkers(tail);
+  check('3 choix pris au lieu de vides', m.choices.length === 3, `got: ${m.choices.length}`);
+  check('libellé 1 exact', m.choices[0]?.libelle === "S'abriter sous le porche", `got: ${m.choices[0]?.libelle}`);
+  check('conséquence vide', m.choices[0]?.consequenceResumee === '');
+}
+
+console.log('16) FIXTURE REVUE : numéroté SANS pipe (« 1. Frapper à la porte »)');
+{
+  const tail = "[[CHOIX]]\n1. Frapper à la porte\n2. S'éloigner du quai";
+  const m = parseChapterMarkers(tail);
+  check('2 choix', m.choices.length === 2, `got: ${m.choices.length}`);
+  check('libellé 1 sans numéro', m.choices[0]?.libelle === 'Frapper à la porte', `got: ${m.choices[0]?.libelle}`);
+  const intro = parseChapterMarkers("[[CHOIX]]\nVoici les choix possibles :\n1. Frapper\n2. Partir");
+  check('l\'intro « Voici les choix : » est ignorée', intro.choices.length === 2, `got: ${intro.choices.length}`);
+  check('intro non stockée', !intro.choices.some((c) => c.libelle.startsWith('Voici')));
+}
+
 console.log(`\nRésultat : ${pass} ✔ / ${fail} ✘`);
 process.exit(fail > 0 ? 1 : 0);

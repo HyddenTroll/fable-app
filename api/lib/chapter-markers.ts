@@ -130,18 +130,29 @@ export function parseChapterMarkers(text: string): ChapterMeta {
 function collectChoices(block: string, out: ChapterChoices[]): void {
   for (const line of block.split('\n')) {
     const trimmed = line.trim();
-    if (!trimmed || !/^\d+\s*[|.]/.test(trimmed)) continue;
-    // retire l'index initial "1|" ou "1."
-    const rest = trimmed.replace(/^\d+\s*[|.]\s*/, '');
-    // Format "n|libellé|conséquence" : on ne coupe QUE sur le DERNIER |
-    // (le libellé peut légitimement contenir une barre, ex. « Fuir | ou
-    // rester ? »), la conséquence étant toujours le dernier segment.
-    const last = rest.lastIndexOf('|');
-    if (last === -1) {
-      out.push({ libelle: rest.trim(), consequenceResumee: '' });
+    if (!trimmed) continue;
+    if (/\[\[[^\]]*\]\]/.test(trimmed)) continue; // marqueur de structure résiduel
+    if (trimmed.endsWith(':')) continue; // intro du modèle (« Voici les choix : »)
+    if (/^\d+\s*[|.]/.test(trimmed)) {
+      // retire l'index initial "1|" ou "1."
+      const rest = trimmed.replace(/^\d+\s*[|.]\s*/, '');
+      // Format "n|libellé|conséquence" : on ne coupe QUE sur le DERNIER |
+      // (le libellé peut légitimement contenir une barre, ex. « Fuir | ou
+      // rester ? »), la conséquence étant toujours le dernier segment.
+      const last = rest.lastIndexOf('|');
+      if (last === -1) {
+        out.push({ libelle: rest.trim(), consequenceResumee: '' });
+        continue;
+      }
+      out.push({ libelle: rest.slice(0, last).trim(), consequenceResumee: rest.slice(last + 1).trim() });
       continue;
     }
-    out.push({ libelle: rest.slice(0, last).trim(), consequenceResumee: rest.slice(last + 1).trim() });
+    // FORMAT LIBRE : le modèle a écrit les choix en lignes nues, sans
+    // numéro ni pipe. Une ligne de la taille d'un libellé (≤ 9 mots) est
+    // retenue comme choix sans conséquence — jamais un choix vide.
+    if (trimmed.split(/\s+/).length <= 9) {
+      out.push({ libelle: trimmed, consequenceResumee: '' });
+    }
   }
 }
 

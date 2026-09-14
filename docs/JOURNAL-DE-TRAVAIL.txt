@@ -1807,4 +1807,23 @@ FAIT :
       — DIAGNOSTIC : stop_reason DÉJÀ loggé dans cost_logs + alerte
         [TRONCATURE] (cost.ts) — vérifié, renforcé par [CHAPITRE TRONQUÉ].
       — TESTS : 14 cas (8 existants + 6 fixtures de revue) : 38/38 ✔.
-      TSC API 0 / MOBILE 0. poussé `9d4a1c6`
+      TSC API 0 / MOBILE 0. poussé `9d4a1c6`• SUITE REVUE PIPELINE (3 remarques utilisateur) :
+      — TRONCATURE : on ne rejette la génération QUE si
+        stop_reason === 'max_tokens' (marqueurs perdus confirmés). Une fin
+        heuristiquement « inachevée » avec stop_reason 'stop' est un FAUX
+        POSITIF (tiret cadratin de dialogue, italique, guillemet final) :
+        le chapitre est CONSERVÉ (3100 tokens sauvés, pas de bouton
+        Réessayer inutile) et loggé [PROSE SUSPECTE — conservée].
+      — FILTRAGE LIBELLÉS : un seul critère estChoixValide partagé par le
+        COMPTAGE (retry < 3) et le STOCKAGE — choixRetenus alimente le
+        retry ET l'insert. Jamais un libellé > 9 mots stocké, jamais un
+        retry compté sur des choix déjà éliminés.
+      — PARSEUR : format libre — le modèle écrit parfois les choix en
+        lignes nues sans pipe (« S'abriter sous le porche ») ou numérotées
+        « 1. » sans pipe : ces lignes (≤ 9 mots) deviennent des choix
+        (conséquence vide), les intros (« Voici les choix : ») et les
+        marqueurs résiduels sont ignorés. Plus jamais de choix vides sur
+        ce mode de panne.
+      — TESTS : 16 cas → 45/45 ✔ (9 nouveaux : format libre, numéroté
+        sans pipe, intro ignorée, + 6 fixtures de la revue précédente).
+      TSC API 0 / MOBILE 0. poussé `5f1bb70`

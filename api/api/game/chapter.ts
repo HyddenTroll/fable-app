@@ -426,34 +426,39 @@ ${nextNumber >= totalChapters
           title = propre || `Chapitre ${nextNumber}`;
         }
 
-        // TRONCATURE : prose coupée (phrase inachevée comme « e. ») → la
-        // génération est ÉCHOUÉE : on ne stocke PAS, on fait réessayer le
-        // client (le retry régénère le chapitre complet en streaming).
-        if (meta.tronquee) {
-          console.warn(
-            `[CHAPITRE TRONQUÉ] game ${gameId} ch ${nextNumber} — prose inachevée (max_tokens ou arrêt précoce), stop_reason=${chapterResult.stopReason}`,
-          );
-          send('error', { message: 'La génération a été interrompue (texte coupé). Réessaie.' });
-          res.end();
-          return;
-        }
+        // TRONCATURE : prose coupée (phrase inachevée comme « e. »). On ne
+            // rejette QUE si stop_reason confirme la coupure (max_tokens). Un
+            // stop_reason 'stop' avec une fin « suspecte » est un FAUX POSITIF
+            // (tiret cadratin de dialogue, mot en italique, guillemet final) :
+            // le modèle sait s'il a fini, l'heuristique non — on garde, on logue.
+            if (meta.tronquee) {
+              if (chapterResult.stopReason === 'max_tokens') {
+                console.warn(
+                  `[CHAPITRE TRONQUÉ] game ${gameId} ch ${nextNumber} — prose inachevée confirmée par stop_reason=max_tokens (${chapterResult.usage?.outputTokens ?? '?'} tokens émis)`,
+                );
+                send('error', { message: 'La génération a été interrompue (texte coupé). Réessaie.' });
+                res.end();
+                return;
+              }
+              console.warn(
+                `[PROSE SUSPECTE — conservée] game ${gameId} ch ${nextNumber} — fin de phrase heuristique non concluante, stop_reason=${chapterResult.stopReason} (faux positif probable : dialogue/italique/guillemet)`,
+              );
+            }
 
         // ANTI-INTERTITRES + plus JAMAIS de marqueur de structure résiduel.
         chapterText = stripMarkers(cleanIntertitles(chapterText, title, nextNumber));
 
-        // Filet : moins de 3 choix (ou libellés trop longs) alors que la fin
-        // n'est PAS autorisée → rattrapage explicite, puis deux choix forcés
-        // en dernière extrémité. Un libellé > 9 mots / 48 caractères est une
-        // faute d'interface : il ne doit jamais atteindre l'écran.
-        const choixValides = choices.filter(
-          (c) =>
-            c.libelle &&
-            c.libelle.trim().length > 0 &&
-            c.libelle.trim().split(/\s+/).length <= 9 &&
-            c.libelle.length <= 48,
-        );
-        let choicesResult = EMPTY_RESULT;
-        if (choixValides.length < 3 && !finAutorisee) {
+        // Un seul critère de validité, partagé par le comptage ET le stockage :
+                // un libellé > 9 mots / 48 caractères est une faute d'interface —
+                // éliminé à la réception, jamais stocké, jamais à l'écran.
+                const estChoixValide = (c: StoryChoice): boolean =>
+                  !!c.libelle &&
+                  c.libelle.trim().length > 0 &&
+                  c.libelle.trim().split(/\s+/).length <= 9 &&
+                  c.libelle.length <= 48;
+                let choixRetenus = choices.filter(estChoixValide);
+                let choicesResult = EMPTY_RESULT;
+                if (choixRetenus.length < 3 && !finAutorisee) {
       try {
         const retryGen = await llm.generateJson<{ choix?: StoryChoice[] }>({
           messages: [
@@ -470,24 +475,22 @@ ${nextNumber >= totalChapters
           kind: 'choices',
           maxTokens: 500,
         });
-        choices = (retryGen.json.choix ?? []).filter(
-                  (c) =>
-                    c.libelle &&
-                    c.libelle.trim().length > 0 &&
-                    c.libelle.trim().split(/\s+/).length <= 9 &&
-                    c.libelle.length <= 48,
-                );
+        choixRetenus = (retryGen.json.choix ?? []).filter(estChoixValide);
                 choicesResult = retryGen.result;
-      } catch {
-        // ignore - fallback ci-dessous
-      }
-      if (choices.length === 0) {
-        choices = [
-          { libelle: 'Continuer coûte que coûte', consequenceResumee: 'Le héros ne renonce pas et suit son instinct.' },
-          { libelle: 'Temporiser et observer', consequenceResumee: 'Le héros prend le temps de comprendre ce qui se joue.' },
-        ];
-      }
-    }
+              } catch {
+                // ignore - fallback ci-dessous
+              }
+              if (choixRetenus.length === 0) {
+                choixRetenus = [
+                  { libelle: 'Continuer coûte que coûte', consequenceResumee: 'Le héros ne renonce pas et suit son instinct.' },
+                  { libelle: 'Temporiser et observer', consequenceResumee: 'Le héros prend le temps de comprendre ce qui se joue.' },
+                ];
+              }
+            }
+            // TOUJOURS stocker les libellés valides : le comptage (retry) et le
+            // stockage partagent le même filtre — jamais de libellé trop long en
+            // base, jamais un retry compté sur des choix déjà éliminés.
+            choices = choixRetenus;
 
     // POST-TRAITEMENT DÉLÉGUÉ : le résumé/état/plan du chapitre sont
     // exécutés en ARRIÈRE-PLAN par /api/game/finalize (déclenché par le
